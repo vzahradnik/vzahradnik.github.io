@@ -1,111 +1,55 @@
 [[redirects]]
   from = "/2018/04/13-intro-to-android-platform-development.html"
-  to = "/android-platform-development"
-  status = 301
-  force = false
-  query = {path = ":path"}
-  conditions = {Language = ["en"], Country = ["US"], Role = ["admin"]}
+  to = "/Android-platform-development"
 
 [[redirects]]
   from = "/2019/03/24-open-letter-to-mep.html"
-  to = "/otvoreny-list-poslancom-europskeho-parlamentu"
-  status = 301
-  force = false
-  query = {path = ":path"}
-  conditions = {Language = ["en"], Country = ["US"], Role = ["admin"]}
+  to = "/Otvoreny-list-poslancom-Europskeho-parlamentu"
 
 [[redirects]]
   from = "/2019/06/17/stopwatch-for-firefighter-competitions.html"
-  to = "/stopwatch-for-firefighter-competitions"
-  status = 301
-  force = false
-  query = {path = ":path"}
-  conditions = {Language = ["en"], Country = ["US"], Role = ["admin"]}
+  to = "/Stopwatch-for-Firefighter-Competitions"
 
 [[redirects]]
   from = "/2019/11/16/why-i-changed-my-mind-on-social-networks.html"
-  to = "/why-i-changed-my-mind-on-social-networks"
-  status = 301
-  force = false
-  query = {path = ":path"}
-  conditions = {Language = ["en"], Country = ["US"], Role = ["admin"]}
+  to = "/Why-I-changed-my-mind-on-social-networks"
 
 [[redirects]]
   from = "/2019/11/27/what-does-it-take-to-write-a-good-arduino-library.html"
-  to = "/what-does-it-take-to-write-a-good-arduino-library"
-  status = 301
-  force = false
-  query = {path = ":path"}
-  conditions = {Language = ["en"], Country = ["US"], Role = ["admin"]}
+  to = "/What-does-it-take-to-write-a-good-Arduino-library"
 
 [[redirects]]
   from = "/2019/12/08/ci-with-arduino.html"
-  to = "/continuous-integration-with-arduino"
-  status = 301
-  force = false
-  query = {path = ":path"}
-  conditions = {Language = ["en"], Country = ["US"], Role = ["admin"]}
+  to = "/Continuous-integration-with-Arduino"
 
 [[redirects]]
   from = "/2019/12/15/our-school-system-is-antiquated-part1.html"
-  to = "/our-school-system-is-antiquated-it-s-time-for-a-change-part-1"
-  status = 301
-  force = false
-  query = {path = ":path"}
-  conditions = {Language = ["en"], Country = ["US"], Role = ["admin"]}
+  to = "/Our-school-system-is-antiquated.-It's-time-for-a-change!-Part-1"
 
 [[redirects]]
   from = "/2019/12/15/our-school-system-is-antiquated-part2.html"
-  to = "/our-school-system-is-antiquated-it-s-time-for-a-change-part-2"
-  status = 301
-  force = false
-  query = {path = ":path"}
-  conditions = {Language = ["en"], Country = ["US"], Role = ["admin"]}
+  to = "/Our-school-system-is-antiquated.-It's-time-for-a-change!-Part-2"
 
 [[redirects]]
   from = "/2019/12/15/our-school-system-is-antiquated-part3.html"
-  to = "/our-school-system-is-antiquated-it-s-time-for-a-change-part-3"
-  status = 301
-  force = false
-  query = {path = ":path"}
-  conditions = {Language = ["en"], Country = ["US"], Role = ["admin"]}
+  to = "/Our-school-system-is-antiquated.-It's-time-for-a-change!-Part-3"
 
 [[redirects]]
   from = "/2019/12/21/one-year-freelancer.html"
-  to = "/2019-the-year-when-i-took-the-leap-of-faith-and-became-a-freelancer"
-  status = 301
-  force = false
-  query = {path = ":path"}
-  conditions = {Language = ["en"], Country = ["US"], Role = ["admin"]}
+  to = "/2019.-The-Year-When-I-Took-The-Leap-of-Faith-and-Became-a-Freelancer"
 
 [[redirects]]
   from = "/2019/12/25/focus-on-niche-market.html"
-  to = "/a-successful-startup-focus-on-niche-market"
-  status = 301
-  force = false
-  query = {path = ":path"}
-  conditions = {Language = ["en"], Country = ["US"], Role = ["admin"]}
+  to = "/A-successful-startup-Focus-on-niche-market!"
 
 [[redirects]]
   from = "/2019/12/25/reasons-to-be-a-youtuber.html"
-  to = "/eleven-reasons-to-become-a-youtuber-in-2020"
-  status = 301
-  force = false
-  query = {path = ":path"}
-  conditions = {Language = ["en"], Country = ["US"], Role = ["admin"]}
+  to = "/Eleven-reasons-to-become-a-YouTuber-in-2020"
 
 [[redirects]]
   from = "/2019/12/28/reasons-to-be-a-youtuber.html"
-  to = "/eleven-reasons-to-become-a-youtuber-in-2020"
-  status = 301
-  force = false
-  query = {path = ":path"}
-  conditions = {Language = ["en"], Country = ["US"], Role = ["admin"]}
+  to = "/Eleven-reasons-to-become-a-YouTuber-in-2020"
 
 [[redirects]]
   from = "/2019/12/31/my-internet-health-story.html"
-  to = "/my-internet-health-story"
-  status = 301
-  force = false
-  query = {path = ":path"}
-  conditions = {Language = ["en"], Country = ["US"], Role = ["admin"]}
+  to = "/My-Internet-Health-Story"
