@@ -1,0 +1,3 @@
+%2F%2F StopWatch Diagram,
+[Tk window|mainloop()]<-.- uses[MainApp|postOnUiThread();close()]
+[MainApp|postOnUiThread();close()]++->[StopWatch|get_current_time()], [MainApp]++->[FlowMeter|get_current_flow()], [MainApp]++->[PressureTransducer|get_current_pressure();get_sliding_avg_pressure()], [MainApp]++->[RpmMeter|get_current_rpm()],[StopWatch]++-1..*>[Button],[FlowMeter]++->[Button], [RpmMeter]++->[Button], [PressureTransducer]uses -.->[busio.i2c]

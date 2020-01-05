@@ -1,0 +1,16 @@
+# Freedom of the Internet is hanging by a thread
+The Internet became for us an integral part of our lives. Being developed in the [1960s through 1980s][internet-wiki], its creators didn't anticipate some fundamental flaws in its design which we're facing today. Most fundamental mechanisms of the Internet are centralized, client/server architecture is the most prevailing, people tend to share their data on clouds owned by private corporations and politicians tend to regulate the Internet, effectively breaking the experience for everyone using it. In this article I'll go through the issues, which I think pose a problem, and whenever possible, I'll suggest possible solutions.
+
+## Advent of the Internet
+The Internet is a global system of interconnected networks. Its origins date back to a research from [1960s][internet-research] to build fault-tolerant communication with remote computer networks. Its predecessor, the [ARPANET][arpanet], interconnected academic and military networks in the 1980s. It was the first network to implement the [TCP/IP][tcp-ip] stack and used packets to send data across lines. Both technologies became the foundation of the Internet and are still used to this day. Commercialization of the Internet began in [1990s][net-commercialization]. According to [Internet World Stats][internet-world-stats], around 1995 only about 16 million of users were connected to the Internet. Since then the growth is very rapid. In the year 2000, there were 361 million of users connected, ten years later there were almost two billions and in mid 2018 there were more that 4 billion of people connected, representing 55 percent of the world's population.
+
+
+[//]: # (Used references)
+[internet-wiki]: https://en.wikipedia.org/wiki/Internet
+[internet-research]: https://www.livinginternet.com/i/ii_ipto.htm
+[arpanet]: https://en.wikipedia.org/wiki/ARPANET
+[tcp-ip]: https://en.wikipedia.org/wiki/Internet_protocol_suite
+[net-commercialization]: https://en.wikipedia.org/wiki/Commercialization_of_the_Internet
+[internet-world-stats]: https://www.internetworldstats.com/emarketing.htm
+
+# net neutrality, dmca, acta, sopa, social networks - platforms vs publishers, private internet infrastructure - fiber optics cables owned by a few companies, content delivery networks - akamai, cludflare, domain providers - godaddy, deplatforming, patreon purge, bitcoin and crypto currencies, eu article 11 and 13, vpn providers, regional blocked content, dns hijacking, dns filtering, bgp - unability to reach any destination from any source within the internet, censorship on company platforms (facebook, twitter), first amendment, de/centralization, port blocking, traffic shaping, traffic prioritization, UKUSA agreement, Five Eyes, global surveillance, nsa, Edward Snowden, 9 eyes, 14 eyes, Electronic Frontier Foundation, OpenMedia, Tor, Onion, free speech, demonetization, Tim Berners-Lee, Solid, html, http vs https, certification authorities, let's encrypt, dnssec, machine learning, data mining, content filtering, advertisement, duckduckgo vs google search engine, IPv6 and user tracking based on assigned IP, logging and browsing history, encrypted video streaming, widevine, bitchute, big china firewall, smart speakers listening
