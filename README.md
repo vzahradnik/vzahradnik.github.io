@@ -1,9 +1,4 @@
-<a href="https://novela.narative.co" target="_blank">
-<img src="https://raw.githubusercontent.com/narative/gatsby-theme-novela-example/master/assets/gatsby-theme-novela-hero.jpg" alt="gatsby-novela-theme hero image" />
-</a>
-
-<br/>
-
+[![Netlify Status](https://api.netlify.com/api/v1/badges/a3ba44f5-c69c-414b-bfb3-4f17c2669a86/deploy-status)](https://app.netlify.com/sites/stupefied-payne-451c52/deploys)
 # Gatsby Starter Novela
 
 With minimal styling and maximum features — including multiple homepage layouts, built-in social sharing and dark mode — Novela makes it easy to start publishing beautiful articles and stories with Gatsby.
