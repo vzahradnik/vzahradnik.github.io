@@ -14,8 +14,12 @@ module.exports = {
         url: `https://twitter.com/VladoZahradnik`,
       },
       {
-        name: `github`,
-        url: `https://github.com/vzahradnik`,
+        name: `youtube`,
+        url: `https://www.youtube.com/channel/UCogZ6qxqKa_WIsw7NnU2IaA`,
+      },
+      {
+        name: `facebook`,
+        url: `https://www.facebook.com/vzahradnik`,
       },
       {
         name: `instagram`,
@@ -24,6 +28,18 @@ module.exports = {
       {
         name: `linkedin`,
         url: `https://www.linkedin.com/in/vladimirzahradnik`,
+      },
+      {
+        name: `medium`,
+        url: `https://medium.com/@vladimir.zahradnik`,
+      },
+      {
+        name: `github`,
+        url: `https://github.com/vzahradnik`,
+      },
+      {
+        name: `paypal`,
+        url: `https://www.paypal.me/vzahradnik`,
       },
     ],
   },

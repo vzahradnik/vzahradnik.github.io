@@ -1,12 +1,17 @@
 - name: Vladimír Záhradník
   bio: |
-    Hi there, I'm Vladimir. I work as a software engineer; at the time,
-    I focus mostly on mobile and embedded development.
+    Hi there, I'm Vladimír. I work as a freelance software engineer; at the time,
+    I focus mostly on mobile and embedded development. I always strive to overcome my
+    limits — that is the reason why I'm so interested in startups and entrepreneurship.
+    Also, I love music, especially live events in the clubs.
   avatar: ./avatars/vladimir-zahradnik.jpg
   social:
     - url: https://twitter.com/VladoZahradnik
+    - url: https://www.youtube.com/channel/UCogZ6qxqKa_WIsw7NnU2IaA
     - url: https://www.facebook.com/vzahradnik
-    - url: https://www.linkedin.com/in/vladimirzahradnik
     - url: https://www.instagram.com/vladimir.zahradnik
+    - url: https://www.linkedin.com/in/vladimirzahradnik
+    - url: https://medium.com/@vladimir.zahradnik
     - url: https://github.com/vzahradnik
+    - url: https://www.paypal.me/vzahradnik
   featured: true
