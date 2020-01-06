@@ -50,6 +50,7 @@ module.exports = {
         contentPosts: "content/posts",
         contentAuthors: "content/authors",
         basePath: "/",
+        mailchimp: true,
         authorsPage: true,
         sources: {
           local: true,
@@ -67,6 +68,12 @@ module.exports = {
         theme_color: `#fff`,
         display: `standalone`,
         icon: `src/assets/favicon.png`,
+      },
+    },
+    {
+      resolve: 'gatsby-plugin-mailchimp',
+      options: {
+        endpoint: 'https://zahradnik.us4.list-manage.com/subscribe/post?u=c838929e4f4a4860aaa982d2c&amp;id=ab314a0059',
       },
     },
   ],
