@@ -76,5 +76,11 @@ module.exports = {
         endpoint: 'https://zahradnik.us4.list-manage.com/subscribe/post?u=c838929e4f4a4860aaa982d2c&amp;id=ab314a0059',
       },
     },
+    {
+      resolve: `gatsby-plugin-disqus`,
+      options: {
+        shortname: `zahradnik-io`
+      }
+    },
   ],
 };

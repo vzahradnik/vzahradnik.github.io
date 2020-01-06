@@ -12,6 +12,7 @@
   "dependencies": {
     "@narative/gatsby-theme-novela": "^0.12.*",
     "gatsby": "^2.18.17",
+    "gatsby-plugin-disqus": "^1.1.4",
     "gatsby-plugin-mailchimp": "^5.1.2",
     "gatsby-plugin-manifest": "^2.2.4",
     "react": "^16.8.6",
