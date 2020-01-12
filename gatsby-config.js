@@ -50,7 +50,7 @@ module.exports = {
         contentPosts: "content/posts",
         contentAuthors: "content/authors",
         basePath: "/",
-        mailchimp: true,
+        mailchimp: false,
         authorsPage: true,
         sources: {
           local: true,
