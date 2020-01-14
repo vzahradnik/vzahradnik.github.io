@@ -15,6 +15,7 @@
     "gatsby-plugin-disqus": "^1.1.4",
     "gatsby-plugin-mailchimp": "^5.1.2",
     "gatsby-plugin-manifest": "^2.2.4",
+    "gatsby-plugin-sitemap": "^2.2.25",
     "react": "^16.8.6",
     "react-dom": "^16.8.6"
   }
