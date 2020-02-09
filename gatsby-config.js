@@ -71,6 +71,27 @@ module.exports = {
       },
     },
     {
+      resolve: `cookiehub-banner`,
+      options: {
+        cookieHubId: "6553fca9",
+        cookieHubV2Api: true,
+        categories: [
+          {
+            categoryName: 'analytics',
+            cookieName: 'gatsby-plugin-google-analytics-gdpr_cookies-enabled'
+          }
+        ]
+      }
+    },
+    {
+      resolve: `gatsby-plugin-google-analytics-gdpr`,
+      options: {
+        trackingId: "UA-142286862-1",
+        anonymizeIP: true,
+        autoStartWithCookiesEnabled: false,
+      },
+    },
+    {
       resolve: "gatsby-plugin-mailchimp",
       options: {
         endpoint: 'https://zahradnik.us4.list-manage.com/subscribe/post?u=c838929e4f4a4860aaa982d2c&amp;id=ab314a0059',
