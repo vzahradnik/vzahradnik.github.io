@@ -1,0 +1,241 @@
+---
+title: Raspberry Pi as a home router
+excerpt: The latest generation of Raspberry Pi is powerful enough to serve as a decent home router. What leads to my decision to use it, and what's my experience?
+author: Vladimír Záhradník
+date: 2020-04-17
+categories: raspberrypi openwrt router openhardware freedom
+hero: ./images/rpi_final_router_build.jpg
+comments: true
+---
+
+Recently I replaced my home router with [Raspberry Pi 4][rpi4-specs]. My main goal was to increase throughput through my VPN. While at it, I also migrated from [OpenVPN][openvpn] to [WireGuard][wireguard], and read their whole technical [paper][wg-whitepaper]. This post sums up my insights with repurposing a [Raspberry Pi][raspberrypi] into a network device.
+
+---
+
+## Why having a home router in the first place?
+When you sign a contract with your internet service provider, besides the Internet service, you usually lease a router too. It is certified for the ISP network and gives you wired and wireless connectivity for all devices in your home. In most cases, you can't get rid of this router, and most people don't bother. I think differently, and I believe it's important to talk about its security risks.
+
+Routers provided by your ISP have several drawbacks like:
+- Their hardware is often very low-end, with insufficient RAM and flash storage
+- As a consequence, their software is limited in functionality
+- Sometimes, such routers have hardware modifications from variants made for the consumer market, and frequently they have custom firmware explicitly made for your ISP
+- You, as a customer, have limited access to these devices. On the other hand, ISP often has remote access and full control over the equipment
+- In the past, security experts found [several backdoors][asus-vulnerability] allowing remote access to anyone who is motivated enough
+- Such routers usually don't get firmware updates, or they get it very rarely and only for a limited time
+- As a consequence, if security experts find bugs in software libraries used in such routers, these bugs are never fixed
+- You use such routers daily for years. Usually, until your ISP gives you an updated model, which is rare
+
+For me, having a custom router connected behind the ISP router is a no-brainer. I like having things under control, and I also use non-standard services like VPN, which spans through my home and flat so that I can access my stuff everywhere I go.
+
+---
+
+## From Mikrotik to Raspberry
+I tried different brands of routers over the years, but one brand stuck with me for a long time — Mikrotik. A friend of mine recommended one to me, and since then, I passed that advice to others, having my own experience now.
+
+<div className="Image__Small">
+  <img src="./images/mikrotik_rb450g.jpg" alt="Mikrotik RB450G" />
+  <figcaption>Mikrotik RB450G, my main router before RPi4 upgrade</figcaption>
+</div>
+
+In my home, I used the [RB450G][mikrotik-rb450g] model, which has a MIPS-based 680 MHz single-core CPU with 256 MB of RAM, and 512 MB of flash storage. It was already a considerable upgrade from having a router from my ISP. At that time, a typical ISP router, or cheap home router, had about 32 MB of RAM and 4 MB of storage. You almost couldn't fit any decent software there; there was just no space.
+
+We were using ADSL for connectivity. To hook up this new router into my network, I connected it to the LAN port of the ADSL modem as the only client. Also, I turned off DHCP, set up static IP address, and turned off all "smart" functions, effectively making the modem just a bridge passing data from my router to the ISP, forth and back.
+
+<div className="Image__Medium">
+  <img src="./images/home-router-behind-isp.png" alt="Home router behind ISP" />
+  <figcaption>A home router connected behind an ISP router</figcaption>
+</div>
+
+Each ISP router is different, but you should be able to set it up similarly. Also, try to look up for the DMZ option and set it to your home router IP address. That way, all data traffic is forwarded to your home router, and no special rules are applied. One last thing, if your ISP router has a WiFi, turn it off. You need to set up a WiFi on your home router, or a device behind it. Otherwise, all wireless traffic bypasses your home router, and that's probably not what you want.
+
+### OpenWrt
+Mikrotik devices use [RouterOS][routeros] as their system. It gives users features found in much pricier network products. I especially love their WinBox app, which helps to manage my equipment through a simple-to-use UI. However, as I used it, I found several bugs, and some features I needed were missing. For example, RouterOS supports OpenVPN only through TCP, which adds overhead. Also, when my provider configured a DS-Lite IPv6 stack, RouterOS support was limited, and I had trouble accessing a native IPv6 network. Therefore, I decided to migrate to [OpenWrt][openwrt], which is an open-source Linux distribution aimed at routers. Due to this, many features were just there, including OpenVPN on UDP, and proper DSLite support.
+
+OpenWrt had many software packages available out of the box. If I missed a feature, I could (and did) prepare a package, and if I found a bug, I could (and did) report an issue and provide a patch. One day, however, Linux kernel dropped support for my flash storage. Suddenly, the latest OpenWrt versions didn't work correctly with my router, and I was stuck with an old version of the system. It was a problem from a security standpoint, as well as from a usability standpoint; I couldn't use the latest software anymore. Because this was my main router, I couldn't experiment with it and prepare patches. Testing my changes was not possible. I kept running this old OpenWrt distribution on my router for over a year. During that time, I was looking for an alternative solution, which is powerful enough to increase my VPN performance, and which can run customizable firmware.
+
+### Finding alternative hardware
+In my other site, I use [Turris Omnia][turris], which uses a forked OpenWrt code. I thought about replacing my Omnia with a network developer board like [MACCHIATObin Double Shot][macchiatobin] and replacing my Mikrotik with Omnia. Still, ultimately I abandoned the idea due to the higher price and lower availability of the MACCHIATObin board. From the practical point, I don't need hardware capable of routing 10 Gbit/second if my ISP gives me only one Gigabit, but I must admit it would be cool. Later I shifted my focus to a hardware running [pfSense][pfsense] or [OPNSense][opnsense]. These distributions have minimal support for ARM-based boards, and finding x86 hardware with low power consumption, reasonable price, and decent performance is not that easy.
+
+Then I remembered on my [Odroid C2][odroid-c2]. It's a developer board with a single Ethernet port and a bunch of USB2 ports. What's important is that it can handle Ethernet through its RJ45 port at full speed of one Gigabit. If you'd like to use such a device as a router, you need to have at least two interfaces — one facing your ISP router (WAN) and one facing your devices (LAN). I was thinking of using this internal Ethernet port for LAN because the maximum speed on the local network is essential. However, for WAN, I needed much lower throughput because my Internet speed was only around 100 Mbit/second. I found some decent USB3 to Ethernet adapters for that purpose. Odroid C2 supports several Linux distributions, including Ubuntu and [ArchLinux ARM][archlinuxarm]. Therefore, transforming it into a router is possible, and I would certainly do that if there weren't a new revision of Raspberry Pi. The main problem with Odroid C2 is that its kernel is not mainline, and it's rather old. Also, ArchLinux ARM, which I planned to use, is not explicitly designed for routers. This solution could work, but it would most likely take a significant time to set up.
+
+Last weekend I was determined to go with the Odroid C2 path. But then I looked at my shiny Raspberry Pi 4, and I changed my mind. I own almost all revisions of Raspberry Pi, and I use them in my work IoT projects. That was also the reason why I bought the Raspberry Pi 4. Previous generations of RPi were not that useful for use as a router because their Ethernet interface was internally routed through a USB2 hub, effectively limiting the throughput to [around 200 Mbit/second][rpi-throughput]. However, RPi4 can finally saturate a full Gigabit link because of its new I/O architecture. Also, it finally provides USB3 ports, which work great with my external USB-to-Ethernet adapter. The main advantage of RPi4 over Odroid C2 is the mainline kernel support. Therefore it's easy to use close-to-latest Linux kernel. Due to its popularity, community support is also better. And, as a bonus, OpenWrt added support for it in their developer builds. Therefore, migration from my existing router to Raspberry Pi should be relatively painless. Let's take a look at this process.
+
+---
+
+## Turning Raspberry Pi into a router
+As I mentioned, I needed to have two Ethernet interfaces, and Raspberry gives me only one. I decided to use the internal Ethernet port for my local LAN and a USB-to-Ethernet adapter for WAN. Of course, this assignment is not mandatory, and if you use a USB adapter for LAN instead, your setup should work too. In my case, the LAN port on RPi is connected to a 24-port Gigabit Ethernet switch to provide connectivity for more than one device. You can buy any cheap Gigabit Ethernet switch.
+
+<div className="Image__Large">
+  <img src="./images/raspberry_with_eth_adapter.jpg" alt="RPi4 with USB-to-Ethernet adapter" />
+  <figcaption>Raspberry Pi 4 with a USB-to-Ethernet adapter</figcaption>
+</div>
+
+Without going into much detail about how an Ethernet works, a router serves two purposes — it resolves an IP address into device MAC using the [ARP][arp] protocol, and it routes traffic into outside networks, like the Internet. When two of your devices want to communicate inside the same LAN network, their traffic won't get through your router at all, only through the switch. Hence, if you buy a cheap Gigabit switch, you'll get a decent network performance, and it doesn't matter what kind of router you use.
+
+Therefore, if you have some spare Raspberry Pi 3, it can still serve you well as a router, just hook up some switch behind it, and make sure your Internet link is slower than 200 Mbit/second. Otherwise, your speed is limited. Raspberry Pi 3 won't handle more traffic because of the internal USB2 hub mentioned earlier. RPi4 is a better choice in that case. I don't have exact stats, but [USB 3.0 throughput is 5 Gbit/s][usb-wiki], so I believe the latest RPi should have no problem saturating an outgoing link.
+
+### OpenWrt Installation
+The installation of the system was pretty straight-forward. I followed the [official instructions][openwrt-rpi-guide]. Note that if you have Raspberry Pi 4, its support is not yet in stable OpenWrt builds, and you need to download the [latest development build][openwrt-rpi4-snapshot]. The image is gzip-compressed; first you need to unpack the file. I explain the required steps using the Linux command line:
+
+```bash
+gunzip rpi-4-ext4-factory.img.gz
+```
+
+As a result, you'll get a file without the `*.gz` extension. You can now flash this file into a MicroSDXC card. I'm using the `dd` tool:
+
+```bash
+dd if=rpi-4-ext4-factory.img of=/dev/mmcblk0 bs=4096
+sync
+```
+
+You specify source file as the `if` parameter, and target memory card as the `of` parameter. Block size, `bs`, is optional to speed things up, and `sync` command makes sure everything is written into the card.
+
+Unlike distributions like Raspbian, OpenWrt doesn't expand your system partition to fit the whole space. Typically, you'll get only 100 MB of space for your apps, even if your memory card has 64 GB of storage. I resized the partition manually on my PC. First, I edited the partition table with `fdisk`, and then used the `resize2fs` command. The animation below illustrates all these steps:
+
+<div className="Image__Medium">
+  <img src="./images/rpi-resize.gif" alt="Rootfs resize" />
+  <figcaption>System partition resize</figcaption>
+</div>
+
+First, you need to change the partition table so that the second, `rootfs`, partition fits all available space. You need to delete the partition first and then create a new one. The key is to make sure the new larger partition starts at the same offset. This operation might sound dangerous, but it's not. Of course, you need to make sure that you've picked the correct device. When you change the partition table, then remove and insert the memory card back so that Linux uses the updated partition table. Next, check the file system for errors, and finally, initiate the `resize2fs` command.
+
+### The first run
+Raspberry Pi has assigned the IP address of `192.168.1.1`. To get access to it, connect your PC into the Ethernet port on RPi, and set its IP address to `192.168.1.2`. Then you should be able to access OpenWrt through SSH:
+
+```bash
+[vzahradnik@EliteBook ~]$ ssh root@192.168.1.1
+
+
+BusyBox v1.31.1 () built-in shell (ash)
+
+  _______                     ________        __
+ |       |.-----.-----.-----.|  |  |  |.----.|  |_
+ |   -   ||  _  |  -__|     ||  |  |  ||   _||   _|
+ |_______||   __|_____|__|__||________||__|  |____|
+          |__| W I R E L E S S   F R E E D O M
+ -----------------------------------------------------
+ OpenWrt SNAPSHOT, r12945-0aa2ecf5b2
+ -----------------------------------------------------
+root@OpenWrt:~#
+```
+
+As a next step, it's a good practice to set up a password:
+
+```bash
+passwd <your-new-password>
+```
+
+To proceed further, we need to have Internet connectivity inside OpenWrt. In my case, I changed the Raspberry Pi IP address inside the `/etc/config/network` file. If you statically assign an IP from a range matching your LAN, you can hook up the Raspberry as a regular client behind your existing router. It makes further steps easier. There is no universal guideline; you're on your own.
+
+### Enabling USB-to-Ethernet adapter
+If you check your available interfaces, you'll most likely see only the internal `eth0` interface, even if your USB adapter is connected. In my case, I had to find out which chipset my adapter is using and install the appropriate kernel module.
+
+```bash
+root@OpenWrt:~# opkg list kmod-usb-net*
+
+# Install the Realtek module
+root@OpenWrt:~# opkg install kmod-usb-net-rtl8152
+root@OpenWrt:~# reboot
+```
+
+After next reboot, you should see your USB Ethernet interface initialized:
+
+```bash
+...
+[    7.159985] usbcore: registered new interface driver r8152
+[    7.370114] r8152 2-2:1.0 eth1: v1.10.11
+[   10.665622] IPv6: ADDRCONF(NETDEV_CHANGE): eth1: link becomes ready
+[   10.673312] r8152 2-2:1.0 eth1: carrier on
+...
+```
+
+### Update network configuration
+As I mentioned previously, I decided to use a USB adapter for traffic going to the Internet. Raspberry Pi uses the internal `eth0` port for that by default. We need to do changes inside the `/etc/config/network` file. This time, however, we can apply the final configuration, including the final IP address for the device. You just need to make sure that you don't apply the configuration, e.g., by rebooting the device.
+
+My file looks like this:
+
+```bash
+...
+# My LAN network, where Raspberry Pi serves as a router.
+# Uses the internal Ethernet port on Raspberry Pi.
+config interface 'lan'
+    option type 'bridge'
+    option ifname 'eth0'
+    option proto 'static'
+    # Static IP address of your router.
+    # It must be unique across your LAN network.
+    option ipaddr '10.0.0.1'
+    option netmask '255.255.255.0'
+    option ip6assign '60'
+
+# WAN network configuration, e.g., to reach
+# the ISP router and the Internet.
+# Uses the USB-to-Ethernet adapter.
+config interface 'wan'
+    option ifname 'eth1'
+    option proto 'static'
+    # Assuming your ISP router has IP 192.168.1.1
+    option ipaddr '192.168.1.2'
+    option netmask '255.255.255.0'
+    option gateway '192.168.1.1'
+    option ipv6 'auto'
+    option peerdns '0'
+    # You can specify custom DNS servers
+    option dns '217.31.204.130 193.29.206.206'
+...
+```
+
+### Install webserver and GUI
+OpenWrt provides [LuCI][luci] as a web UI. It allows you to manage all these settings through a simple webpage. On low-end OpenWrt routers, it usually uses `uhttpd` as a webserver. However, Raspberry Pi is powerful enough to handle a full-fledged [Nginx][nginx] server.
+
+You can install UI with these commands:
+```bash
+opkg update
+opkg install luci-ssl-nginx
+```
+
+Optionally, you can install language packs to switch UI into your preferred language. See the official documentation for the instructions.
+
+To enable the UI, you need to do the following:
+```bash
+root@OpenWrt:~# /etc/init.d/nginx enable
+```
+
+### Final steps
+That's pretty much it! Raspberry Pi is ready now to serve as a router. If you have another home router with OpenWrt (like the Mikrotik in my case), you can transfer the remaining configuration, like firewall rules, DHCP and DNS entries, and then you can turn Raspberry Pi down. It's ready to be placed as a router now.
+
+After reboot, you can access the web interface in your browser using the static IP set in the network configuration.
+
+<div className="Image__Medium">
+  <img src="./images/openwrt_luci_nginx.png" alt="LuCI web interface" />
+  <figcaption>LuCI web interface</figcaption>
+</div>
+
+---
+
+## Conclusion
+In my case, the experiment to use Raspberry Pi as my router turned out well, and I decided to make this setup permanent. After a long time, I have OpenWrt with the latest patches. My VPN performance is significantly higher, and not to mention this solution gives me 4 GB of RAM and almost 60 GB of storage, which brings new possibilities, like running my proxy server or configuring more demanding firewall rules. I'm pleased that, finally, we have development boards capable of replacing network equipment. Such boards may shape the segment of home networking significantly in upcoming years. If you have a spare Raspberry Pi, I encourage you to try to use it as a router too. It's a fun experience.
+
+[//]: # (Used references)
+[rpi4-specs]: https://www.raspberrypi.org/products/raspberry-pi-4-model-b/
+[openvpn]: https://openvpn.net/
+[wireguard]: https://www.wireguard.com/
+[wg-whitepaper]: https://www.wireguard.com/papers/wireguard.pdf
+[asus-vulnerability]: https://www.bleepingcomputer.com/news/security/40-asus-rt-router-models-are-vulnerable-to-simple-hacks/
+[raspberrypi]: https://www.raspberrypi.org/
+[mikrotik-rb450g]: https://mikrotik.com/product/RB450G
+[routeros]: https://mikrotik.com/software
+[openwrt]: https://openwrt.org/
+[turris]: https://www.turris.cz/en/omnia/
+[macchiatobin]: http://macchiatobin.net/product/macchiatobin-double-shot/
+[pfsense]: https://www.pfsense.org/
+[opnsense]: https://opnsense.org/
+[odroid-c2]: https://wiki.odroid.com/odroid-c2/odroid-c2
+[archlinuxarm]: https://archlinuxarm.org/platforms/armv8/amlogic/odroid-c2
+[rpi-throughput]: https://www.jeffgeerling.com/blogs/jeff-geerling/getting-gigabit-networking
+[arp]: https://en.wikipedia.org/wiki/Address_Resolution_Protocol
+[usb-wiki]: https://en.wikipedia.org/wiki/USB
+[openwrt-rpi-guide]: https://openwrt.org/toh/raspberry_pi_foundation/raspberry_pi
+[openwrt-rpi4-snapshot]: https://downloads.openwrt.org/snapshots/targets/brcm2708/bcm2711/
+[luci]: https://openwrt.org/docs/guide-user/luci/luci.essentials
+[nginx]: https://nginx.org/
