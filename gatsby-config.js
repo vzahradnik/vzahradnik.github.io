@@ -71,7 +71,7 @@ module.exports = {
       },
     },
     {
-      resolve: `cookiehub-banner`,
+      resolve: `gatsby-plugin-cookiehub-banner`,
       options: {
         cookieHubId: "6553fca9",
         cookieHubV2Api: true,
