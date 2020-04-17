@@ -34,7 +34,7 @@ I tried different brands of routers over the years, but one brand stuck with me 
 
 <div className="Image__Small">
   <img src="./images/mikrotik_rb450g.jpg" alt="Mikrotik RB450G" />
-  <figcaption>Mikrotik RB450G, my main router before RPi4 upgrade</figcaption>
+  <figcaption>Mikrotik RB450G, my main router before the RPi4 upgrade</figcaption>
 </div>
 
 In my home, I used the [RB450G][mikrotik-rb450g] model, which has a MIPS-based 680 MHz single-core CPU with 256 MB of RAM, and 512 MB of flash storage. It was already a considerable upgrade from having a router from my ISP. At that time, a typical ISP router, or cheap home router, had about 32 MB of RAM and 4 MB of storage. You almost couldn't fit any decent software there; there was just no space.
@@ -74,7 +74,7 @@ Without going into much detail about how an Ethernet works, a router serves two 
 
 Therefore, if you have some spare Raspberry Pi 3, it can still serve you well as a router, just hook up some switch behind it, and make sure your Internet link is slower than 200 Mbit/second. Otherwise, your speed is limited. Raspberry Pi 3 won't handle more traffic because of the internal USB2 hub mentioned earlier. RPi4 is a better choice in that case. I don't have exact stats, but [USB 3.0 throughput is 5 Gbit/s][usb-wiki], so I believe the latest RPi should have no problem saturating an outgoing link.
 
-### OpenWrt Installation
+### OpenWrt installation
 The installation of the system was pretty straight-forward. I followed the [official instructions][openwrt-rpi-guide]. Note that if you have Raspberry Pi 4, its support is not yet in stable OpenWrt builds, and you need to download the [latest development build][openwrt-rpi4-snapshot]. The image is gzip-compressed; first you need to unpack the file. I explain the required steps using the Linux command line:
 
 ```bash
