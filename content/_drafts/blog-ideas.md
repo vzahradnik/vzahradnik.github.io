@@ -7,6 +7,7 @@ Ideas for future articles.
 - WireGuard - VPN designed with focus on real-world usage
 - Facebook, an unreliable partner for your business
 - Maintaining account security in Toastmasters club
+- Writing organization processes as RFC-like docs
 
 ## Backlog
 - How to setup custom email server on public dynamic ip address
