@@ -2,6 +2,9 @@
 Ideas for future articles.
 
 ## Top priority posts
+- My beliefs
+- Organic Mission: my first entrepreneurial experience
+- Why executioners fascinate me
 - 5G: Demystifying Myths
 - Hackintosh: How did the scene evolve over the years?
 - WireGuard - VPN designed with focus on real-world usage
