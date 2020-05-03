@@ -1,0 +1,350 @@
+---
+title: WireGuard — A VPN with real-world usage in mind
+excerpt: Recently I made a switch from OpenVPN to WireGuard. I'm super-impressed by that project, and this post tells you why.
+author: Vladimír Záhradník
+date: 2020-05-03
+categories: wireguard vpn raspberrypi openwrt freedom
+hero: ./images/hero.jpg
+comments: true
+---
+
+In my [latest post][rpi-as-a-home-router], I wrote about my journey in replacing a home router with a [Raspberry Pi 4][rpi4-specs]. One of the reasons was to increase the throughput of my VPN, and I considered [WireGuard][wireguard] since I first heard Linus Torvalds himself [liked it a lot][linus-likes-wireguard].
+
+> Can I just once again state my love for it and hope it gets merged soon? Maybe the code isn't perfect, but I've skimmed it, and compared to the horrors that are OpenVPN and IPSec, it's a work of art.
+> — <cite>[Linus Torvalds][linus-quote]</cite>
+
+However, I didn't know how WireGuard works, how difficult it is to set up, and whether it is the right fit for me. I had this project on my TODO list for at least half a year; originally, I planned to use different hardware as the RPi 4 was not even announced. The silver lining of the current COVID-19 crisis is that it reduced my workload, and I can dedicate some time to side projects and experiments. Because WireGuard seemed promising to use in other projects, I decided to understand the internals by reading its [paper][wg-whitepaper].
+
+Linus talks about solutions like [OpenVPN][openvpn] and [IPSec][ipsec] like horrors, and I couldn't agree more. I used both VPNs in the past. For IPsec, I even read [some][esp] of the RFCs. At Alcatel-Lucent, I was working on a feature called [ePDG][ePDG], which allows cellular carriers to transmit data from your mobile phone into the mobile gateway in the data center through the Internet; maybe you've heard about the Voice-over-WiFi. In this technology, IPsec secures the tunnel between your phone and your carrier.
+
+Before I explain how WireGuard works and tell you what I like about it, let's analyze existing solutions first.
+
+---
+
+## IPsec
+IPsec is a de-facto standard in the industry. Once you set the tunnel up, the performance is rather good. IPsec design and building blocks are entirely open and free to read through a set of RFCs. Written mostly by academia, it has a perfect separation of layers — for example, key exchange ([IKEv2][ike]) is separate from the secured data transmission ([ESP][esp]). As a downside, setting all these blocks is inherently complex. In Linux, solutions like [strongSwan][strongswan] make it a little bit easier, but I wouldn't say easy.
+
+What I like about IPsec is that the ESP payload can be directly packed after an IP portion of a packet. It's because the ESP is registered as one of the [allowed protocols][ip-protocols] which you can set inside the IP header's "Next Header" field. If you configure your VPN this way, you'll lower the overhead. However, in the NATted world of today, IPsec data is mostly encapsulated inside the UDP payload.
+
+IPsec can work in two modes — site-to-site, where you interconnect two LANs, or a RoadWarrior mode used when you want to connect with your device into a company network. RoadWarrior doesn't allow (as far as I can tell) interconnecting LANs; I guess nobody assumed such a scenario. So you are forced to use the pure site-to-site mode, which has many disadvantages.
+
+### Site-to-site IPsec Pros & Cons
+- ✅ Decent VPN performance
+- ✅ Less packet overhead in pure ESP mode
+- ❌ Difficult to setup
+- ❌ The configuration is static on both ends, with hardcoded IPs, firewall rules, routes, and other settings
+- ❌ Both ends of the tunnel require a public static IP address
+- ❌ Both ends require firewall exceptions for specific protocols and port numbers
+- ❌ IPsec doesn't allow to change certain ports; they are "hardwired" inside the RFC standard
+- ❌ Difficult to debug
+
+In my case, I didn't have static IP addresses, but at least they were public. One end of the tunnel was in Bratislava, the other end was across the country in Chmiňany, and I was using Mikrotik routers on both ends. Change of dynamic IP was a problem. If you use a VPN like OpenVPN, you can specify a domain name instead of an IP address of your peer. Therefore, you can use dynamic DNS services, which are integrated into many consumer routers out-of-the-box. However, IPsec doesn't expect such a scenario, and you need to configure everything. I ended up writing a slightly complicated script that updated interface configs, firewall rules, and many other quirks. You can still find it in my [GitHub repo][mikrotik-ipsec-script]. This setup worked, and the performance was OK. But one day I changed my ISP, I didn't have a public IP anymore, and I had to find another solution which could connect two ends again. I ended up with OpenVPN, which was also supported on Mikrotik [RouterOS][routeros].
+
+---
+
+## OpenVPN
+This solution has a classic client-server architecture. You need to run an OpenVPN server on a router (or any device) exposed via a public IP address. The other end may be behind NAT with a private IP. So long as there's a way how the client can reach the server, OpenVPN works fine. Once the client initiates a session, NAT rules are dynamically applied along the way to keep the session open. To make sure the NAT rules stay applied, once in a time, the client sends a keepalive packet across the tunnel. If a dynamic IP address is changed, the VPN connection drops for a brief time. However, the client usually connects through a domain name, which gets updated to the new server IP, and the connection gets established.
+
+### Pros & Cons
+- ✅ It can bridge two LANs even if one client has private IP
+- ✅ Supports transport over TCP and UDP
+- ✅ A client can access a server through a DNS domain entry
+- ✅ A server can optionally announce other routes, like its LAN network
+- ✅ A client can have a static IP inside the OpenVPN. Useful, when you want to create a static route to client's LAN
+- ❌ Difficult to set up; however easier than IPsec
+- ❌ A client can't announce its routes. A server needs to create a static route outside of OpenVPN configuration
+- ❌ Difficult to debug
+- ❌ Bad performance, the throughput is much lower than on IPsec
+- ❌ Security vulnerabilities and a codebase which is hard to audit by researchers
+
+Mikrotik uses a custom implementation of OpenVPN, which works only through TCP. People unsuccessfully ask for UDP support for years. OpenVPN over TCP is less efficient because the TCP protocol always asks for confirmation that the packet has arrived. On top of that, OpenVPN maintains its session. Over time, as I went from RouterOS to [OpenWrt][openwrt], switching this VPN to use UDP was among the first things in my list.
+
+Albeit OpenVPN runs better over UDP, its performance is still weak. One of the main reasons is that in Linux, it's implemented as a userspace client. When OpenVPN generates a packet, it's copied several times until it lefts the hardware NIC interface. Also, OpenVPN doesn't work efficiently with multi-core CPUs.
+
+Configuring OpenVPN is more straightforward than setting up an IPsec. However, it's still rather difficult. People need to know how to generate OpenSSL keys, preferably with the [easy-rsa][easy-rsa] scripts shipped with the OpenVPN. Security in OpenVPN is also a concern. In the past, researchers found multiple vulnerabilities inside the OpenSSL library and in the core [OpenVPN library][openvpn-vulnerabilities] as well. The codebase is vast, which makes auditing and finding bugs more difficult.
+
+---
+
+## WireGuard
+In this place, I need to mention that IPsec and OpenVPN are rather old protocols. Over time, people found pitfalls in their designs, but it's not easy, sometimes not even possible, to fix principal design flaws. WireGuard authors were well aware of both IPsec and OpenVPN problems found in real-world scenarios and wrote the protocol to solve them.
+
+> WireGuard® is an extremely simple yet fast and modern VPN that utilizes state-of-the-art cryptography. It aims to be faster, simpler, leaner, and more useful than IPsec while avoiding the massive headache. It intends to be considerably more performant than OpenVPN.
+> — <cite>[WireGuard webpage][wireguard]</cite>
+
+When I read their paper and had all this information in my head, I wrote the main points into a bullet list. Let's put it here for a reference.
+
+### Pros & Cons
+- ✅ The codebase is simple; the kernel driver has according to its authors less than [4,000 lines of code][wg-whitepaper]
+- ✅ Due to its simplicity, it's easily auditable for security vulnerabilities
+- ✅ Easy to configure and use
+- ✅ Supports roaming of clients without losing VPN connectivity
+- ✅ Uses the state-of-the-art cryptography
+- ✅ Runs well on powerful servers and embedded routers
+- ✅ Very high performance, comparable to IPsec
+- ✅ Supports Linux containers to give them access to VPN only through the Wireguard namespace
+- ✅ Available on many platforms, including Android and iOS. WireGuard is actively backported to older Linux kernels to extend support even more
+- ❌ The kernel driver is so far available only for Linux. Other platforms use a userspace client written in Go. However, according to the authors, it's still quite performant
+
+For the tech-savvy readers, let me list a few more pros:
+- ✅ Linux kernel driver doesn't use Crypto API. Instead, WireGuard re-implements some functions directly to avoid dynamic memory allocation
+- ✅ WireGuard supports configurations with pure statically allocated memory 
+- ✅ Cryptographic keys are easily generated with the supplied `wg` tool
+- ✅ Implicit stealth mode. By default, WireGuard peers send packets only when needed, and WireGuard service doesn't reply to random requests without correctly populated headers. So if a random network scanner sends a request to a port where WireGuard listens, it gets no reply back and has no idea that a VPN is running there. Clients behind NAT can keep the VPN established using an optional keepalive parameter; it defaults to *no keepalive*
+- ✅ Because WireGuard on Linux runs inside the kernel, and not in userspace, internal packets are not copied over several times until they exit the hardware NIC
+- ✅ Unlike OpenVPN, WireGuard utilizes all CPU cores efficiently
+- ✅ Key exchange layer and transport layer are not separated (unlike IPsec), to make implementation and maintainability for network engineers easier
+- ✅ In Linux, authors of WireGuard partially integrated its configuration into standard Linux tools like `ip`. For remaining functionality, they provide a `wg` utility, and over time they plan to integrate all this functionality into standard tools and to get rid of this `wg` tool altogether
+
+As you can see, the list is rather long, and those are just the main points I gathered. Before I tell you how easy it gets configured, let me explain what's a WireGuard peer first.
+
+## Everyone is a peer
+In WireGuard, there is no client-server relationship. WireGuard introduces a concept of peers, which are interconnected clients, and by definition, there is no superior or inferior peer.
+
+To establish connectivity, you need to ensure the following:
+- On each peer, create a WireGuard interface and assign an IP address to it with the `ip` tool. It's an address inside a VPN network bound to the peer forever
+- On each peer generate a private key using the `wg` tool and assign it to the WireGuard interface
+- Derive a public key, again with the `wg` tool, and add it to all other peers you want to communicate. WireGuard doesn't specify how to exchange the keys. I opened an SSH session on each device and copied them over manually
+- Optionally, tell each peer how to reach other peers by specifying a public IP (or domain) and a port. Not all peers need to know how to reach others, as long as others know how to reach them; you'll see later
+
+### Peer key generation
+Generating public/private key pairs is straightforward. Make sure you have WireGuard tools installed. The procedure varies based on your system. First, you generate a private key:
+
+```bash
+root@OpenWrt:~# wg genkey
+CKqTfzJBQgg4Vefi38IpBkzPUYUdJdneyZCf4bkBsm0=
+```
+
+You need to store this private key inside a file referenced from the WireGuard configuration. From this private key, you need to derive a public key and distribute it to other peers:
+
+```bash
+root@OpenWrt:~# echo "CKqTfzJBQgg4Vefi38IpBkzPUYUdJdneyZCf4bkBsm0=" | wg pubkey
+pKIHvamNAEpnH11czVMDDv/GD0ivVwp8Jwhp0qUH7UU=
+```
+
+You need to repeat these steps for each peer in your VPN network.
+
+Let's go through several scenarios, and hopefully, you'll understand better how it works.
+
+### Scenario #1: A site-to-site VPN with both peers having a public IP address
+In this first scenario, we are inter-connecting two routers.
+
+Peer A:
+- LAN network: 10.0.0.0/24
+- VPN IP: 192.168.1.1/32
+- Public: IP 46.43.215.66 (or domain peerone.example.org)
+- WireGuard port: 1194 (use whatever port you want, as long as it's not blocked by your ISP)
+
+Peer B:
+- LAN network: 10.0.1.0/24
+- VPN IP: 192.168.1.2/32
+- Public IP: 12.35.181.48 (or domain peertwo.example.org)
+- WireGuard port: 1194
+
+<div className="Image__Medium">
+  <img src="./images/scenario_01.png" alt="Scenario 1" />
+  <figcaption>Scenario #1: A site-to-site VPN</figcaption>
+</div>
+
+First, create a WireGuard interface on each peer:
+
+Peer A:
+```bash
+peer A# ip link add dev wg0 type wireguard
+```
+
+Peer B:
+```bash
+peer B# ip link add dev wg0 type wireguard
+```
+
+Next, assign an IP address to the interface. It serves as a peer IP address inside your VPN, and it never changes (unless you do it, of course).
+
+Peer A:
+```bash
+peer A# ip address add dev wg0 192.168.1.1/32
+```
+
+Peer B:
+```bash
+peer B# ip address add dev wg0 192.168.1.2/32
+```
+
+Next, generate keys as described above, and assign them to peers.
+
+Peer A:
+```bash
+peer A# wg genkey > private
+peer A# cat private
+iFtTfEwI/+Bc0M2olXuytEVPU4TXhCDVGezFt7H8ylg=
+peer A# wg pubkey < private
+AqyBazhsen/jzTJ0MzyyU16wOYovBPZ+DIu6x4rSH3Y=
+
+# Assign a private key to the wg0 interface
+peer A# wg set wg0 private-key ./private
+```
+
+Peer B:
+```bash
+peer B# wg genkey > private
+peer B# cat private
+uPBLlBHptZahFKaX9mSFmIgSNjAEd1kwB+MSAE+QVE0=
+peer B# wg pubkey < private
+i8nniZCkTISUfaLMQ+FV0Sewvq0f68UrkLkeV0a4BnA=
+
+# Assign a private key to the wg0 interface
+peer B# wg set wg0 private-key ./private
+```
+
+And enable the `wg0` interface on both peers:
+
+Peer A:
+```bash
+peer A# ip link set wg0 up
+```
+
+Peer B:
+```bash
+peer B# ip link set wg0 up
+```
+
+At this point, the WireGuard interface is configured, but peers don't know of each other. Let's fix that.
+
+Peer A:
+```bash
+peer A# wg set wg0 peer i8nniZCkTISUfaLMQ+FV0Sewvq0f68UrkLkeV0a4BnA= allowed-ips 192.168.1.2/32,10.0.1.0/24 endpoint 12.35.181.48:1194
+```
+
+Peer B:
+```bash
+peer A# wg set wg0 peer AqyBazhsen/jzTJ0MzyyU16wOYovBPZ+DIu6x4rSH3Y= allowed-ips 192.168.1.1/32,10.0.0.0/24 endpoint 46.43.215.66:1194
+```
+
+Now, the VPN is configured, and peers should be able to reach each other.
+
+The `peer` parameter is a public key of a peer you want to initiate communication.
+
+The `allowed-ips` parameter lists all the networks that the other peer provides. In our example, it lists an IP address assigned to the WireGuard interface and an IP network address of a LAN connected to the peer. You have full control over what networks you notify to others, but at the minimum, you should list the peer IP address there.
+
+The `endpoint` parameter tells the peer how to reach the other, and it's optional; however, imagine a situation where you don't put endpoint information to either peer. How do they reach each other? The truth is they won't. In each scenario, at least one peer should have a hardcoded way how to reach another peer. Let's imagine that I didn't specify an endpoint to peer A on peer B. Therefore, if peer B wants to send a packet you'll get an error telling you there's no route to peer A. But if peer A wants to communicate with peer B, it can because it has the endpoint. Once peer B receives a packet coming from peer A, it notes its WAN IP address, and from that point, both can communicate.
+
+WireGuard maintains a virtual routing table where it matches public key with a peer IP address:
+
+| Peer Public Key                              | Allowed source IPs         |
+|----------------------------------------------|----------------------------|
+| i8nniZCkTISUfaLMQ+FV0Sewvq0f68UrkLkeV0a4BnA= | 192.168.1.2/32,10.0.1.0/24 |
+
+This table matches the peer's public key with associated IPs. Imagine that peer A wants to send a packet to a device behind peer B's LAN (IP: 10.0.1.10). WireGuard looks into this table and finds a matching public key (i.e., the route exists). Then, WireGuard encrypts the packet with the public key associated with the target IP address and sends the packet to the peer B's endpoint. On the other side of the VPN, peer B receives a packet on a WireGuard port 1194. Then, it tries to decrypt the packet with its matching private key. If peer B succeeds, it processes the packet. Otherwise, WireGuard drops the packet.
+
+| Peer Public Key                              | Allowed source IPs         |
+|----------------------------------------------|----------------------------|
+| AqyBazhsen/jzTJ0MzyyU16wOYovBPZ+DIu6x4rSH3Y= | 192.168.1.1/32,10.0.0.0/24 |
+
+When a computer on IP 10.0.1.0 wants to send a reply to peer A, it puts an IP of peer A as a destination address. Then, peer B looks into the table to find a corresponding public key for the destination address. If it succeeds, it encrypts the packet with the matching public key of peer A and sends the packet, which is processed on peer A WireGuard instance.
+
+### Scenario #2: Two peers behind NAT and one peer with a public IP
+This scenario represents a typical situation where you have your routers behind NAT, and you want to establish a secure VPN. In such a case, at least one device needs to have a public IP address.
+
+Peer A:
+- LAN network: 10.0.0.0/24
+- VPN IP: 192.168.1.1/32
+- Behind NAT (no public IP)
+
+Peer B:
+- LAN network: 10.0.1.0/24
+- VPN IP: 192.168.1.2/32
+- Behind NAT (no public IP)
+
+Peer C:
+- LAN network: 10.0.2.0/24
+- VPN IP: 192.168.1.3/32
+- Public IP: 12.35.181.48
+- WireGuard port: 1194
+
+<div className="Image__Medium">
+  <img src="./images/scenario_02.png" alt="Scenario 2" />
+  <figcaption>Scenario #2: A site-to-site VPN with peers behind NAT</figcaption>
+</div>
+
+In this example, peer A and B are behind NAT. There's no way how they can communicate directly. However, they can send traffic through peer C, which is reachable for both of them. We still have peers that are "equal" in WireGuard terminology; however, by setting the configuration to send data from peer A to peer B through peer C (and vice-versa), we effectively created a client-server architecture. Peers A and B are clients, and all their traffic goes through peer C. Both clients A and B have defined endpoint to peer C. I won't put full configuration here as I explained it in detail in the first scenario. But let me show at least configuration for peer A.
+
+```bash
+# Create an interface
+peer A# ip link add dev wg0 type wireguard
+peer A# ip address add dev wg0 192.168.1.1/32
+
+# Generate a key
+peer A# wg genkey > private
+peer A# cat private
+iFtTfEwI/+Bc0M2olXuytEVPU4TXhCDVGezFt7H8ylg=
+peer A# wg pubkey < private
+AqyBazhsen/jzTJ0MzyyU16wOYovBPZ+DIu6x4rSH3Y=
+
+# Assign a private key to the wg0 interface
+peer A# wg set wg0 private-key ./private
+
+# Enable an interface
+peer A# ip link set wg0 up
+
+# Add peer C only (peer B is reachable through peer C)
+# Add network from both peer B and peer C to be advertised
+# as reachable through peer C
+peer A# wg set wg0 peer i8nniZCkTISUfaLMQ+FV0Sewvq0f68UrkLkeV0a4BnA= allowed-ips 192.168.1.2/32,192.168.1.3/32,10.0.1.0/24,10.0.2.0/24 endpoint 12.35.181.48:1194
+```
+
+At this moment, if peer A wants to send a packet to the LAN 10.0.1.0/24 on peer B, it looks into the table and matches the route with a public key for peer C and sends the packet. Peer C has a connection to peer B and forwards the packet. To make sure all peers are reachable at any time, we need to set an optional `persistent-keepalive` parameter. NAT session usually terminates rather quickly, and because WireGuard, by default, sends data only when there's anything to send, the connection between peer A and peer C as well as between peer B and peer C closes. It is re-established when peer A sends data to peer C, and peer B needs to do the same. To keep the NAT session active for both peers, we can set the *keepalive* on peers A and B, which send a packet to peer C once per 25 seconds (it's a recommended value, safe enough to avoid closing the session). Therefore, peer C can communicate with both peers at any time and forward data as needed.
+
+Let's change the last line where we add peer C information on peer A. Note the *keepalive* set to 25 seconds:
+```bash
+peer A# wg set wg0 peer <pubkey> allowed-ips <networks> endpoint <peer-c-endpoint> persistent-keepalive 25
+```
+
+### Scenario #3: RoadWarrior clients accessing a company VPN
+The following scenario is fairly typical. An employee wants to access the company VPN with his company laptop and phone to read some documents.
+
+<div className="Image__Medium">
+  <img src="./images/scenario_03.png" alt="Scenario 3" />
+  <figcaption>Scenario #3: RoadWarrior clients accessing a corporate VPN</figcaption>
+</div>
+
+In this case, both a laptop and a phone are behind NAT. Their location may change at any time, as well as their network IP addresses. "Client" peers don't share any networks and want to communicate only with the "server" peer. The `persistent-keepalive` is not needed because the company server doesn't need ever to reach an employee device. Usually, an employee connects with the WireGuard VPN only when he wants to transmit some data, and after that, he disconnects. Even if the client app is connected and the NAT session terminates, during the next data transmission, a new NAT session is created, and the company server notes updated IP and port. Everything works as expected.
+
+There is one caveat to this setup. As far as I know, there's no way how to dynamically assign an IP address to the client peer inside the VPN. As tools evolve, I expect this problem to be solved.
+
+## Application support
+WireGuard is supported on many platforms. Outside of Linux, you can use its app written in Go. Many tools like `systemd-networkd` or `NetworkManager` added native support, which makes WireGuard even easier to use. In my case, I set up WireGuard on [OpenWrt][openwrt] router. Their GUI called [LuCI][luci] has a package for WireGuard; you can create the interface as well as add peers from the router web interface. And so long as you understood the terminology, setting it up is a breeze.
+
+<div className="Image__Medium">
+  <img src="./images/wg-luci.png" alt="WireGuard on LuCI" />
+  <figcaption>WireGuard in LuCI webinterface</figcaption>
+</div>
+
+---
+
+## Throughput
+I use WireGuard for over two weeks now. I don't have exact throughput data because, due to the COVID-19 situation, the Internet is heavily utilized, and my speed varies during the day. However, I did some quick tests outside peak hours, and the results were awe-inspiring. If you want at least some benchmark, check out the [paper][wg-whitepaper] where WireGuard authors compare WireGuard, IPsec, and OpenVPN. The difference between OpenVPN and WireGuard is enormous.
+
+---
+
+## Conclusion
+I believe WireGuard has a bright future, and I look forward to seeing improved support on existing platforms and devices, as well as added support on new ones. In the IPsec section, I briefly mentioned [ePDG][ePDG], which runs inside your mobile carrier's cloud to transport voice over IPsec. Even if the standard defines IPsec for the transport, I can imagine replacing it with WireGuard over time, and overall seeing WireGuard used in many applications where IPsec dominated for years.
+
+[//]: # (Used references)
+[rpi-as-a-home-router]: https://www.zahradnik.io/Raspberry-Pi-as-a-home-router
+[rpi4-specs]: https://www.raspberrypi.org/products/raspberry-pi-4-model-b/
+[wireguard]: https://www.wireguard.com/
+[wg-whitepaper]: https://www.wireguard.com/papers/wireguard.pdf
+[linus-likes-wireguard]: https://www.phoronix.com/scan.php?page=news_item&px=Linus-Likes-WireGuard
+[linus-quote]: http://lkml.iu.edu/hypermail/linux/kernel/1808.0/02472.html
+[ePDG]: https://www.3gpp.org/technologies/keywords-acronyms/100-the-evolved-packet-core
+[openvpn]: https://openvpn.net/
+[ipsec]: https://en.wikipedia.org/wiki/IPsec
+[esp]: https://tools.ietf.org/html/rfc2406
+[ike]: https://tools.ietf.org/html/rfc5996
+[strongswan]: https://strongswan.org/
+[ip-protocols]: https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers
+[mikrotik-ipsec-script]: https://github.com/vzahradnik/dynamic-ipsec-scripts
+[openwrt]: https://openwrt.org/
+[easy-rsa]: https://community.openvpn.net/openvpn/wiki/EasyRSA
+[openvpn-vulnerabilities]: https://openvpn.net/security-advisories/
+[routeros]: https://mikrotik.com/software
+[luci]: https://openwrt.org/docs/guide-user/luci/luci.essentials
