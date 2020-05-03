@@ -2,12 +2,12 @@
 Ideas for future articles.
 
 ## Top priority posts
+- From LastPass to Enpass
 - My beliefs
 - Organic Mission: my first entrepreneurial experience
 - Why executioners fascinate me
 - 5G: Demystifying Myths
 - Hackintosh: How did the scene evolve over the years?
-- WireGuard - VPN designed with focus on real-world usage
 - Facebook, an unreliable partner for your business
 - Maintaining account security in Toastmasters club
 - Writing organization processes as RFC-like docs
