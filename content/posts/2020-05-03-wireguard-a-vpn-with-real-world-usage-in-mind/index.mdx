@@ -29,8 +29,8 @@ What I like about IPsec is that the ESP payload can be directly packed after an 
 IPsec can work in two modes — site-to-site, where you interconnect two LANs, or a RoadWarrior mode used when you want to connect with your device into a company network. RoadWarrior doesn't allow (as far as I can tell) interconnecting LANs; I guess nobody assumed such a scenario. So you are forced to use the pure site-to-site mode, which has many disadvantages.
 
 ### Site-to-site IPsec Pros & Cons
-- ✅ Decent VPN performance
-- ✅ Less packet overhead in pure ESP mode
+- ✔️ Decent VPN performance
+- ✔️ Less packet overhead in pure ESP mode
 - ❌ Difficult to setup
 - ❌ The configuration is static on both ends, with hardcoded IPs, firewall rules, routes, and other settings
 - ❌ Both ends of the tunnel require a public static IP address
@@ -46,11 +46,11 @@ In my case, I didn't have static IP addresses, but at least they were public. On
 This solution has a classic client-server architecture. You need to run an OpenVPN server on a router (or any device) exposed via a public IP address. The other end may be behind NAT with a private IP. So long as there's a way how the client can reach the server, OpenVPN works fine. Once the client initiates a session, NAT rules are dynamically applied along the way to keep the session open. To make sure the NAT rules stay applied, once in a time, the client sends a keepalive packet across the tunnel. If a dynamic IP address is changed, the VPN connection drops for a brief time. However, the client usually connects through a domain name, which gets updated to the new server IP, and the connection gets established.
 
 ### Pros & Cons
-- ✅ It can bridge two LANs even if one client has private IP
-- ✅ Supports transport over TCP and UDP
-- ✅ A client can access a server through a DNS domain entry
-- ✅ A server can optionally announce other routes, like its LAN network
-- ✅ A client can have a static IP inside the OpenVPN. Useful, when you want to create a static route to client's LAN
+- ✔️ It can bridge two LANs even if one client has private IP
+- ✔️ Supports transport over TCP and UDP
+- ✔️ A client can access a server through a DNS domain entry
+- ✔️ A server can optionally announce other routes, like its LAN network
+- ✔️ A client can have a static IP inside the OpenVPN. Useful, when you want to create a static route to client's LAN
 - ❌ Difficult to set up; however easier than IPsec
 - ❌ A client can't announce its routes. A server needs to create a static route outside of OpenVPN configuration
 - ❌ Difficult to debug
@@ -74,26 +74,26 @@ In this place, I need to mention that IPsec and OpenVPN are rather old protocols
 When I read their paper and had all this information in my head, I wrote the main points into a bullet list. Let's put it here for a reference.
 
 ### Pros & Cons
-- ✅ The codebase is simple; the kernel driver has according to its authors less than [4,000 lines of code][wg-whitepaper]
-- ✅ Due to its simplicity, it's easily auditable for security vulnerabilities
-- ✅ Easy to configure and use
-- ✅ Supports roaming of clients without losing VPN connectivity
-- ✅ Uses the state-of-the-art cryptography
-- ✅ Runs well on powerful servers and embedded routers
-- ✅ Very high performance, comparable to IPsec
-- ✅ Supports Linux containers to give them access to VPN only through the Wireguard namespace
-- ✅ Available on many platforms, including Android and iOS. WireGuard is actively backported to older Linux kernels to extend support even more
+- ✔️ The codebase is simple; the kernel driver has according to its authors less than [4,000 lines of code][wg-whitepaper]
+- ✔️ Due to its simplicity, it's easily auditable for security vulnerabilities
+- ✔️ Easy to configure and use
+- ✔️ Supports roaming of clients without losing VPN connectivity
+- ✔️ Uses the state-of-the-art cryptography
+- ✔️ Runs well on powerful servers and embedded routers
+- ✔️ Very high performance, comparable to IPsec
+- ✔️ Supports Linux containers to give them access to VPN only through the Wireguard namespace
+- ✔️ Available on many platforms, including Android and iOS. WireGuard is actively backported to older Linux kernels to extend support even more
 - ❌ The kernel driver is so far available only for Linux. Other platforms use a userspace client written in Go. However, according to the authors, it's still quite performant
 
 For the tech-savvy readers, let me list a few more pros:
-- ✅ Linux kernel driver doesn't use Crypto API. Instead, WireGuard re-implements some functions directly to avoid dynamic memory allocation
-- ✅ WireGuard supports configurations with pure statically allocated memory 
-- ✅ Cryptographic keys are easily generated with the supplied `wg` tool
-- ✅ Implicit stealth mode. By default, WireGuard peers send packets only when needed, and WireGuard service doesn't reply to random requests without correctly populated headers. So if a random network scanner sends a request to a port where WireGuard listens, it gets no reply back and has no idea that a VPN is running there. Clients behind NAT can keep the VPN established using an optional keepalive parameter; it defaults to *no keepalive*
-- ✅ Because WireGuard on Linux runs inside the kernel, and not in userspace, internal packets are not copied over several times until they exit the hardware NIC
-- ✅ Unlike OpenVPN, WireGuard utilizes all CPU cores efficiently
-- ✅ Key exchange layer and transport layer are not separated (unlike IPsec), to make implementation and maintainability for network engineers easier
-- ✅ In Linux, authors of WireGuard partially integrated its configuration into standard Linux tools like `ip`. For remaining functionality, they provide a `wg` utility, and over time they plan to integrate all this functionality into standard tools and to get rid of this `wg` tool altogether
+- ✔️ Linux kernel driver doesn't use Crypto API. Instead, WireGuard re-implements some functions directly to avoid dynamic memory allocation
+- ✔️ WireGuard supports configurations with pure statically allocated memory 
+- ✔️ Cryptographic keys are easily generated with the supplied `wg` tool
+- ✔️ Implicit stealth mode. By default, WireGuard peers send packets only when needed, and WireGuard service doesn't reply to random requests without correctly populated headers. So if a random network scanner sends a request to a port where WireGuard listens, it gets no reply back and has no idea that a VPN is running there. Clients behind NAT can keep the VPN established using an optional keepalive parameter; it defaults to *no keepalive*
+- ✔️ Because WireGuard on Linux runs inside the kernel, and not in userspace, internal packets are not copied over several times until they exit the hardware NIC
+- ✔️ Unlike OpenVPN, WireGuard utilizes all CPU cores efficiently
+- ✔️ Key exchange layer and transport layer are not separated (unlike IPsec), to make implementation and maintainability for network engineers easier
+- ✔️ In Linux, authors of WireGuard partially integrated its configuration into standard Linux tools like `ip`. For remaining functionality, they provide a `wg` utility, and over time they plan to integrate all this functionality into standard tools and to get rid of this `wg` tool altogether
 
 As you can see, the list is rather long, and those are just the main points I gathered. Before I tell you how easy it gets configured, let me explain what's a WireGuard peer first.
 

@@ -30,8 +30,8 @@ Na IPsec sa mi páči, že ESP obsah je možné priamo zabaliť za IP časťou p
 IPsec môže fungovať v dvoch režimoch — site-to-site, kde prepájate dve LAN siete alebo v režime RoadWarrior, ktorý sa používa, keď chcete pripojiť vaše zariadenie do firemnej siete. RoadWarrior neumožňuje (pokiaľ viem) prepojenie celých LAN sietí. Osobne si myslím, že nikto takýto scenár nepredpokladal. Takže musíte použiť čistý site-to-site režim a ten má mnoho nevýhod.
 
 ### Plusy a mínusy site-to-site IPsec
-- ✅ Slušný výkon VPN
-- ✅ Menšia prevádzková réžia v čistom ESP režime
+- ✔️ Slušný výkon VPN
+- ✔️ Menšia prevádzková réžia v čistom ESP režime
 - ❌ Je ťažké ho nastaviť
 - ❌ Konfigurácia je na oboch koncoch statická, s napevno zadanými IP adresami, pravidlami firewallu, trasami (routami) a ďalšími nastaveniami
 - ❌ Oba konce tunela vyžadujú verejnú statickú IP adresu
@@ -47,11 +47,11 @@ V mojom prípade som nemal statické IP adresy, ale aspoň boli verejné. Jeden 
 Toto riešenie má klasickú architektúru typu klient-server. OpenVPN server musíte spustiť na routri (alebo akomkoľvek zariadení), ktoré má dostupnú verejnú IP adresu. Druhý koniec môže byť za NATom s privátnou IP. Za predpokladu, že sa klient dokáže pripojiť k serveru, OpenVPN funguje bez problémov. Len čo klient iniciuje reláciu, po ceste sa dynamicky aplikujú NAT pravidlá, aby relácia ostala otvorená. Aby sme sa uistili, že NAT pravidlá zostanú aplikované, raz za čas klient pošle cez tunel tzv. keepalive paket. Keď sa dynamická IP adresa zmení, VPN spojenie sa na krátky čas preruší. Avšak klient sa zvyčajne pripája prostredníctvom názvu domény, ktorý je aktualizovaný na novú IP adresu servera, a preto sa spojenie znovu vytvorí.
 
 ### Plusy a mínusy
-- ✅ Dokáže premostiť dve LAN siete, aj keď má jeden z klientov privátnu IP adresu
-- ✅ Podporuje prenos cez TCP a UDP
-- ✅ Klient môže pristupovať k serveru prostredníctvom doménového záznamu v DNS
-- ✅ Server môže voliteľne oznamovať iné trasy, ako napríklad jeho LAN sieť
-- ✅ Klient môže mať vnútri OpenVPN statickú IP adresu. To sa hodí, keď chcete vytvoriť statickú trasu na LAN klienta
+- ✔️ Dokáže premostiť dve LAN siete, aj keď má jeden z klientov privátnu IP adresu
+- ✔️ Podporuje prenos cez TCP a UDP
+- ✔️ Klient môže pristupovať k serveru prostredníctvom doménového záznamu v DNS
+- ✔️ Server môže voliteľne oznamovať iné trasy, ako napríklad jeho LAN sieť
+- ✔️ Klient môže mať vnútri OpenVPN statickú IP adresu. To sa hodí, keď chcete vytvoriť statickú trasu na LAN klienta
 - ❌ Je ťažké ho nastaviť, ale je to jednoduchšie ako u IPsec
 - ❌ Klient nemôže oznamovať svoje trasy. Server si musí vytvoriť statickú trasu mimo konfigurácie OpenVPN
 - ❌ Je ťažké ho debugovať
@@ -75,26 +75,26 @@ Na tomto mieste by som rád spomenul, že IPsec aj OpenVPN sú dosť staré prot
 Keď som si prečítal ich technický dokument a mal som v hlave všetky tieto informácie, napísal som si hlavné body do odrážkového zoznamu. Pridám ho sem ako referenciu.
 
 ### Plusy a mínusy
-- ✅ Kód je jednoduchý. Ovládač v jadre má podľa jeho autorov menej ako [4 000 riadkov kódu][wg-whitepaper]
-- ✅ Preto, že je jednoduchý, je jednoducho auditovateľný ohľadom bezpečnostných zraniteľností
-- ✅ Jednoducho sa konfiguruje a používa
-- ✅ Podporuje presúvanie sa klientov medzi sieťami bez straty VPN spojenia
-- ✅ Používa najmodernejšiu kryptografiu
-- ✅ Beží dobre na výkonných serveroch ako aj vstavaných routroch
-- ✅ Veľmi vysoký výkon, porovnateľný s IPsec
-- ✅ Podporuje linuxové kontajnery a umožňuje im získať prístup iba k VPN a to prostredníctvom menného priestoru Wireguardu
-- ✅ Je k dispozícii na mnohých platformách, vrátane Androidu a iOS. Podpora pre WireGuard je aktívne pridávaná aj do starších linuxových jadier, čím sa rozširuje podpora ešte viac
+- ✔️ Kód je jednoduchý. Ovládač v jadre má podľa jeho autorov menej ako [4 000 riadkov kódu][wg-whitepaper]
+- ✔️ Preto, že je jednoduchý, je jednoducho auditovateľný ohľadom bezpečnostných zraniteľností
+- ✔️ Jednoducho sa konfiguruje a používa
+- ✔️ Podporuje presúvanie sa klientov medzi sieťami bez straty VPN spojenia
+- ✔️ Používa najmodernejšiu kryptografiu
+- ✔️ Beží dobre na výkonných serveroch ako aj vstavaných routroch
+- ✔️ Veľmi vysoký výkon, porovnateľný s IPsec
+- ✔️ Podporuje linuxové kontajnery a umožňuje im získať prístup iba k VPN a to prostredníctvom menného priestoru Wireguardu
+- ✔️ Je k dispozícii na mnohých platformách, vrátane Androidu a iOS. Podpora pre WireGuard je aktívne pridávaná aj do starších linuxových jadier, čím sa rozširuje podpora ešte viac
 - ❌ Ovládač jadra je zatiaľ k dispozícii iba pre Linux. Ostatné platformy používajú klienta v používateľskom priestore, ktorý je napísaný v Go. Avšak podľa autorov je stále dosť výkonný
 
 Pre tých technickejších čitateľov pridám ešte niekoľko plusov:
-- ✅ Ovládač v linuxovom jadre nepoužíva Crypto API. Namiesto toho WireGuard reimplementuje niektoré funkcie napriamo, aby sa vyhol dynamickej alokácii pamäte
-- ✅ WireGuard podporuje konfigurácie čisto iba so staticky alokovanou pamäťou 
-- ✅ Kryptografické kľúče sa jednoducho generujú dodaným nástrojom `wg`
-- ✅ Implicitný utajený (stealth) režim. Štandardne posielajú rovesníci (peeri) vo WireGuarde iba, keď potrebujú a služba WireGuard neodpovedá na náhodné požiadavky bez správne vyplnených hlavičiek. Takže keď náhodný sieťový skener pošle požiadavku na port, na ktorom počúva WireGuard, nedostane naspäť žiadnu odpoveď a vôbec netuší, že tam beží nejaká VPN. Klienti za NATom môžu udržiavať VPNku v prevádzke pomocou voliteľného keepalive parametra. Štandardne je *keepalive vypnutý*
-- ✅ Pretože WireGuard na Linux beží priamo v jadre a nie v používateľskom priestore, vnútorné pakety sa nekopírujú niekoľkokrát, kým opustia sieťovú kartu
-- ✅ Na rozdiel od OpenVPN využíva WireGuard všetky jadra procesora efektívne
-- ✅ Vrstva na výmenu kľúčov a transportná vrstva nie sú oddelené (na rozdiel od IPsec), aby bola implementácia a údržba pre sieťových inžiniérov jednoduchšia
-- ✅ V Linuxe autori WireGuardu čiastočne integrovali jeho konfiguráciu do štandardných linuxových nástrojov ako `ip`. Pre zvyšnú funkčnosť poskytujú nástroj `wg` a časom plánujú integrovať všetku túto funkčnosť do štandardných nástrojov a úplne sa zbaviť tohto `wg` nástroja
+- ✔️ Ovládač v linuxovom jadre nepoužíva Crypto API. Namiesto toho WireGuard reimplementuje niektoré funkcie napriamo, aby sa vyhol dynamickej alokácii pamäte
+- ✔️ WireGuard podporuje konfigurácie čisto iba so staticky alokovanou pamäťou 
+- ✔️ Kryptografické kľúče sa jednoducho generujú dodaným nástrojom `wg`
+- ✔️ Implicitný utajený (stealth) režim. Štandardne posielajú rovesníci (peeri) vo WireGuarde iba, keď potrebujú a služba WireGuard neodpovedá na náhodné požiadavky bez správne vyplnených hlavičiek. Takže keď náhodný sieťový skener pošle požiadavku na port, na ktorom počúva WireGuard, nedostane naspäť žiadnu odpoveď a vôbec netuší, že tam beží nejaká VPN. Klienti za NATom môžu udržiavať VPNku v prevádzke pomocou voliteľného keepalive parametra. Štandardne je *keepalive vypnutý*
+- ✔️ Pretože WireGuard na Linux beží priamo v jadre a nie v používateľskom priestore, vnútorné pakety sa nekopírujú niekoľkokrát, kým opustia sieťovú kartu
+- ✔️ Na rozdiel od OpenVPN využíva WireGuard všetky jadra procesora efektívne
+- ✔️ Vrstva na výmenu kľúčov a transportná vrstva nie sú oddelené (na rozdiel od IPsec), aby bola implementácia a údržba pre sieťových inžiniérov jednoduchšia
+- ✔️ V Linuxe autori WireGuardu čiastočne integrovali jeho konfiguráciu do štandardných linuxových nástrojov ako `ip`. Pre zvyšnú funkčnosť poskytujú nástroj `wg` a časom plánujú integrovať všetku túto funkčnosť do štandardných nástrojov a úplne sa zbaviť tohto `wg` nástroja
 
 Ako môžete vidieť, tento zoznam je dosť dlhý, a to sú len hlavné body, ktoré som dal dokopy. Kým vám poviem, ako jednoducho sa to nastavuje, vysvetlím vám ešte, čo je WireGuard rovesník (peer).
 
