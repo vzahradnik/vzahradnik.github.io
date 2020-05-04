@@ -216,7 +216,7 @@ peer A# wg set wg0 peer i8nniZCkTISUfaLMQ+FV0Sewvq0f68UrkLkeV0a4BnA= allowed-ips
 
 Peer B:
 ```bash
-peer A# wg set wg0 peer AqyBazhsen/jzTJ0MzyyU16wOYovBPZ+DIu6x4rSH3Y= allowed-ips 192.168.1.1/32,10.0.0.0/24 endpoint 46.43.215.66:1194
+peer B# wg set wg0 peer AqyBazhsen/jzTJ0MzyyU16wOYovBPZ+DIu6x4rSH3Y= allowed-ips 192.168.1.1/32,10.0.0.0/24 endpoint 46.43.215.66:1194
 ```
 
 Now, the VPN is configured, and peers should be able to reach each other.
@@ -321,7 +321,11 @@ WireGuard is supported on many platforms. Outside of Linux, you can use its app 
 ---
 
 ## Throughput
-I use WireGuard for over two weeks now. I don't have exact throughput data because, due to the COVID-19 situation, the Internet is heavily utilized, and my speed varies during the day. However, I did some quick tests outside peak hours, and the results were awe-inspiring. If you want at least some benchmark, check out the [paper][wg-whitepaper] where WireGuard authors compare WireGuard, IPsec, and OpenVPN. The difference between OpenVPN and WireGuard is enormous.
+I use WireGuard for over two weeks now. I don't have exact throughput data because, due to the COVID-19 situation, the Internet is heavily utilized, and my speed varies during the day. However, I did some quick tests outside peak hours, and the results were awe-inspiring.
+
+My Internet download speed on the peer in Chmiňany is close to 100 Mbps. The remote end has a fiber optics with much higher download and upload speeds. When I tried to copy a video from my remote server, I was getting throughput in a range of 70–80 Mbps. I checked the CPU utilization on the RPi, and there was still a headroom.
+
+These are rough data only for an illustration. If you want at least some benchmark, check out the paper where WireGuard authors compare WireGuard, IPsec, and OpenVPN. The difference between OpenVPN and WireGuard is enormous.
 
 ---
 

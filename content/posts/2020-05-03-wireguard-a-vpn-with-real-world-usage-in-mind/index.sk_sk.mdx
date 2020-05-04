@@ -217,7 +217,7 @@ rovesnik A# wg set wg0 peer i8nniZCkTISUfaLMQ+FV0Sewvq0f68UrkLkeV0a4BnA= allowed
 
 Rovesník B:
 ```bash
-rovesnik A# wg set wg0 peer AqyBazhsen/jzTJ0MzyyU16wOYovBPZ+DIu6x4rSH3Y= allowed-ips 192.168.1.1/32,10.0.0.0/24 endpoint 46.43.215.66:1194
+rovesnik B# wg set wg0 peer AqyBazhsen/jzTJ0MzyyU16wOYovBPZ+DIu6x4rSH3Y= allowed-ips 192.168.1.1/32,10.0.0.0/24 endpoint 46.43.215.66:1194
 ```
 
 Teraz je VPN nakonfigurovaná a rovesníci by mali vedieť spolu komunikovať.
@@ -322,7 +322,11 @@ WireGuard je podporovaný na mnohých platformách. Mimo Linuxu môžete použi�
 ---
 
 ## Priepustnosť
-WireGuard používam vyše dvoch týždňov. Nemám presné dáta priepustnosti, pretože kvôli situácii ohľadom COVID-19 je Internet dosť vyťažený a moja rýchlosť počas dňa dosť kolíše. Avšak urobil som zopár rýchlych testov mimo špičky a výsledky boli ohromné. Ak chcete vidieť aspoň nejaké porovnanie, pozrite si [technický dokument][wg-whitepaper], kde autori WireGuardu porovnávajú WireGuard, IPsec a OpenVPN. Rozdiel medzi OpenVPN a WireGuardom je enormný.
+WireGuard používam vyše dvoch týždňov. Nemám presné dáta priepustnosti, pretože kvôli situácii ohľadom COVID-19 je Internet dosť vyťažený a moja rýchlosť počas dňa dosť kolíše. Avšak urobil som zopár rýchlych testov mimo špičky a výsledky boli ohromné.
+
+Rýchlosť sťahovania môjho Internetu u rovesníka v Chmiňanoch je zhruba 100 Mbit/s. Vzdialený koniec má optické pripojenie s oveľa vyššími rýchlosťami sťahovania a nahrávania. Keď som skúsil kopírovať video z môjho vzdialeného servera, dostával som priepustnosť v rozsahu 70–80 Mbit/s. Skontroloval som tiež vyťaženie procesora v RPi a bola tam ešte rezerva.
+
+Toto sú hrubé dáta len pre ilustráciu. Ak chcete vidieť aspoň nejaké porovnanie, pozrite si [technický dokument][wg-whitepaper], kde autori WireGuardu porovnávajú WireGuard, IPsec a OpenVPN. Rozdiel medzi OpenVPN a WireGuardom je enormný.
 
 ---
 
