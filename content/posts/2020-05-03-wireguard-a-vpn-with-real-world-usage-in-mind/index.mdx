@@ -288,7 +288,7 @@ peer A# ip link set wg0 up
 # Add peer C only (peer B is reachable through peer C)
 # Add network from both peer B and peer C to be advertised
 # as reachable through peer C
-peer A# wg set wg0 peer i8nniZCkTISUfaLMQ+FV0Sewvq0f68UrkLkeV0a4BnA= allowed-ips 192.168.1.2/32,192.168.1.3/32,10.0.1.0/24,10.0.2.0/24 endpoint 12.35.181.48:1194
+peer A# wg set wg0 peer <peer-c-public-key> allowed-ips 192.168.1.2/32,192.168.1.3/32,10.0.1.0/24,10.0.2.0/24 endpoint 12.35.181.48:1194
 ```
 
 At this moment, if peer A wants to send a packet to the LAN 10.0.1.0/24 on peer B, it looks into the table and matches the route with a public key for peer C and sends the packet. Peer C has a connection to peer B and forwards the packet. To make sure all peers are reachable at any time, we need to set an optional `persistent-keepalive` parameter. NAT session usually terminates rather quickly, and because WireGuard, by default, sends data only when there's anything to send, the connection between peer A and peer C as well as between peer B and peer C closes. It is re-established when peer A sends data to peer C, and peer B needs to do the same. To keep the NAT session active for both peers, we can set the *keepalive* on peers A and B, which send a packet to peer C once per 25 seconds (it's a recommended value, safe enough to avoid closing the session). Therefore, peer C can communicate with both peers at any time and forward data as needed.
