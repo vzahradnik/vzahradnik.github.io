@@ -289,7 +289,7 @@ rovesnik A# ip link set wg0 up
 # Sem pridáme iba rovesníka C (rovesník B je dostupný cez rovesníka C)
 # Pridajte siete od rovesníka B aj C, ktoré chcete oznamovať ako
 # dostupné cez rovesníka C
-rovesnik A# wg set wg0 peer i8nniZCkTISUfaLMQ+FV0Sewvq0f68UrkLkeV0a4BnA= allowed-ips 192.168.1.2/32,192.168.1.3/32,10.0.1.0/24,10.0.2.0/24 endpoint 12.35.181.48:1194
+rovesnik A# wg set wg0 peer <verejný-kľúč-rovesníka-c> allowed-ips 192.168.1.2/32,192.168.1.3/32,10.0.1.0/24,10.0.2.0/24 endpoint 12.35.181.48:1194
 ```
 
 Ak chce v tejto chvíli rovesník A poslať paket do LAN siete LAN 10.0.1.0/24 na rovesníkovi B, pozrie sa do tabuľky, vyhľadá pre cieľovú trasu príslušný verejný kľúč rovesníka C a pošle paket. Rovesník C má spojenie s rovesníkom B a paket mu prepošle. Aby sme sa uistili, že sú všetci rovesníci kedykoľvek dostupní, musíme nastaviť voliteľný parameter `persistent-keepalive`. NAT relácia sa zvyčajne uzavrie dosť rýchlo a keďže štandardne WireGuard posiela dáta iba vtedy, keď má čo poslať, spojenie medzi rovesníkom A a rovesníkom C, ako aj medzi rovesníkom B a rovesníkom B, sa uzavrie. Znovu sa zostaví vtedy, keď pošle rovesník dáta rovesníkovi C a rovesník B musí spraviť to isté. Aby sme ponechali NAT reláciu aktívnu pre oboch rovesníkov, môžeme nastaviť *keepalive* na rovesníkoch A a B, ktorí raz za 25 sekúnd pošlu rovesníkovi C paket (je to odporučená hodnota, dostatočne bezpečná, aby sme zabránili uzavretiu relácie). A teda, rovesník C môže komunikovať s oboma rovesníkmi kedykoľvek a preposielať ich dáta podľa potreby.
