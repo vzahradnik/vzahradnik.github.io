@@ -2,6 +2,7 @@
 Ideas for future articles.
 
 ## Top priority posts
+- Toastmasters Leadership Lessons
 - From LastPass to Enpass
 - My beliefs
 - Organic Mission: my first entrepreneurial experience
