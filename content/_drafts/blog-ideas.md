@@ -3,15 +3,14 @@ Ideas for future articles.
 
 ## Top priority posts
 - Toastmasters Leadership Lessons
-- From LastPass to Enpass
 - My beliefs
 - Organic Mission: my first entrepreneurial experience
 - Why executioners fascinate me
 - 5G: Demystifying Myths
 - Hackintosh: How did the scene evolve over the years?
 - Facebook, an unreliable partner for your business
-- Maintaining account security in Toastmasters club
 - Writing organization processes as RFC-like docs
+- Design patterns, captured in real world, applied in real world
 
 ## Backlog
 - How to setup custom email server on public dynamic ip address
