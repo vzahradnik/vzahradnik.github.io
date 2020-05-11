@@ -2,7 +2,7 @@
 title: Migrating from LastPass to Enpass
 excerpt: I used LastPass Premium for several years. Now I decided to migrate to a different solution. What were my reasons, and was the migration difficult?
 author: Vladimír Záhradník
-date: 2020-05-03
+date: 2020-05-11
 categories: passwords security technology
 hero: ./images/hero.jpg
 comments: true
@@ -17,7 +17,7 @@ Before I started using LastPass, I did my research, and I knew about [KeePass][k
 - An ability to store arbitrary data values, not just name-password combinations (private GPG keys, photos of my ID and passport, and other files)
 - An ability to flexibly add new fields to the entries, like notes, security questions, PINs
 - A standardized browser extension that works on every platform the same
-- An auto-complete feature (in all my devices); support for [Android autofill API][android-autofill]
+- An auto-fill feature (in all my devices); support for [Android autofill API][android-autofill]
 - An automatic backup of my encrypted vault
 - A convenient generator of secure passwords
 - A security audit (a way to find weak passwords, passwords used on multiple accounts, [pwned][pwn] passwords)
@@ -37,8 +37,13 @@ Since I started using LastPass, its yearly premium plan got pricier each year. W
 
 ---
 
+<div className="Image__Large">
+  <img src="./images/security-lock.png" alt="Lock" />
+  <figcaption>Image by Thomas Breher from Pixabay</figcaption>
+</div>
+
 ## And the winner is Enpass
-Recent years were very turbulent in the market of passwords managers. LastPass got many competitors; many of them offered comparable features for the same or lower price. When I decided to migrate away to a different solution, I did my research to find out what solutions are good for me. A few days ago, I read a blog from Nextcloud [comparing different password managers][nextcloud-pass]. They listed some excellent options, and Enpass seemed promising. Just recently, its authors added support for [WebDAV][webdav], which allows me to use my local [Nextcloud server][nextcloud] as a "cloud." In other words, I have full control over my passwords.
+Recent years were very turbulent in the market of passwords managers. LastPass got many competitors; many of them offered comparable features for the same or lower price. When I decided to migrate away to a different solution, I did my research to find out what solutions are good for me. A few days ago, I read a blog post from Nextcloud [comparing different password managers][nextcloud-pass]. They listed some excellent options, and Enpass seemed promising. Just recently, its authors added support for [WebDAV][webdav], which allows me to use my local [Nextcloud server][nextcloud] as a "cloud." In other words, I have full control over my passwords.
 
 ### Enpass features:
 - Allows to synchronize passwords with local Nextcloud server
@@ -48,11 +53,11 @@ Recent years were very turbulent in the market of passwords managers. LastPass g
 - Supports autofill API and fingerprint vault unlock on Android
 - Browser extensions are not needed. If you use them, they don't send data to Enpass. Extension communicates directly with your locally installed app
 - Allows to store any data in the vault, including arbitrary files
-- Their apps are very modern, and I like their UI
-- One of the best features is support for TOTP
-- They offer a *lifetime subscription*, which costs less than one year of LastPass Premium
+- Its apps are very modern, and I like their UI
+- One of the best features is support for [TOTP][totp]
+- It offers a *lifetime subscription*, which costs less than one year of LastPass Premium
 
-Their lifetime subscription and the ability to synchronize vaults with my Nextcloud server were a dealbreaker. I decided to buy the app only a few minutes after I got it installed. Synchronization is rapid. When I update my vault in an app, it takes less than 30 seconds to see the changes on other devices like my phone. Once you buy their app, you need to give Enpass your email address. It pairs your payment with your email so that you can restore your license on other devices. That's it — an email address is all Enpass needs, and only to restore your purchase later.
+Enpass's lifetime subscription and the ability to synchronize vaults with my Nextcloud server were a dealbreaker. I decided to buy the app only a few minutes after I got it installed. Synchronization is rapid. When I update my vault in an app, it takes less than 30 seconds to see the changes on other devices like my phone. Once you buy their app, you need to give Enpass your email address. It pairs your payment with your email so that you can restore your license on other devices. That's it — an email address is all Enpass needs, and only to restore your purchase later.
 
 A free version of Enpass is limited to 25 entries in a single vault. It requires no registration whatsoever, so I encourage you to try it for yourself, especially if you don't use a password manager yet.
 
@@ -65,7 +70,12 @@ I split my passwords into two separate vaults. One is for work, and the other is
 ---
 
 ## Migration
-LastPass supports exporting of your entries in one large JSON file. Enpass should support the importing of such a file; however, I can't tell for sure. I decided to go through all my entries and to enter them manually. My main reason was that I had a perfect opportunity to review my accounts, update passwords, and remove the ones I don't use. GDPR ["right to be forgotten"][gdpr-forget] comes handy sometimes.
+LastPass supports exporting of your entries in one large JSON file. Enpass should support the importing of such a file; however, I can't tell for sure. I decided to go through all my entries and to enter them manually. My main reason was that I had a perfect opportunity to review my accounts, update passwords, and remove the accounts I don't use. GDPR ["right to be forgotten"][gdpr-forget] comes handy sometimes.
+
+<div className="Image__Large">
+  <img src="./images/password-app.jpg" alt="Password" />
+  <figcaption>Image by Gino Crescoli from Pixabay</figcaption>
+</div>
 
 Once I installed the Enpass browser extension, the migration went fast. As soon as I logged into a webpage with credentials from LastPass, Enpass captured the data and offered to store them into its local vault. All I had to do was to review the entry and hit the "Save" button. Sometimes I corrected or put additional info. Many entries in my LastPass vault contained supplemental notes like a list of recovery codes.
 
