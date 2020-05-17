@@ -2,6 +2,7 @@
 Ideas for future articles.
 
 ## Top priority posts
+- OBS and ZOOM
 - Applying HW and SW Engineering patterns in a real world
 - I really miss Google+
 - Toastmasters Leadership Lessons
