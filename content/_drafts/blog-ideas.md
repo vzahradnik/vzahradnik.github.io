@@ -2,6 +2,7 @@
 Ideas for future articles.
 
 ## Top priority posts
+- Jack of all trades, master of none
 - Písanie dokumentácie ako softvérového projektu - dokumentácia je ako kód, všetky otázky sú ako Issues a všetko je pokope
 - OBS and ZOOM
 - Applying HW and SW Engineering patterns in a real world
