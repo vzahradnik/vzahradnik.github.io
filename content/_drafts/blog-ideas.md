@@ -2,6 +2,7 @@
 Ideas for future articles.
 
 ## Top priority posts
+- Running a Toastmasters club as an open-source software project
 - Challenges of going online in our Toastmasters club
 - Jack of all trades, master of none
 - Písanie dokumentácie ako softvérového projektu - dokumentácia je ako kód, všetky otázky sú ako Issues a všetko je pokope
