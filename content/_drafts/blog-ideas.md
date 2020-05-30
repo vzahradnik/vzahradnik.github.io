@@ -2,6 +2,8 @@
 Ideas for future articles.
 
 ## Top priority posts
+- O preklade easy-Speaku
+- Budúcnosť printových médií a môj názor na novinárskych aktivistov
 - Running a Toastmasters club as an open-source software project
 - Challenges of going online in our Toastmasters club
 - Jack of all trades, master of none
