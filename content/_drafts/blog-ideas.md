@@ -2,6 +2,8 @@
 Ideas for future articles.
 
 ## Top priority posts
+- Toastmasters International - darwin - neschopný sa prispôsobiť
+- Bohatý otec, chudobný otec
 - O preklade easy-Speaku
 - Budúcnosť printových médií a môj názor na novinárskych aktivistov
 - Running a Toastmasters club as an open-source software project
