@@ -2,6 +2,7 @@
 Ideas for future articles.
 
 ## Top priority posts
+- The Mom Test - Comenio Edition
 - Toastmasters International - darwin - neschopný sa prispôsobiť
 - Bohatý otec, chudobný otec
 - O preklade easy-Speaku
