@@ -2,10 +2,10 @@ module.exports = {
   siteMetadata: {
     title: `Vladimír Záhradník | Blog`,
     name: `Vladimír Záhradník`,
-    siteUrl: `https://zahradnik.io`,
-    description: `A personal blog about entrepreneurship, software development, open-source, and content creation.`,
+    siteUrl: `https://www.zahradnik.io`,
+    description: `A personal blog about technology and entrepreneurship.`,
     hero: {
-      heading: `Welcome! If you're interested in entrepreneurship and software development, you're in the right place.`,
+      heading: `Welcome to my site about technology and entrepreneurship.`,
       maxWidth: 652,
     },
     social: [

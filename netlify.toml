@@ -1,3 +1,6 @@
+[[plugins]]
+  package = "netlify-plugin-gatsby-cache"
+
 [[redirects]]
   from = "/2018/04/13-intro-to-android-platform-development.html"
   to = "/Android-platform-development"
