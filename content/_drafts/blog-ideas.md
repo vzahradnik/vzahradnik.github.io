@@ -2,6 +2,7 @@
 Ideas for future articles.
 
 ## Top priority posts
+- Storytelling
 - The Mom Test - Comenio Edition
 - Toastmasters International - darwin - neschopný sa prispôsobiť
 - Bohatý otec, chudobný otec
