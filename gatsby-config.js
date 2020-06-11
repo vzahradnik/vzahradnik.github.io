@@ -10,12 +10,24 @@ module.exports = {
     },
     social: [
       {
-        name: `twitter`,
-        url: `https://twitter.com/VladoZahradnik`,
+        name: `github`,
+        url: `https://github.com/vzahradnik`,
+      },
+      {
+        name: `medium`,
+        url: `https://medium.com/@vladimir.zahradnik`,
       },
       {
         name: `youtube`,
         url: `https://www.youtube.com/channel/UCogZ6qxqKa_WIsw7NnU2IaA`,
+      },
+      {
+        name: `twitter`,
+        url: `https://twitter.com/VladoZahradnik`,
+      },
+      {
+        name: `linkedin`,
+        url: `https://www.linkedin.com/in/vladimirzahradnik`,
       },
       {
         name: `facebook`,
@@ -24,22 +36,6 @@ module.exports = {
       {
         name: `instagram`,
         url: `https://www.instagram.com/vladimir.zahradnik`,
-      },
-      {
-        name: `linkedin`,
-        url: `https://www.linkedin.com/in/vladimirzahradnik`,
-      },
-      {
-        name: `medium`,
-        url: `https://medium.com/@vladimir.zahradnik`,
-      },
-      {
-        name: `github`,
-        url: `https://github.com/vzahradnik`,
-      },
-      {
-        name: `paypal`,
-        url: `https://www.paypal.me/vzahradnik`,
       },
     ],
   },
