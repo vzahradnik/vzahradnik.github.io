@@ -2,6 +2,7 @@
 Ideas for future articles.
 
 ## Top priority posts
+- Prečo začínam s webovým vývojom
 - Mobile and convergence
 - Ľudia nemajú cieľ
 - Storytelling
