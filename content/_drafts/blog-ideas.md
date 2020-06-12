@@ -2,6 +2,7 @@
 Ideas for future articles.
 
 ## Top priority posts
+- Mobile and convergence
 - Ľudia nemajú cieľ
 - Storytelling
 - The Mom Test - Comenio Edition
