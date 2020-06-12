@@ -2,6 +2,7 @@
 Ideas for future articles.
 
 ## Top priority posts
+- Ľudia nemajú cieľ
 - Storytelling
 - The Mom Test - Comenio Edition
 - Toastmasters International - darwin - neschopný sa prispôsobiť
