@@ -2,12 +2,17 @@
 Ideas for future articles.
 
 ## Top priority posts
+- Myšlienkové mapy a blogy
+- Blogerská výzva - 8 článkov mesačne
+- Prečo je u firmy dôležitá misia/vízia?
+- GlobalLogic retrospektíva
+- Osobná značka, firemná značka, firemná kultúra
+- Rozširovanie vplyvu na sociálnych médiách (TM príspevok)
 - Prečo začínam s webovým vývojom
 - Mobile and convergence
 - Storytelling
 - The Mom Test - Comenio Edition
 - Toastmasters International - darwin - neschopný sa prispôsobiť
-- Bohatý otec, chudobný otec
 - O preklade easy-Speaku
 - Budúcnosť printových médií a môj názor na novinárskych aktivistov
 - Running a Toastmasters club as an open-source software project
@@ -21,7 +26,7 @@ Ideas for future articles.
 - My beliefs
 - Organic Mission: my first entrepreneurial experience
 - Why executioners fascinate me
-- 5G: Demystifying Myths
+- 5G: Demystified
 - Hackintosh: How did the scene evolve over the years?
 - Facebook, an unreliable partner for your business
 - Writing organization processes as RFC-like docs
