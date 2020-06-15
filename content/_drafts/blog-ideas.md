@@ -2,6 +2,7 @@
 Ideas for future articles.
 
 ## Top priority posts
+- Moja nízka autocenzúra
 - Myšlienkové mapy a blogy
 - Blogerská výzva - 8 článkov mesačne
 - Prečo je u firmy dôležitá misia/vízia?
