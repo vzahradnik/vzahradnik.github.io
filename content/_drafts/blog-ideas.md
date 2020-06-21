@@ -2,6 +2,7 @@
 Ideas for future articles.
 
 ## Top priority posts
+- Transformácia klubu do online prostredia
 - Môj prvý webinár
 - Moja nízka autocenzúra
 - Myšlienkové mapy a blogy
