@@ -4,7 +4,6 @@ Ideas for future articles.
 ## Top priority posts
 - Spisovateľský blok: Je reálny?
 - Transformácia klubu do online prostredia
-- Môj prvý webinár
 - Moja nízka autocenzúra
 - Myšlienkové mapy a blogy
 - Blogerská výzva - 8 článkov mesačne
