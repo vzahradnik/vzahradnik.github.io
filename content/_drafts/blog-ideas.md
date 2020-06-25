@@ -6,7 +6,6 @@ Ideas for future articles.
 - Transformácia klubu do online prostredia
 - Moja nízka autocenzúra
 - Myšlienkové mapy a blogy
-- Blogerská výzva - 8 článkov mesačne
 - Prečo je u firmy dôležitá misia/vízia?
 - GlobalLogic retrospektíva
 - Osobná značka, firemná značka, firemná kultúra
