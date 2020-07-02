@@ -2,8 +2,11 @@
 Ideas for future articles.
 
 ## Top priority posts
+- Končím s prispievaním do Home Assistanta
+- Prehľad videoplatforiem
+- Colníci
+- Toastmasters International - darwin - neschopný sa prispôsobiť
 - Spisovateľský blok: Je reálny?
-- Transformácia klubu do online prostredia
 - Moja nízka autocenzúra
 - Myšlienkové mapy a blogy
 - Prečo je u firmy dôležitá misia/vízia?
@@ -14,7 +17,6 @@ Ideas for future articles.
 - Mobile and convergence
 - Storytelling
 - The Mom Test - Comenio Edition
-- Toastmasters International - darwin - neschopný sa prispôsobiť
 - O preklade easy-Speaku
 - Budúcnosť printových médií a môj názor na novinárskych aktivistov
 - Running a Toastmasters club as an open-source software project
