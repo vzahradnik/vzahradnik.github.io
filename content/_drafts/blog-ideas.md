@@ -2,6 +2,7 @@
 Ideas for future articles.
 
 ## Top priority posts
+- Trampoty s domácim serverom
 - Končím s prispievaním do Home Assistanta
 - Prehľad videoplatforiem
 - Colníci
