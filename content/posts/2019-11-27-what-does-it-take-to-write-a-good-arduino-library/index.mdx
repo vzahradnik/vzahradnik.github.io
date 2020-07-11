@@ -21,9 +21,9 @@ I got my Arduino kit about a year and a half ago, and I understood the framework
   <YouTube videoId="PK_yguLapgA" />
 </div>
 
-In 1996, the maiden flight of the Ariane 5 launcher failed. A massive disaster caused by a programming error. Read the full story [here][ariane-5].
+In 1996, the maiden flight of the Ariane 5 launcher ended with a massive disaster caused by a programming error. Read the full story [here][ariane-5].
 
-Arduino is not that critical and expensive, but I still think that writing of tests is worth it. The downside is that it takes additional development time. I would say that each project is different, and you'll need to decide whether the time to write the tests is worth it. In my opinion, you'll greatly benefit from the tests if you implement some kind of a [state machine][state-machine]. It is ubiquitous in Arduino and allows you to change the code with confidence. Also, Arduino libraries are usually tiny, only hundreds of lines of code, compared to thousands of lines in Android apps or elsewhere. To thoroughly test your library, you often need to write less than 10 test cases. For example, I was able to write unit tests for the [relay library][simple-relay] in less than three hours, and I was still learning to use the testing framework.
+Arduino is not that critical and expensive, but I still think that writing of tests is worth it. The downside is that it takes additional development time. I would say that each project is different, and you'll need to decide whether the time to write the tests is worth it. In my opinion, you'll greatly benefit from the tests if you implement some kind of a [state machine][state-machine]. It is ubiquitous in Arduino and tests allow you to change the code with confidence. Also, Arduino libraries are usually tiny, only hundreds of lines of code, compared to thousands of lines in Android apps or elsewhere. To thoroughly test your library, you often need to write less than 10 test cases. For example, I was able to write unit tests for the [relay library][simple-relay] in less than three hours, and I was still learning to use the testing framework.
 
 At this time, I work on a long-term [Arduino][arduino] project which implements a semi-automated gearbox. Imagine a steering wheel with two paddles mounted next to it.
 
@@ -62,7 +62,7 @@ OneButton button = OneButton(INPUT_PIN, /* activeLow */ true);
 button.attachClick(onClick);
 ```
 
-The following approach works excellent for registering C-like functions, but not for [C++ object member functions][so-object-member]. It's because all member functions have an implicit (first) parameter - `this`.
+The following approach works excellent for registering C-like functions, but not for [C++ object member functions][so-object-member]. It's because all member functions have an implicit (first) parameter — `this`.
 
 To circumvent the limitation, you could:
 - Pass the address of the static member function, which will call the member function running on the specific object
@@ -134,8 +134,8 @@ Let's assume following about your users:
 
 One of your main goals should be to hide all complexity away and to provide many example uses of your library. Arduino provides several reference guides; you should at least check these:
 - [Arduino Style Guide][arduino-style-guide], which will help you to write Examples for your library that can be read by both beginners and professional developers
-- [Arduino API Style Guide][arduino-api-style-guide], which is a style guide for writing library APIs
-- [Arduino library specification][arduino-library-specification], which is a specification you should follow to make your library compatible with Arduino IDE
+- [Arduino API Style Guide][arduino-api-style-guide], which defines rules for writing library APIs
+- [Arduino library specification][arduino-library-specification], which you should follow to make your library compatible with Arduino IDE
 
 After you know your users and recommended guidelines of the Arduino community, it's time to define some targets to meet.
 
@@ -155,7 +155,7 @@ After you know your users and recommended guidelines of the Arduino community, i
 As you can see, unit tests coverage and documentation are just some of the goals to meet. 
 
 ### High-level abstraction
-When you try to come up with a decent library design, start with a pen and paper. As an inspiration, look at the official Arduino libraries. They are all well-written. I'll briefly mention the [Servo][arduino-servo] library. Imagine you want to control a servo, which functions you'd like to have? You will probably need some function to specify an output pin, on which you connect your servo. You will also need a function, which tells the servo how much it should turn itself and a function that reports the current position of your servo. And that's pretty much all you need as a user. You don't bother users with implementation details; they are all hidden.
+When you try to come up with a decent library design, start with a pen and paper. As an inspiration, look at the official Arduino libraries. They are all well-written. I'll briefly mention the [Servo][arduino-servo] library. Imagine you want to control a servo. Which functions you'd like to have? You will probably need some function to specify an output pin, on which you connect your servo. You will also need a function, which tells the servo how much it should turn itself and a function that reports the current position of your servo. And that's pretty much all you need as a user. You don't bother users with implementation details; they are all hidden.
 
 In my case, I wanted to provide a way to register callbacks, a way to customize the debounce interval, and a way to adjust timeout values used to detect click, double-click, and long-press events. Most of the time, users will just register callback and won't care about all the default values, but it's a good practice to give users a way to customize the behavior. However, don't expose all values. Instead, think of usage scenarios and decide what makes sense to expose. After I made my design decisions, typically, my library is initialized with 1 or 2 lines of code. Perfect! Feel free to check the [examples][objectbutton-examples] of how to use the library.
 
@@ -202,10 +202,10 @@ My suggestion is to combine both approaches. Start with documenting what your li
   <figcaption>GitHub Wiki for ObjectButton</figcaption>
 </div>
 
-After you wrote your high-level overview of the library, it's time to write comments inside your code. I decided to use [Doxygen][doxygen]; it's a de facto standard, and it's easy to setup. Also, it supports several styles of comments, including the Javadoc style.
+After you wrote your high-level overview of the library, it's time to write comments inside your code. I decided to use [Doxygen][doxygen]: it's a de facto standard, and it's easy to setup. Also, it supports several styles of comments, including the Javadoc style.
 
 ### Doxygen
-If you want to generate Doxygen documentation, you'll need to create a [Doxyfile][doxyfile]. It's a template for Doxygen with various settings, e.g., your project name, location of the source code, etc. I was lucky to find a Doxyfile, which somebody adapted for Arduino. One of the vital settings was the inclusion of the `*.ino` files. Doxygen usually doesn't know that these files contain valid C/C++ code. If you ever need this template, just grab [mine][doxyfile] a change project name and path.
+If you want to generate Doxygen documentation, you'll need to create a [Doxyfile][doxyfile]. It's a template for Doxygen with various settings, e.g., your project name, location of the source code, etc. I was lucky to find a Doxyfile, which somebody adapted for Arduino. One of the vital settings was the inclusion of the `*.ino` files. Doxygen usually doesn't know that these files contain valid C/C++ code. If you ever need this template, just grab [mine][doxyfile] and change project name and path.
 
 If you want to know the details about how to add comments in the code, it's best to check the [Doxygen webpage][doxygen].
 
@@ -268,7 +268,7 @@ All examples are Arduino project files (`*.ino`), which you can compile from Ard
 For inspiration, take a look at the [examples][objectbutton-examples] from my library.
 
 ## Automated testing
-Now you have a library, which is well documented and supposedly easy to use. As a next step, write some unit tests to verify that your code does what it supposes to do. Automated testing is still not typical for Arduino libraries, and I'm not surprised. If we look into other programming environments, they often come with an official testing framework or at least a well-known third-party framework. In Java and Android, it's [JUnit][junit]; Python has a built-in module, [unittest][unittest]; the C++ world uses [Googletest][googletest]. Arduino provides no official testing framework, and you won't find many articles covering the subject.
+Now you have a library, which is well documented and supposedly easy to use. As a next step, write some unit tests to verify that your code does what it supposes to do. Automated testing is still not typical for Arduino libraries, and I'm not surprised. If we look into other programming environments, they often come with an official testing framework or at least a well-known third-party framework. In Java and Android, it's [JUnit][junit]; Python has a built-in module, [unittest][unittest], sometimes people also use [pytest][pytest]; the C++ world uses [Googletest][googletest]. Arduino provides no official testing framework, and you won't find many articles covering the subject.
 
 ### Manual testing everywhere
 Most of the Arduino developers test their code manually. When the code somewhat works, it's considered complete. If they break the code in future updates, they may not notice this for a long time. Not a good thing!
@@ -316,7 +316,7 @@ Albeit writing examples is optional, every well-supported library should have at
 ## Writing unit tests
 Unit tests examine your library code in isolation. They are sometimes more challenging to write, but pros prevail over cons.
 
-- I found several third-party testing frameworks to use with Arduino:
+I found several third-party testing frameworks to use with Arduino:
 - [Googletest][googletest] is a general C++ framework, written not with Arduino in mind. However, you can use it. See [arduino_midi_library][arduino-midi] for a practical example.
 - [PlatformIO Unit Testing Framework][platformio-test] is also a general-purpose framework, but it's more focused on testing embedded code. Recently its creators published it as open-source.
 - [ArduinoUnit][arduino-unit]; its authors made it explicitly for Arduino. It's easier to set up for beginners.
@@ -399,7 +399,7 @@ state->digitalPin[INPUT_PIN] = LOW;
 
 `state` is a pointer to ArduinoCI structure, which controls "virtual" Arduino running our test.
 
-Now, we've pressed a button, and we need to release it after a particular time. If we just changed the input pin voltage, the internal timer would still return the same value - 0. Virtually no time has passed. To simulate time, we need to set `micros,` i.e.:
+Now, we've pressed a button, and we need to release it after a particular time. If we just changed the input pin voltage, the internal timer would still return the same value — 0. Virtually no time has passed. To simulate time, we need to set `micros,` i.e.:
 ```cpp
 state->micros = (DEFAULT_DEBOUNCE_TICKS_MS + 1) * 1000;
 ```
@@ -460,6 +460,7 @@ If you have some questions or you have a feeling that I forgot about something, 
 [arduino-library-specification]: https://github.com/arduino/Arduino/wiki/Arduino-IDE-1.5:-Library-specification
 [junit]: https://junit.org/junit5/
 [unittest]: https://docs.python.org/3/library/unittest.html
+[pytest]: https://docs.pytest.org/en/latest/
 [googletest]: https://github.com/google/googletest
 [arduino-midi]: https://github.com/FortySevenEffects/arduino_midi_library
 [arduino-unit]: https://github.com/mmurdoch/arduinounit

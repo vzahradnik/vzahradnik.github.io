@@ -2,6 +2,9 @@
 Ideas for future articles.
 
 ## Top priority posts
+- Ako nahrať osobné stretnutie Toastmasters - mikrofón, fotoaparát...
+- Raspberry Pi a Controllino
+- Facebook - under-the-hood bugs
 - Raspberry Pi - článok, ktorý vystrelil
 - Trampoty s domácim serverom
 - Končím s prispievaním do Home Assistanta

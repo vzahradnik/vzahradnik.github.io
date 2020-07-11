@@ -39,7 +39,7 @@ We decided to implement this project in Python 3. This language is widely used a
   <figcaption>Firefighter Stopwatch GUI</figcaption>
 </div>
 
-If you're not familiar with this library, you create the whole UI via code. This library provides various widgets, like Frame, Label, or Button. You can change the appearance of the widgets with custom styles and position them inside a window using the geometry manager. The most commonly used manager is called a [grid][grid-manager]. You need to place each widget into a table with columns and rows. The largets widget placed inside the column or row determines the dimensions of the column or row.
+If you're not familiar with this library, you create the whole UI via code. This library provides various widgets, like Frame, Label, or Button. You can change the appearance of the widgets with custom styles and position them inside a window using the geometry manager. The most commonly used manager is called a [grid][grid-manager]. You need to place each widget into a table with columns and rows. The largest widget placed inside the column or row determines the dimensions of the column or row.
 
 And there's our first problem. If you look at the UI, you can see that when you run our app, there is no data. Widgets take less space, and the window is smaller. As soon as you start measuring values, the window size will change rapidly. Take a look at a screenshot below.
 
@@ -107,7 +107,7 @@ def _start_watch(self):
     pass
 ```
 
-You need to connect your callback into `when pressed` property. The button component expects a function with a specific signature. Ideally, you should reference a function without input parameter, or you can pass a function, which assumes one input parameter. When called, it will have a proper reference to the Button object.
+You need to connect your callback into `when_pressed` property. The button component expects a function with a specific signature. Ideally, you should reference a function without input parameter, or you can pass a function, which assumes one input parameter. When called, it will have a proper reference to the Button object.
 
 We use buttons inside classes. Their functions have `self` as their input parameter. To make it work, we use an anonymous lambda function, which calls the code we need.
 
