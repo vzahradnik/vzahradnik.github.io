@@ -1,6 +1,6 @@
 ---
 title: Continuous integration with Arduino
-excerpt: What is a continuous integration and how it will help you to automate mundane tasks?
+excerpt: What is a continuous integration and how it will help you to automate routine tasks?
 author: Vladimír Záhradník
 date: 2019-12-08
 categories: arduino arduinoci automation ci travis embedded development
@@ -19,23 +19,23 @@ Imagine a situation where you work on a project with two other developers. In ou
   <figcaption>Team collaboration with git</figcaption>
 </div>
 
-You're adding support for user authentication; your colleague writes code to read data from the GSM module, and another colleague works on input data validation. Now, as you implement the feature, your local codebase naturally diverges from the files on the server - a single source of truth. For simplicity, let's assume you all work on the same branch. If you don't know what it is, read [here][git-branch].
+You're adding support for user authentication; your colleague writes code to read data from the GSM module, and another colleague works on input data validation. Now, as you implement the feature, your local codebase naturally diverges from the files on the server — a single source of truth. For simplicity, let's assume you all work on the same branch. If you don't know what it is, read [here][git-branch].
 
 At some point in time, you'll push your changes to the central repository. Your colleagues will try to do the same. Ideally, you all have worked on different parts of the library, and you didn't modify the same section of code as your two colleagues. In reality, this is rare, and you need to deal with the issues.
 
 > Git is just a tool. You're the one responsible for resolving conflicting code changes.
 
-Git provides several safeguards to merge the code from all sources correctly.
+Git provides several safeguards to merge the code from all sources correctly:
 1. If you changed the files, which were not modified on the server while you were working on the change, your change gets accepted (this behavior is configurable)
 2. If you changed the files, which somebody else updated on the server in the meantime, your code gets rejected. You need to fetch the latest changes and resolve merge conflicts.
 3. When you fetch the changes from the server, if git can figure out how to merge changed files, it will do it automatically. Otherwise, it will stop, and you need to merge the changes manually. Sometimes it's hard. You may not be familiar with the whole codebase, and your conflict resolution may not be correct. Git will be, however, happy to accept your decision.
 
-There may be other rules, but those are the most important. Let me emphasize one thing; git is just a tool. You're the one responsible for resolving conflicting code changes.
+There may be other rules, but those are the most important. Let me emphasize one thing: git is just a tool. You're the one responsible for resolving conflicting code changes.
 
 ## Multiple branches and pull requests
-Let's expand the previous example a little, to be more realistic. Usually, your git repository has one main branch called `master`. Developers working on a new feature will create a new feature branch from the master, e.g., `feature/authentication`. Similarly, if they work on a bugfix, they will create a bugfix branch. Multiple git development models exist to provide some guidelines, like [GitFlow][gitflow]. Today I won't go into details. I just want you to know that realistically a git repository may have a lot of branches, which get merged eventually into the main one.
+Let's expand the previous example a little, to be more realistic. Usually, your git repository has one main branch called `main` (or `master` in older repos). Developers working on a new feature will create a new feature branch from the main, e.g., `feature/authentication`. Similarly, if they work on a bugfix, they will create a bugfix branch. Multiple git development models exist to provide some guidelines, like [GitFlow][gitflow]. Today I won't go into details. I just want you to know that realistically a git repository may have a lot of branches, which get merged eventually into the main one.
 
-A common way how to merge changes from the derived branches into the main one is through pull requests. These are not an integral part of git itself. Instead, various software tools added support for them on top of git. In GitHub, they are called pull requests, GitLab calls them merge requests, etc. The point is, you create a pull request, select a source branch from where to bring the changes, select a destination branch, where the changes should be merged and hit on the *Create Pull Request* button.
+A common way how to merge changes from the derived branches into the main one is through pull requests. These are not an integral part of git itself. Instead, various software tools added support for them on top of git. In GitHub, they are called pull requests, GitLab calls them merge requests, etc. The point is, you create a pull request, select a source branch from where to bring the changes, select a destination branch, where the changes should be merged and hit on the *Create pull request* button.
 
 <div className="Image__Medium">
   <img src="./images/github-pull-request.png" alt="Creating a pull request on GitHub" />
@@ -47,18 +47,18 @@ Other developers have a chance to take a look at your changes, comment them and,
 ## Continuous integration. Why do we need it?
 If you count on merging the code solely on git, you have a problem. Git provides a guarantee that all conflicting changes were resolved, but it doesn't guarantee that the code changes are correct and that the code still works properly.
 
-If there's a problem, you'll eventually find out from your users sooner or later. We'll probably all agree that it's best to prevent these situations. Someone from lead developers could do occasional manual testing, but he may still miss something. It's tedious and time-consuming. Instead, we should focus on automating things. And that's what continuous integration tools provide for us.
+If there's a problem, you'll eventually find out from your users sooner or later. We'll probably all agree that it's best to prevent these situations. Someone from lead developers could do occasional manual testing, but he may still miss something. Manual testing is tedious and time-consuming. Instead, we should focus on automating things. And that's what continuous integration tools provide for us.
 
 Continuous integration (CI) tools can help us with the following:
 - They will automatically build your code after each change in any branch. If the machine isn't able to build your code, you'll get notified by an e-mail.
 - They will optionally run your tests to make sure the code still does what it should do.
 - They will generate documentation from the source code and publish it to a webpage. It's sometimes called continuous deployment.
 
-Imagine a virtual machine, which will be run just to build your code. You are responsible for specifying the environment, e.g., which operating system to use, what tools to install to run the code, what version of dependency libraries to use, etc. It's up to you what things you want to automate, all the commands which you can put into the command line, you can also put into the automation script.
+Imagine a virtual machine, which will be run just to build your code. You are responsible for specifying the environment, e.g., which operating system to use, what tools to install to run the code, what version of dependency libraries to use, etc. It's up to you what things you want to automate. All commands which you can put into the command line, you can also put into the automation script.
 
 Also, a very common thing to do is to build (and test) your code in multiple environments. One CI will make your library in Windows 10 with PlatformIO; another will use the Arduino toolchain under Linux. In the case of Arduino, you can also produce binaries for several different hardware platforms to make sure the library builds fine on Arduino Uno, Mega, or Leonardo. If the build process fails for any of the platforms, you'll get an e-mail on failure, and you'll need to fix your code to be compatible or drop support for the hardware platform. Either way, without the CI, you most likely wouldn't know that your library doesn't work on Leonardo, because you manually test only on Uno.
 
-Today I will explain basic principles on Travis CI. This tool is free for all open-source projects. There are other CI solutions, e.g., Bamboo from Atlassian, Jenkins. Also, Gitlab provides its own CI, and recently GitHub introduced GitHub Actions. Most of the tools work very similarly. Once you get the gist for Travis, you'll understand the rest.
+Today I will explain basic principles on Travis CI. This tool is free for all open-source projects. There are other CI solutions, e.g., Bamboo from Atlassian, or Jenkins. Also, GitLab provides its own CI, and recently GitHub introduced GitHub Actions. Most of the tools work very similarly. Once you get the gist for Travis, you'll understand the rest.
 
 ## Travis CI
 Travis CI works with GitHub only. If you host your code someplace else, check the alternative solutions. Adding support for Travis CI into our repository is very easy. First, go to their [webpage][travis] and sign up with your GitHub account. Travis will also ask you for authorization to access your repositories, just follow the guide.
@@ -107,7 +107,7 @@ Note the `before_install` hook. There I ask to install additional dependencies. 
 
 In the `script` section, I put step-by-step commands I want to be executed. You can put there almost anything, even run external bash scripts. In my case, Travis will do the following:
 - Install dependencies necessary to run ArduinoCI test framework
-- Run ArduinoCI - It will try to build the code for several Arduino platforms and run unit tests if there are any
+- Run ArduinoCI — It will try to build the code for several Arduino platforms and run unit tests if there are any
 - If ArduinoCI finished successfully, Travis generates documentation for the project
 
 The `deploy` hook is intriguing. I use [GitHub Pages][gh-pages] to host my documentation online.
@@ -122,7 +122,7 @@ GitHub expects you to create a special repository branch called `gh-pages.` When
 What I would like you to notice is that this deploy hook will automatically push your generated documentation into this particular GitHub Pages branch. Your documentation gets updated after each commit, which didn't cause a failure in previous steps.
 
 ## Write permissions
-When you authorized Travis to access your repositories, you gave it read-only access. If you want from Travis to push code into your repository, you need to approve it explicitly. In theory, you could provide your username and login, but this is very insecure. Instead, GitHub allows you to generate access tokens. They are bound to your account, and you define the scope of what is permitted. Your credentials were not exposed, and you can revoke the token at any time from the [GitHub Admin page][github-tokens].
+When you authorized Travis to access your repositories, you gave it read-only access. If you want from Travis to push code into your repository, you need to approve it explicitly. In theory, you could provide your username and password, but this is very insecure. Instead, GitHub allows you to generate access tokens. They are bound to your account, and you define the scope of what is permitted. Your credentials were not exposed, and you can revoke the token at any time from the [GitHub Admin page][github-tokens].
 
 <div className="Image__Medium">
   <img src="./images/gh-tokens-page.png" alt="GitHub Access Tokens" />
@@ -137,7 +137,7 @@ When you have all this automation in place, there's one very convenient feature 
   <figcaption>GitHub Badges</figcaption>
 </div>
 
-It's called a badge and is very common on GitHub. You can put it into your Readme file. Path to the badge picture doesn't change, but the content reflects the current status of your repository. You know at a glance that there's an issue.
+Such an image is called a badge and is very common on GitHub. You can put it into your Readme file. Path to the badge picture doesn't change, but the content reflects the current status of your repository. You know at a glance that there's an issue.
 
 Adding a badge into your Readme is a matter of just one line:
 ```markdown
@@ -152,12 +152,12 @@ Continuous integration tools are very convenient. Even if you don't have unit te
   <figcaption>Travis Dashboard</figcaption>
 </div>
 
-At a minimum, I would strongly suggest using the CI tools to perform automated builds for several target Arduino platforms. You'll have at least some guarantee that your library will work on them. You can get this set up within minutes, and the benefits are enormous. For open-source projects, this should be a no-brainer. All other projects require a paid CI service - in these cases, enabling CI should be at least a subject of discussion. You can always set up your server for running your own CI server to lower your cost.
+At a minimum, I would strongly suggest using the CI tools to perform automated builds for several target Arduino platforms. You'll have at least some guarantee that your library will work on them. You can get this set up within minutes, and the benefits are enormous. For open-source projects, this should be a no-brainer. All other projects require a paid CI service — in these cases, enabling CI should be at least a subject of discussion. You can always set up your server for running your own CI server to lower your cost.
 
 [//]: # (Used references)
 [arduino]: https://www.arduino.cc/
 [ci]: https://en.wikipedia.org/wiki/Continuous_integration
-[good-library]: https://zahradnik.io/2019/11/27/what-does-it-take-to-write-a-good-arduino-library.html
+[good-library]: https://www.zahradnik.io/what-does-it-take-to-write-a-good-arduino-library
 [travis]: https://travis-ci.com/
 [git]: https://git-scm.com/
 [git-branch]: https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell
