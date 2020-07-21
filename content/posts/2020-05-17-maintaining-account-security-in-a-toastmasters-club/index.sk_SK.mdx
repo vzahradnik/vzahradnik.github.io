@@ -12,14 +12,10 @@ secret: true
 
 Vyše roka pomáham riadiť miestny neziskový klub [Toastmasters][toastmasters]. Takmer po celý čas som cítil, že bezpečnostné štandardy v našej organizácii sú slabé. Avšak zaviesť zmeny nie je jednoduché — nie všetci moji kolegovia sú technicky zdatní. Preto som musel nájsť spôsob, ako lepšie zabezpečiť naše účty bez toho, aby to bolo pre ostatných príliš komplikované. Bol to otvorený problém a nikto mi nevedel dať odpoveď. Rozprával som sa s inými komunitnými klubmi a ich štandardy boli podobne nízke. Nikoho bezpečnosť nezaujíma, pokiaľ klub funguje. Prešli mesiace bez akejkoľvek zmeny na našej strane. Zrazu, koncom apríla bola naša zdieľaná [stránka na Facebooku][fb-tmke] kompromitovaná a musel som rýchlo konať. Za posledné dva týždne som konečne prišiel na spôsob, ako zvýšiť bezpečnosť bez toho, aby som zvýšil zložitosť.
 
----
-
 ## Čo je to Toastmasters? Stručná verzia
 Toastmasters je komunita nezávislých rečníckych klubov pod záštitou Toastmasters International. História siaha až do roku 1924, keď Ralph Smedley založil úplne prvý klub. Každý klub vedie bežné stretnutia, na ktorých si môžu členovia trénovať rečnenie na verejnosti v priateľskom prostredí. Hoci my všetci sme kluby Toastmasters, každý klub je iný, pretože komunita okolo klubu je iná.
 
 Okrem rečnenia na verejnosti majú členovia možnosť zlepšiť sa v ich líderských zručnostiach. A čo je lepší spôsob, ako praktizovať líderské zručnosti, než viesť váš klub? Je to neziskovka, za našu prácu nám nikto neplatí. Práve naopak, platíme si členské poplatky ako ktokoľvek iný. Pre mňa znamená viesť klub Toastmasters club ako keby som viedol vlastnú firmu s pripojenými tréningovými kolieskami. Môžete veci pokašľať, ale ľudia aj tak prídu. Na druhej strane, môžete experimentovať, prichádzať s nápadmi a pracovať v prostredí pripomínajúcom startup. Vaša aktivita má vážny dopad na budúcnosť klubu.
-
----
 
 ## Všade zdieľané účty
 Keď som bol zvolený do jednej z líderských pozícií, môj predchodca mi dal inštrukcie na prihlásenie do zdieľaného klubového emailového účtu. Používame obyčajný Gmail, ktorý je dostupný každému vedúcemu klubu. Naša emailová adresa (prihlasovacie meno) je dobre známa a naše heslo bolo veľmi slabé. Bolo krátke, nemalo žiadne špeciálne znaky, ani len čísla. Osobne verím, že keby vyskúšal hacker slovníkový útok, uspel by. A čo je horšie, toto heslo s vysokou pravdepodobnosťou nebolo nikdy menené.
@@ -37,8 +33,6 @@ Kým vysvetlím, ako som vyriešil našu situáciu, zhrňme si všetky problémy
 - Neexistuje jedno centrálne miesto s informáciami o všetkých účtoch spravovaných v našom klube
 - Nejasné vlastníctvo existujúcich služieb, ako našej webstránky. Často nevie nikto povedať, kto je správcom
 - Pri účtoch ako je naša stránka na Facebooku, kde dávate oprávnenia účtom jednotlivcov, aby mali práva správcu, nikto neodstraňuje bývalých vedúcich. Často majú plné práva správcu
-
----
 
 ## Vytvorenie poriadku z chaosu
 Uvedené výzvy sú ešte stále zjednodušené oproti skutočnosti, akej som čelil.
@@ -80,7 +74,7 @@ Používanie aliasu z Gmailu by malo byť jednoduché pre všetkých. Normálne 
 | toastmasterskosice.sk | mx1.improvmx.com | 10       | 600 |
 | toastmasterskosice.sk | mx2.improvmx.com | 20       | 600 |
 
-Celý návod pre Gmail nájdete [tu][improvmx-gmail]. Ak sa pozriete na jednotlivé kroky, zistíte, že táto integrácia vyžaduje v Gmaile povolenú [dvojfaktorovú autentifikáciu][2fa]. Toto bol ďalší problém, ktorý som musel riešiť. Ak nastavím autentifikáciu pomocou [2FA][2fa] tokenu, ako rozdistribuujem token všetkým oprávneným členom? Ako im jednoducho vysvetlím, čo je to 2FA, prečo to potrebujeme a ako si to nastavia? Ukázalo sa, že existuje ešte jeden menej bezpečný spôsob. Google účet má možnosť nazvanú ["Menej zabezpečené aplikácie"][google-less-secure-apps]. Pokiaľ je zapnutá, náš účet je podľa Googlu viac zraniteľný. Avšak umožňuje nám to použiť preposielanie pošty bez zapnutého 2FA.
+Celý návod pre Gmail nájdete [tu][improvmx-gmail]. Ak sa pozriete na jednotlivé kroky, zistíte, že táto integrácia vyžaduje v Gmaile povolenú [dvojfaktorovú autentifikáciu][2fa]. Toto bol ďalší problém, ktorý som musel riešiť. Ak nastavím autentifikáciu pomocou [2FA][2fa] tokenu, ako rozdistribuujem token všetkým oprávneným členom? Ako im jednoducho vysvetlím, čo je to 2FA, prečo to potrebujeme a ako si to nastavia? Ukázalo sa, že existuje ešte jeden menej bezpečný spôsob. Google účet má možnosť nazvanú [„Menej zabezpečené aplikácie“][google-less-secure-apps]. Pokiaľ je zapnutá, náš účet je podľa Googlu viac zraniteľný. Avšak umožňuje nám to použiť preposielanie pošty bez zapnutého 2FA.
 
 <div className="Image__Small">
   <img src="./images/sk/ImprovMX-Gmail.png" alt="Aliasy v Gmaile" />
@@ -109,8 +103,6 @@ Taktiež som vo všetkých účtoch, kde som mal prístup, aktualizoval verejné
 
 V takomto stave som účty zanechal do konca apríla. Vtedy niekto kompromitoval našu stránku na Facebooku a musel som rýchlo konať, aby som obmedzil škody.
 
----
-
 ## Po prieniku
 Nebudem zachádzať do podrobností. No po mesiacoch nečinnosti som musel urýchlene zabezpečiť naše účty. Keď máte motiváciu, všetko ide rýchlejšie. V mojom prípade som dal dokopy robustné riešenie len za dva týždne.
 
@@ -135,8 +127,6 @@ Ako dni plynuli, stále som sa tohto konceptu držal, ale namiesto papiera som n
 
 Okrem bezpečnosti klubových účtov som sa tiež snažil o náhradu môjho správcu hesiel. Rozhodol som sa [zmigrovať z LastPassu a našiel som Enpass][lastpass-enpass-post]. Poskytuje zabezpečený trezor a je zadarmo do 25 položiek. Aplikácie sú široko dostupné, lokalizované a jednoducho použiteľné pre každého. Rozhodol som sa použiť [Enpass][enpass] ako bezpečnú alternatívu k USB kľúču.
 
----
-
 ## Migrovanie účtov do Enpassu
 Účel Enpassu bol jednoduchý — mal by ukladať všetky naše účty a ich heslá. Účty spravované cez roly správcov by mali uvádzať kontakty na aktuálnych správcov a inštrukcie, ako požiadať o správcovské prístupy a ako zrušiť prístupy bývalým správcom. Enpass naše položky chráni jedným hlavným heslom. Pokiaľ vedúci poznajú toto heslo, nemusia si pamätať heslá pre jednotlivé účty.
 
@@ -150,7 +140,7 @@ Do trezora som pridal všetky naše účty. U každého účtu chráneného hesl
 ### Zdieľanie trezora
 Teraz sa vráťme späť k našej [organizácii na GitHube][github-tmke]. Jednou zo skvelých funkcií, ktoré nám GitHub ponúka, je podpora vydaní. Softvéroví vývojári používajú vydania (releases), aby mohli zverejňovať stabilné verzie ich softvéru. Typicky pridajú ku konkrétnemu commitu tag. GitHub vytvorí zdrojový archív pripravený na stiahnutie, ktorý sa neskôr použije na vytvorenie distribučných balíkov.
 
-Máme repozitár, do ktorého ukladám dokumenty pre vedúcich. Tam som sa rozhodol vytvoriť nové vydanie "softvéru". Do poznámok k vydaniu zvyčajne dáte názov a komentár. V našom prípade som tam napísal inštrukcie, ako nainštalovať Enpass. Taktiež som tam ako prílohu v tom to vydaní pridal náš šifrovaný trezor.
+Máme repozitár, do ktorého ukladám dokumenty pre vedúcich. Tam som sa rozhodol vytvoriť nové vydanie „softvéru.“ Do poznámok k vydaniu zvyčajne dáte názov a komentár. V našom prípade som tam napísal inštrukcie, ako nainštalovať Enpass. Taktiež som tam ako prílohu v tom to vydaní pridal náš šifrovaný trezor.
 
 <div className="Image__Large">
   <img src="./images/sk/github-vault-release.png" alt="Záloha trezora Enpassu" />
@@ -174,12 +164,8 @@ Nový tajomník by mal:
 
 Prečo nestačí zmeniť hlavné heslo k trezoru? Nuž, pretože jeho záloha je verejne prístupná a môže si ju ktokoľvek stiahnuť. Bývalí vedúci majú stále prístup k staršej revízii trezora. Pokiaľ sa heslá k účtom uloženým v trezore nezmenia, stále tam nim majú prístup. Je to skoro ako v tom prípade so zdieľaným heslom na začiatku. A preto musí nový tajomník zmeniť každé heslo, aby sa zabezpečili vysoké bezpečnostné štandardy. Aj keby som natrénoval môjho zverenca, aby túto úlohu zvládol, časom, keď sa vedúci po niekoľký krát vymenia, informácia sa môže skresliť. A možno po pár rokoch nový tajomník neurobí všetky potrebné kroky.
 
----
-
 ## Aké je riešenie?
 Nikdy by som si nebol pomyslel, že to poviem, ale riešením je napísať klubové procesy (ako v korporátnom svete). Kľúčové je všetko zautomatizovať. Napríklad, bude existovať procesný dokument nazvaný *Prenos účtov* s vysvetlením, prečo je to potrebné a s požadovanými krokmi. Tento dokument sa bude odkazovať na návody, kde bude postup krok za krokom, vrátane obrázkov, ako sa má konkrétny úkon spraviť. V tejto chvíli premýšľam nad spôsobom, ako takéto procesné dokumenty písať. Rozhodne to zaberie veľmi veľa času. Avšak pevne verím, že je to správny spôsob, ak chceme zaistiť vysoké štandardy klubu napriek ľuďom vo velení.
-
----
 
 ## Záver
 Veci, ktoré sa zdajú jednoduché, majú zvyčajne skrytú zložitosť. V našom prípade je táto zložitosť skrytá v mojich myšlienkach a moderných šifrovacích technikách. Používame silné heslá a dvojfaktorovú autentifikáciu a predsa je prihlasovanie stále pohodlné. Dúfam, že sa štandardy, ktoré som tu definoval, budú používať mnoho rokov odteraz.
@@ -193,8 +179,8 @@ Riadite podobnú organizáciu? Riešite v nej bezpečnosť? Aké máte riešenie
 [gsuite]: https://gsuite.google.com/
 [improvmx]: https://improvmx.com/
 [improvmx-gmail]: https://improvmx.com/guides/send-emails-using-gmail/
-[mx-record]: https://en.wikipedia.org/wiki/MX_record
-[google-less-secure-apps]: https://support.google.com/accounts/answer/6010255?hl=en
+[mx-record]: https://cs.wikipedia.org/wiki/MX_z%C3%A1znam
+[google-less-secure-apps]: https://support.google.com/accounts/answer/6010255?hl=sk
 [2fa]: https://en.wikipedia.org/wiki/Multi-factor_authentication
 [github-tmke]: https://github.com/toastmasters-kosice/
 [github-pages]: https://pages.github.com/
@@ -202,6 +188,6 @@ Riadite podobnú organizáciu? Riešite v nej bezpečnosť? Aké máte riešenie
 [personal-github]: https://github.com/vzahradnik/
 [fb-tmke]: https://www.facebook.com/toastmasters.kosice
 [web-tmke]: https://toastmasterskosice.sk/
-[lastpass-enpass-post]: https://www.zahradnik.io/Migrating-from-LastPass-to-Enpass
+[lastpass-enpass-post]: https://www.zahradnik.io/migracia-z-lastpass-do-enpass
 [enpass]: https://www.enpass.io/
 [troy-hunt]: https://www.troyhunt.com/only-secure-password-is-one-you-cant/

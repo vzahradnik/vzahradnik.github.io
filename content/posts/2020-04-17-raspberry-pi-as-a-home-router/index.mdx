@@ -11,8 +11,6 @@ comments: true
 
 Recently I replaced my home router with [Raspberry Pi 4][rpi4-specs]. My main goal was to increase throughput through my VPN. While at it, I also migrated from [OpenVPN][openvpn] to [WireGuard][wireguard], and read their whole technical [paper][wg-whitepaper]. This post sums up my insights with repurposing a [Raspberry Pi][raspberrypi] into a network device.
 
----
-
 ## Why having a home router in the first place?
 When you sign a contract with your internet service provider, besides the Internet service, you usually lease a router too. It is certified for the ISP network and gives you wired and wireless connectivity for all devices in your home. In most cases, you can't get rid of this router, and most people don't bother. I think differently, and I believe it's important to talk about its security risks.
 
@@ -27,8 +25,6 @@ Routers provided by your ISP have several drawbacks like:
 - You use such routers daily for years. Usually, until your ISP gives you an updated model, which is rare
 
 For me, having a custom router connected behind the ISP router is a no-brainer. I like having things under control, and I also use non-standard services like VPN, which spans through my home and flat so that I can access my stuff everywhere I go.
-
----
 
 ## From Mikrotik to Raspberry
 I tried different brands of routers over the years, but one brand stuck with me for a long time — Mikrotik. A friend of mine recommended one to me, and since then, I passed that advice to others, having my own experience now.
@@ -60,8 +56,6 @@ In my other site, I use [Turris Omnia][turris], which uses a forked OpenWrt code
 Then I remembered on my [Odroid C2][odroid-c2]. It's a developer board with a single Ethernet port and a bunch of USB2 ports. What's important is that it can handle Ethernet through its RJ45 port at full speed of one Gigabit. If you'd like to use such a device as a router, you need to have at least two interfaces — one facing your ISP router (WAN) and one facing your devices (LAN). I was thinking of using this internal Ethernet port for LAN because the maximum speed on the local network is essential. However, for WAN, I needed much lower throughput because my Internet speed was only around 100 Mbit/second. I found some decent USB3 to Ethernet adapters for that purpose. Odroid C2 supports several Linux distributions, including Ubuntu and [ArchLinux ARM][archlinuxarm]. Therefore, transforming it into a router is possible, and I would certainly do that if there weren't a new revision of Raspberry Pi. The main problem with Odroid C2 is that its kernel is not mainline, and it's rather old. Also, ArchLinux ARM, which I planned to use, is not explicitly designed for routers. This solution could work, but it would most likely take a significant time to set up.
 
 Last weekend I was determined to go with the Odroid C2 path. But then I looked at my shiny Raspberry Pi 4, and I changed my mind. I own almost all revisions of Raspberry Pi, and I use them in my work IoT projects. That was also the reason why I bought the Raspberry Pi 4. Previous generations of RPi were not that useful for use as a router because their Ethernet interface was internally routed through a USB2 hub, effectively limiting the throughput to [around 200 Mbit/second][rpi-throughput]. However, RPi4 can finally saturate a full Gigabit link because of its new I/O architecture. Also, it finally provides USB3 ports, which work great with my external USB-to-Ethernet adapter. The main advantage of RPi4 over Odroid C2 is the mainline kernel support. Therefore it's easy to use close-to-latest Linux kernel. Due to its popularity, community support is also better. And, as a bonus, OpenWrt added support for it in their developer builds. Therefore, migration from my existing router to Raspberry Pi should be relatively painless. Let's take a look at this process.
-
----
 
 ## Turning Raspberry Pi into a router
 As I mentioned, I needed to have two Ethernet interfaces, and Raspberry gives me only one. I decided to use the internal Ethernet port for my local LAN and a USB-to-Ethernet adapter for WAN. Of course, this assignment is not mandatory, and if you use a USB adapter for LAN instead, your setup should work too. In my case, the LAN port on RPi is connected to a 24-port Gigabit Ethernet switch to provide connectivity for more than one device. You can buy any cheap Gigabit Ethernet switch.
@@ -211,8 +205,6 @@ After reboot, you can access the web interface in your browser using the static 
   <img src="./images/openwrt_luci_nginx.png" alt="LuCI web interface" />
   <figcaption>LuCI web interface</figcaption>
 </div>
-
----
 
 ## Conclusion
 In my case, the experiment to use Raspberry Pi as my router turned out well, and I decided to make this setup permanent. After a long time, I have OpenWrt with the latest patches. My VPN performance is significantly higher, and not to mention this solution gives me 4 GB of RAM and almost 60 GB of storage, which brings new possibilities, like running my proxy server or configuring more demanding firewall rules. I'm pleased that, finally, we have development boards capable of replacing network equipment. Such boards may shape the segment of home networking significantly in upcoming years. If you have a spare Raspberry Pi, I encourage you to try to use it as a router too. It's a fun experience.

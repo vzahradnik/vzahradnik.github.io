@@ -142,7 +142,7 @@ Potom ako poznáte vašich používateľov a odporúčané pravidlá Arduino kom
 
 ### Ciele na dosiahnutie
 - **Jednoduché použitie pre každého**
-- Dobrá high-level abstrakcia
+- Dobrá vysokoúrovňová abstrakcia
 - Konzistentné s [príručkami pre programovanie Arduino projektov][arduino-api-style-guide]
 - Dodržiava [špecifikáciu knižníc pre Arduino IDE 1.5][arduino-library-specification]
 - Dobrá čitateľnosť
@@ -155,12 +155,12 @@ Potom ako poznáte vašich používateľov a odporúčané pravidlá Arduino kom
 
 Ako môžete vidieť, pokrytie unit testami a dokumentácia sú len niektoré z cieľov, ktoré potrebujeme splniť. 
 
-### High-level abstrakcia
+### Vysokoúrovňová abstrakcia
 Keď sa snažíte prísť so slušným návrhom knižnice, začnite perom a papierom. Pre inšpiráciu sa pozrite na oficiálne Arduino knižnice. Všetky sú dobre napísané. Stručne spomeniem knižnicu [Servo][arduino-servo]. Predstavte si, že chcete ovládať servomotor. Ktoré funkcie by ste chceli mať? Asi budete potrebovať nejakú funkciu na zadanie výstupného pinu, na ktorom bude servomotor pripojený. Taktiež budete potrebovať funkciu, ktorá servomotoru povie, o koľko sa má pootočiť a funkciu, ktorá hlási aktuálnu pozíciu servomotora. A to je asi tak všetko čo potrebujete ako používateľ. Používateľov neobťažujete implementačnými detailami, všetky sú skryté.
 
 V mojom prípade som chcel poskytnúť spôsob na registrovanie callbackov, spôsob, ako upraviť debounce interval a spôsob, ako prispôsobiť hodnoty časových limitov použité na detekciu kliknutí, dvojklikov a dlhých stlačení tlačidla. Väčšinu času používatelia len zaregistrujú callback a predvolené hodnoty ich nebudú zaujímať, ale je dobrou praxou dať používateľom možnosť ako správanie prispôsobiť. Avšak nesprístupňujte všetky hodnoty. Namiesto toho premýšľajte nad scenármi použitia a rozhodnite sa, čo má zmysel sprístupniť. Potom, čo som urobil svoje návrhové rozhodnutia, sa moja knižnica inicializuje jedným alebo dvoma riadkami kódu. Paráda! Pokojne si pozrite [príklady][objectbutton-examples] toho, ako sa knižnica používa.
 
-Ďalšou vecou, nad ktorou musíte premýšľať, je to, ako štruktúrovať kód s ohľadom na testovanie. Keď píšete kód, skúste premýšľať, ako ho testovať. Typicky by ste sa mali vyhýbať jednej veľkej triede. Namiesto toho rozbite kód do niekoľkých menších tried. Neskôr ich môžete testovať izolovane od zvyšku systému. Ich funkcie by mali robiť iba jednu vec a ich názvy by vám mali napovedať, čo asi robia, bez toho, aby ste čítali dokumentáciu. Za bežných okolností sú tieto funkcie krátke — majú menej ako desať riadkov kódu. Kód, ktorý implementuje stavový automat je zvyčajne veľký. Avšak veľa funkčnosti môžete presunúť do pomocných funkcií. Keď tak spravíte, váš stavový automat poskytne high-level obraz toho, čo robí. Tu je príklad z môjho kódu, kde sa oznámi listenerom výskyt udalosti kliknutia.
+Ďalšou vecou, nad ktorou musíte premýšľať, je to, ako štruktúrovať kód s ohľadom na testovanie. Keď píšete kód, skúste premýšľať, ako ho testovať. Typicky by ste sa mali vyhýbať jednej veľkej triede. Namiesto toho rozbite kód do niekoľkých menších tried. Neskôr ich môžete testovať izolovane od zvyšku systému. Ich funkcie by mali robiť iba jednu vec a ich názvy by vám mali napovedať, čo asi robia, bez toho, aby ste čítali dokumentáciu. Za bežných okolností sú tieto funkcie krátke — majú menej ako desať riadkov kódu. Kód, ktorý implementuje stavový automat je zvyčajne veľký. Avšak veľa funkčnosti môžete presunúť do pomocných funkcií. Keď tak spravíte, váš stavový automat poskytne pohľad z výšky na to, čo robí. Tu je príklad z môjho kódu, kde sa oznámi listenerom výskyt udalosti kliknutia.
 
 Namiesto tohto kódu:
 ```cpp
@@ -203,7 +203,7 @@ Navrhujem vám skombinovať oba prístupy. Začnite zdokumentovaním, čo vaša 
   <figcaption>GitHub Wiki pre ObjectButton</figcaption>
 </div>
 
-Potom, ako ste napísali high-level prehľad vašej knižnice, je čas napísať komentáre priamo do kódu. Rozhodol som sa použiť [Doxygen][doxygen]: ide o de facto štandard a je jednoduché ho nastaviť. Taktiež podporuje niekoľko štýlov komentárov, vrátane štýlu Javadoc.
+Potom, ako ste napísali vysokoúrovňový prehľad vašej knižnice, je čas napísať komentáre priamo do kódu. Rozhodol som sa použiť [Doxygen][doxygen]: ide o de facto štandard a je jednoduché ho nastaviť. Taktiež podporuje niekoľko štýlov komentárov, vrátane štýlu Javadoc.
 
 ### Doxygen
 Ak chcete vygenerovať Doxygen dokumentáciu, potrebujete vytvoriť [Doxyfile][doxyfile]. Je to šablóna pre Doxygen s rôznymi nastaveniami, napríklad názov projektu, umiestnenie zdrojového kódu, atď. Mal som šťastie, že som našiel Doxyfile, ktorý už niekto upravil pre Arduino. Jedným z nevýhnutných nastavení bolo zahrnutie `*.ino` súborov. Doxygen zvyčajne nevie, že tieto súbory obsahujú platný C/C++ kód. Ak by ste niekedy takúto šablónu potrebovali, stiahnite si [moju][doxyfile] a zmeňte názov projektu a cestu.

@@ -21,12 +21,10 @@ Linus hovorí o riešeniach [OpenVPN][openvpn] a [IPSec][ipsec] ako o hrôzach a
 
 Predtým, než vysvetlím, ako WireGuard funguje, a poviem vám, čo sa mi na ňom páči, pozrime sa najprv na existujúce riešenia.
 
----
-
 ## IPsec
 IPsec je de-facto priemyselný štandard. Keď už rozbeháte tunel, výkon je, dá sa povedať, slušný. Návrh IPsec a jeho stavebné prvky sú úplne otvorené a môžete si ich bezplatne prečítať v kolekcii RFC dokumentov. Napísaný prevažne akademikmi, má dokonalé oddelenie vrstiev — napríklad, výmena kľúčov ([IKEv2][ike]) je oddelená od zabezpečeného dátového prenosu ([ESP][esp]). Nevýhodou je však to, že nastaviť tieto prvky je dosť zložité. V Linuxe to riešenia ako [strongSwan][strongswan] trochu uľahčujú, ale nepovedal by som, že nastaviť IPsec je jednoduché.
 
-Na IPsec sa mi páči, že ESP obsah je možné priamo zabaliť za IP časťou paketu. Je to preto, že ESP je registrovaný ako jeden z [povolených protokolov][ip-protocols], ktoré môžete nastaviť vo vnútri poľa "Next Header" v IP hlavičke. Ak vašu VPN nastavíte takto, znížite prevádzkovú réžiu. Avšak v dnešnom zaNATovanom svete, IPsec dáta sú väčšinou zapuzdrené vnútri UDP.
+Na IPsec sa mi páči, že ESP obsah je možné priamo zabaliť za IP časťou paketu. Je to preto, že ESP je registrovaný ako jeden z [povolených protokolov][ip-protocols], ktoré môžete nastaviť vo vnútri poľa „Next Header“ v IP hlavičke. Ak vašu VPN nastavíte takto, znížite prevádzkovú réžiu. Avšak v dnešnom zaNATovanom svete, IPsec dáta sú väčšinou zapuzdrené vnútri UDP.
 
 IPsec môže fungovať v dvoch režimoch — site-to-site, kde prepájate dve LAN siete alebo v režime RoadWarrior, ktorý sa používa, keď chcete pripojiť vaše zariadenie do firemnej siete. RoadWarrior neumožňuje (pokiaľ viem) prepojenie celých LAN sietí. Osobne si myslím, že nikto takýto scenár nepredpokladal. Takže musíte použiť čistý site-to-site režim a ten má mnoho nevýhod.
 
@@ -37,12 +35,10 @@ IPsec môže fungovať v dvoch režimoch — site-to-site, kde prepájate dve LA
 - ❌ Konfigurácia je na oboch koncoch statická, s napevno zadanými IP adresami, pravidlami firewallu, trasami (routami) a ďalšími nastaveniami
 - ❌ Oba konce tunela vyžadujú verejnú statickú IP adresu
 - ❌ Oba konce vyžadujú výnimky vo firewalle pre konkrétne protokoly a čísla portov
-- ❌ IPsec neumožňuje isté porty zmeniť. Sú napevno "zadrôtované" v RFC štandarde
+- ❌ IPsec neumožňuje isté porty zmeniť. Sú napevno „zadrôtované“ v RFC štandarde
 - ❌ Je ťažké ho debugovať
 
 V mojom prípade som nemal statické IP adresy, ale aspoň boli verejné. Jeden koniec tunela bol v Bratislave a ten druhý na druhom konci krajiny, v Chmiňanoch. Na oboch koncoch som používal routre od Mikrotiku. Zmena dynamickej IP adresy bola problém. Ak používate VPN ako OpenVPN, môžete namiesto IP adresy vášho rovesníka (peer) zadať názov domény. Preto môžete použiť dynamické DNS služby, ktoré sú integrované v mnohých spotrebných routroch od výroby. Avšak IPsec takýto scenár neočakáva a musíte nastaviť všetko. Skončil som tak, že som si napísal trochu komplikovaný skript, ktorý aktualizoval konfiguráciu na rozhraniach, pravidlá firewallu a mnoho ďalších záludností. Stále ho môžete nájsť v mojom [repozitáre na GitHube][mikrotik-ipsec-script]. Takto mi IPsec fungoval a výkon bol v pohode. No jedného dňa som zmenil poskytovateľa Internetu, už som nemal verejnú IP adresu a musel som si nájsť iné riešenie, ako opäť prepojiť dva konce. Skončil som pri OpenVPN, ktorú Mikrotik [RouterOS][routeros] tiež podporoval.
-
----
 
 ## OpenVPN
 Toto riešenie má klasickú architektúru typu klient-server. OpenVPN server musíte spustiť na routri (alebo akomkoľvek zariadení), ktoré má dostupnú verejnú IP adresu. Druhý koniec môže byť za NATom s privátnou IP. Za predpokladu, že sa klient dokáže pripojiť k serveru, OpenVPN funguje bez problémov. Len čo klient iniciuje reláciu, po ceste sa dynamicky aplikujú NAT pravidlá, aby relácia ostala otvorená. Aby sme sa uistili, že NAT pravidlá zostanú aplikované, raz za čas klient pošle cez tunel tzv. keepalive paket. Keď sa dynamická IP adresa zmení, VPN spojenie sa na krátky čas preruší. Avšak klient sa zvyčajne pripája prostredníctvom názvu domény, ktorý je aktualizovaný na novú IP adresu servera, a preto sa spojenie znovu vytvorí.
@@ -64,8 +60,6 @@ Mikrotik používa vlastnú implementáciu OpenVPN, ktorá funguje iba prostredn
 Hoci beží OpenVPN lepšie cez UDP, jeho výkon je stále slabý. Jedným z dôvodov je ten, že v Linuxe je OpenVPN implementovaný ako klient v používateľskom priestore. Keď OpenVPN vygeneruje paket, ten sa skopíruje niekoľkokrát, kým opustí rozhranie sieťovej karty. Taktiež OpenVPN nefunguje efektívne s mnohojadrovými procesormi.
 
 Konfigurácia OpenVPN je oveľa priamočiarejšia ako nastavenie IPsec. Avšak stále to nie je jednoduché. Ľudia musia vedieť, ako vygenerovať OpenSSL kľúče, ideálne pomocou [easy-rsa][easy-rsa] skriptov, ktoré sa dodávajú spolu s OpenVPN. Bezpečnosť v OpenVPN je taktiež problém. V minulosti našli výskumníci viacero zraniteľností v knižnici OpenSSL a aj v jadre [knižnice OpenVPN][openvpn-vulnerabilities]. Kód je obrovský, čím sa audit a hľadanie chýb dosť komplikuje.
-
----
 
 ## WireGuard
 Na tomto mieste by som rád spomenul, že IPsec aj OpenVPN sú dosť staré protokoly. Časom našli ľudia v ich návrhoch nedostatky, ale nie je jednoduché, občas dokonca nemožné, opraviť podstatné chyby v návrhu. Autori WireGuardu si boli dobre vedomí problémov s IPsec a OpenVPN, ktoré sa vyskytovali v reálnych podmienkach, a napísali protokol, aby tieto problémy vyriešil.
@@ -267,7 +261,7 @@ Rovesník C:
   <figcaption>Scenár 2: Site-to-site VPN s rovesníkmi za NATom</figcaption>
 </div>
 
-V tomto príklade sú rovesníci A a B za NATom. Nie je žiadny spôsob, ako by mohli spolu napriamo komunikovať. Avšak môžu si posielať dáta cez rovesníka C, s ktorým sa vedia spojiť obaja. Stále tu máme rovesníkov, ktorí sú si vo WireGuard terminológii "rovní". Avšak tým, že nastavíme konfiguráciu tak, aby sa posielali dáta z rovesníka A na rovesníka B cez rovesníka C (a opačne), v podstate sme vytvorili architektúru klient-server. Rovesníci A a B sú klienti a všetky ich dáta idú cez rovesníka C. Obaja klienti, A aj B, majú definovaný koncový bod na rovesníka C. Nebudem sem dávať celú konfiguráciu, keďže som ju podrobne vysvetlil v predchádzajúcom scenári. Ale ukážem vám aspoň konfiguráciu pre rovesníka A.
+V tomto príklade sú rovesníci A a B za NATom. Nie je žiadny spôsob, ako by mohli spolu napriamo komunikovať. Avšak môžu si posielať dáta cez rovesníka C, s ktorým sa vedia spojiť obaja. Stále tu máme rovesníkov, ktorí sú si vo WireGuard terminológii „rovní.“ Avšak tým, že nastavíme konfiguráciu tak, aby sa posielali dáta z rovesníka A na rovesníka B cez rovesníka C (a opačne), v podstate sme vytvorili architektúru klient-server. Rovesníci A a B sú klienti a všetky ich dáta idú cez rovesníka C. Obaja klienti, A aj B, majú definovaný koncový bod na rovesníka C. Nebudem sem dávať celú konfiguráciu, keďže som ju podrobne vysvetlil v predchádzajúcom scenári. Ale ukážem vám aspoň konfiguráciu pre rovesníka A.
 
 ```bash
 # Vytvorenie rozhrania
@@ -308,7 +302,7 @@ Nasledujúci scenár je dosť typický. Zamestnanec chce pristupovať k firemnej
   <figcaption>Scenario 3: RoadWarrior klienti pristupujúci k firemnej VPN</figcaption>
 </div>
 
-V tomto prípade sú notebook aj telefón za NATom. Ich lokalita sa môže kedykoľvek zmeniť, ako aj ich IP adresy. "Klientskí" rovesníci nezdieľajú žiadne siete a chcú komunikovať iba so "serverovým" rovesníkom. Parameter `persistent-keepalive` nepotrebujeme, pretože firemný server nikdy nepotrebuje pripojenie k zariadeniu zamestnanca. Zvyčajne sa zamestnanec pripojí s WireGuard VPN iba vtedy, keď chce preniesť nejaké dáta a hneď potom sa odpojí. Aj keď je klientská aplikácia stále pripojená a NAT relácia sa preruší, počas najbližšieho dátového prenosu sa vytvorí nová NAT relácia a firemný server si poznačí aktualizovanú IP adresu a port. Všetko funguje tak ako má.
+V tomto prípade sú notebook aj telefón za NATom. Ich lokalita sa môže kedykoľvek zmeniť, ako aj ich IP adresy. „Klientskí“ rovesníci nezdieľajú žiadne siete a chcú komunikovať iba so „serverovým“ rovesníkom. Parameter `persistent-keepalive` nepotrebujeme, pretože firemný server nikdy nepotrebuje pripojenie k zariadeniu zamestnanca. Zvyčajne sa zamestnanec pripojí s WireGuard VPN iba vtedy, keď chce preniesť nejaké dáta a hneď potom sa odpojí. Aj keď je klientská aplikácia stále pripojená a NAT relácia sa preruší, počas najbližšieho dátového prenosu sa vytvorí nová NAT relácia a firemný server si poznačí aktualizovanú IP adresu a port. Všetko funguje tak ako má.
 
 Toto nastavenie má jeden nedostatok. Pokiaľ viem, neexistuje spôsob ako dynamicky priradiť IP adresu klientovi vnútri VPN. Ako sa postupne nástroje vylepšujú, očakávam, že sa tento problém vyrieši.
 
@@ -320,8 +314,6 @@ WireGuard je podporovaný na mnohých platformách. Mimo Linuxu môžete použi�
   <figcaption>WireGuard vo webovom rozhraní LuCI</figcaption>
 </div>
 
----
-
 ## Priepustnosť
 WireGuard používam vyše dvoch týždňov. Nemám presné dáta priepustnosti, pretože kvôli situácii ohľadom COVID-19 je Internet dosť vyťažený a moja rýchlosť počas dňa dosť kolíše. Avšak urobil som zopár rýchlych testov mimo špičky a výsledky boli ohromné.
 
@@ -329,13 +321,11 @@ Rýchlosť sťahovania môjho Internetu u rovesníka v Chmiňanoch je zhruba 100
 
 Toto sú hrubé dáta len pre ilustráciu. Ak chcete vidieť aspoň nejaké porovnanie, pozrite si [technický dokument][wg-whitepaper], kde autori WireGuardu porovnávajú WireGuard, IPsec a OpenVPN. Rozdiel medzi OpenVPN a WireGuardom je enormný.
 
----
-
 ## Záver
 Verím, že má WireGuard jasnú budúcnosť a teším sa na vylepšenú podporu na existujúcich zariadeniach ako aj na pridanie podpory na tých nových. V časti o IPsec som stručne spomenul [ePDG][ePDG], ktoré beží v cloude u mobilného operátora a prenáša hlas cez IPsec. Aj keď štandard definuje pre transport IPsec, viem si predstaviť, že by sa časom nahradil za WireGuard a celkovo, že ho uvidíme v mnohých aplikáciách, kde IPsec roky dominoval.
 
 [//]: # (Used references)
-[rpi-as-a-home-router]: https://www.zahradnik.io/Raspberry-Pi-ako-domaci-router
+[rpi-as-a-home-router]: https://www.zahradnik.io/raspberry-pi-ako-domaci-router
 [rpi4-specs]: https://www.raspberrypi.org/products/raspberry-pi-4-model-b/
 [wireguard]: https://www.wireguard.com/
 [wg-whitepaper]: https://www.wireguard.com/papers/wireguard.pdf
@@ -343,7 +333,7 @@ Verím, že má WireGuard jasnú budúcnosť a teším sa na vylepšenú podporu
 [linus-quote]: http://lkml.iu.edu/hypermail/linux/kernel/1808.0/02472.html
 [ePDG]: https://www.3gpp.org/technologies/keywords-acronyms/100-the-evolved-packet-core
 [openvpn]: https://openvpn.net/
-[ipsec]: https://en.wikipedia.org/wiki/IPsec
+[ipsec]: https://cs.wikipedia.org/wiki/IPsec
 [esp]: https://tools.ietf.org/html/rfc2406
 [ike]: https://tools.ietf.org/html/rfc5996
 [strongswan]: https://strongswan.org/

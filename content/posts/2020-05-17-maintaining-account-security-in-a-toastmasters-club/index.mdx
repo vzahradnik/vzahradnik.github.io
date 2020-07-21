@@ -11,14 +11,10 @@ comments: true
 
 For over a year, I help run a local non-profit [Toastmasters][toastmasters] club. Almost the entire time, I felt that security standards in our organization were weak. However, introducing changes is not easy — not all my peers are technically-skilled. Therefore, I had to find a way how to better secure our accounts without making it too complicated for others. It was an open problem, and nobody could give me an answer. I talked with other community clubs, and their standards were similarly low. Nobody cares for security as long as the club operates. Months passed by without any change on our end. Suddenly, at the end of April, our shared [Facebook page][fb-tmke] was compromised, and I had to act quickly. In the past two weeks, I finally came with a way how to increase security without increasing complexity.
 
----
-
 ## What is Toastmasters? A short story
 Toastmasters is a community of independent speech clubs under the umbrella of Toastmasters International. History goes back into 1924 when Ralph Smedley founded the very first club. Each club conducts regular meetings where members can practice public speaking in a friendly environment. Albeit we all are Toastmasters clubs, every club is different because the community around the club is different.
 
 Besides public speaking, members have a chance to get better at their leadership skills. And what's the best way to practice leadership skills than to run your club? It's a non-profit, we don't get paid for our work. On the contrary, we pay the club membership fees like anyone else. For me, running a Toastmasters club is like running my company with training wheels attached. You can screw things up, but people will still come. On the other hand, you can experiment, bring ideas, and work in a startup-like environment. Your activity has a severe impact on the club's future.
-
----
 
 ## Shared accounts everywhere
 When I got elected to one of the leadership positions, my predecessor gave me login instructions to get into the shared club email account. We use regular Gmail accessible by every club officer. Our email address (login) is well known, and our password was very weak. It was short, it had no special characters, not even numbers. I'm confident that a hacker trying dictionary attack would succeed. What's even worse, this password was most likely never changed.
@@ -36,8 +32,6 @@ Before I explain how I solved our situation, let's list all the issues in one pl
 - There is no central information about all accounts managed in our club
 - Unclear ownership of existing services, like our webpage. Often, nobody can tell who's an admin
 - On accounts like Facebook Page, where you authorize an individual's account to have admin rights, nobody removes past officers. Often, they have full admin rights
-
----
 
 ## Creating order from the chaos
 The listed challenges are still simplified compared to the reality I dealt with.
@@ -108,8 +102,6 @@ Also, in all accounts where I had access, I updated public information, like a n
 
 In such a state, I left the accounts until the end of April. Then, our Facebook page got compromised, and I had to act quickly to mitigate the damage.
 
----
-
 ## After the breach
 I won't go into details here. However, after months of inactivity, I had to secure our accounts quickly. When you're motivated, everything goes faster. In my case, I put together a robust solution in just two weeks.
 
@@ -133,8 +125,6 @@ As days went by, I held by that concept, but instead of paper, I suggested buyin
 > — <cite>[Troy Hunt][troy-hunt]</cite>
 
 Besides club account security, I was also trying to find a replacement for my password manager. I decided to [migrate away from LastPass, and I found Enpass][lastpass-enpass-post]. It provides a secure vault, and it's free for up to 25 entries. Applications are widely available, and they are localized and easy-to-use for everyone. I decided to use [Enpass][enpass] as a secure alternative to the USB stick.
-
----
 
 ## Migrating accounts to Enpass
 The purpose of Enpass was simple — it should store all our accounts and their passwords. Accounts managed through admin roles should list contacts to current administrators and instructions on how to request admin access and revoke access for past admins. Enpass protects our entries with a single master password. So long as officers know this password, they don't need to remember passwords for individual accounts.
@@ -173,12 +163,8 @@ A new secretary should:
 
 Why it's not enough to change the master password for the vault? Well, because its backup is stored publicly, anyone can download it. Past officers still have access to the older vault's revision. If the passwords for the accounts inside the vault are not changed, they still have access. That is almost like the case with the shared password in the beginning. Hence, a new secretary needs to change every password to maintain high-security standards. Even if I trained my mentee to handle this task, over time, as officers change several times, the information might get distorted. Perhaps, after a few years, a new secretary won't do all the required steps.
 
----
-
 ## What's the solution?
 I would never think to ever say this, but the solution is to write the club's processes (as in a corporate world). The key is to automate everything. For example, there will be a process document labeled *Transfer of accounts* with the rationale behind it, and required steps. This document will be linked to guides, where is a step-by-step procedure, including pictures, how to do a specific action. At the moment, I'm thinking of a way how to write the process documents. It will definitely take a severe amount of time. However, I firmly believe it's the right way to do if we want to ensure high club standards despite people in charge.
-
----
 
 ## Conclusion
 Things that seem easy usually have a hidden complexity. In our case, this complexity is hidden in my thoughts and modern encryption techniques. We use strong passwords and two-factor authentication, yet logging in is still comfortable and convenient to use. I hope that the standards I defined here will be used for years to come.
@@ -201,6 +187,6 @@ Do you run a similar organization? Do you care about security? What's your solut
 [personal-github]: https://github.com/vzahradnik/
 [fb-tmke]: https://www.facebook.com/toastmasters.kosice
 [web-tmke]: https://toastmasterskosice.sk/
-[lastpass-enpass-post]: https://www.zahradnik.io/Migrating-from-LastPass-to-Enpass
+[lastpass-enpass-post]: https://www.zahradnik.io/migrating-from-lastpass-to-enpass
 [enpass]: https://www.enpass.io/
 [troy-hunt]: https://www.troyhunt.com/only-secure-password-is-one-you-cant/

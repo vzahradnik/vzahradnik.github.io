@@ -12,8 +12,6 @@ secret: true
 
 Nedávno som nahradil môj domáci router za [Raspberry Pi 4][rpi4-specs]. Mojím hlavným cieľom bolo zvýšiť priepustnosť na mojej VPN. A keď už som to robil, tiež som zmigroval z [OpenVPN][openvpn] na [WireGuard][wireguard] a prečítal si celý technický [dokument][wg-whitepaper]. Tento príspevok zhŕňa dokopy moje poznatky z toho, ako som zmenil účel môjho [Raspberry Pi][raspberrypi] na sieťové zariadenie.
 
----
-
 ## Prečo je dobré mať domáci router v prvom rade?
 Keď podpíšete zmluvu s vašim poskytovateľom Internetu, okrem internetovej služby si zvyčajne prenajímate aj router. Je certifikovaný pre sieť vášho poskytovateľa a poskytuje drôtové a bezdrôtové pripojenie pre všetky zariadenia u vás doma. Vo väčšine prípadov sa tohto routra nemôžete zbaviť a väčšina ľudí to ani nerieši. Ja rozmýšľam inak a verím, že je dôležité rozprávať o jeho bezpečnostných rizikách.
 
@@ -29,8 +27,6 @@ Routre poskytnuté vašim poskytovateľom Internetu majú niekoľko nevýhod:
 
 Pre mňa je to, že mám vlastný router pripojený za routrom môjho poskytovateľa samozrejmosť. Rád mám veci pod kontrolou a tiež používam neštandardné služby ako VPN, ktorá prepája dom u mojich rodičov a byt tak, aby som mohol k mojim veciam pristupovať odkiaľkoľvek.
 
----
-
 ## Od Mikrotiku k Raspberry
 Za tie roky som vyskúšal viacero značiek routrov, ale u jednej som zostal veľmi dlho — u Mikrotiku. Odporučil mi ho priateľ a odvtedy som túto radu predal ďalej s tým, že už mám vlastné skúsenosti.
 
@@ -41,7 +37,7 @@ Za tie roky som vyskúšal viacero značiek routrov, ale u jednej som zostal ve�
 
 U mňa doma som používal model [RB450G][mikrotik-rb450g], ktorý má jednojadrový MIPS procesor taktovaný na 680 MHz, 256 MB RAM a 512 MB flashového úložiska. Oproti routru môjho poskytovateľa bolo už aj toto značné zlepšenie. V tom čase mal typický router od poskytovateľa Internetu, resp. lacný domáci router, zhruba 32 MB RAM a 4 MB úložiska. Nebolo takmer možné dostať tam nejaký slušný softvér, pretože jednoducho nebolo miesto.
 
-Pripájali sme sa prostredníctvom ADSL. Aby som tento nový router zapojil do mojej siete, pripojil som ho na LAN port ADSL modemu ako jediného klienta. Taktiež som vypol DHCP, nastavil statickú IP adresu a vypol všetky "inteligentné" funkcie, čím som spravil z modemu len hlúpy bridge, ktorý preposielal dáta z môjho routra k môjmu poskytovateľovi Internetu, tam a späť.
+Pripájali sme sa prostredníctvom ADSL. Aby som tento nový router zapojil do mojej siete, pripojil som ho na LAN port ADSL modemu ako jediného klienta. Taktiež som vypol DHCP, nastavil statickú IP adresu a vypol všetky „inteligentné“ funkcie, čím som spravil z modemu len hlúpy bridge, ktorý preposielal dáta z môjho routra k môjmu poskytovateľovi Internetu, tam a späť.
 
 <div className="Image__Medium">
   <img src="./images/sk/home-router-behind-isp.png" alt="Domáci router za ISP routrom" />
@@ -51,7 +47,7 @@ Pripájali sme sa prostredníctvom ADSL. Aby som tento nový router zapojil do m
 Každý router poskytovateľa je iný, ale mali by ste ho vedieť nastaviť obdobne. Tiež skúste nájsť možnosť DMZ a nastaviť ju na IP adresu vášho domáceho routra. Takto budú všetky dáta preposielané na váš domáci router a nebudú sa aplikovať žiadne špeciálne pravidlá. A ešte jedna vec. Ak má router od vášho poskytovateľa WiFi, vypnite ju. WiFi potrebujete nastaviť na vašom domácom routri alebo na zariadení, ktoré je za ním. Inak budú všetky dáta z bezdrôtovej siete obchádzať váš domáci router a to zrejme nechcete.
 
 ### OpenWrt
-Zariadenia od Mikrotiku používajú ako ich systém [RouterOS][routeros]. Dáva používateľom funkcie, ktoré sa nachádzajú v oveľa drahších sieťových produktoch. Obzvlášť zbožňujem ich WinBox aplikáciu, ktorá mi pomáha spravovať moje zariadenia cez jednoduché UI. Avšak, ako som to používal, našiel som niekoľko chýb a tiež mi chýbali niektoré funkcionality. Napríklad, RouterOS podporuje OpenVPN iba cez TCP, čím stúpa prevádzková réžia. Taktiež, keď môj poskytovateľ zaviedol IPv6 v konfigurácii DS-Lite, podpora v RouterOS bola obmedzená a mal som problém pristupovať k natívnej IPv6 sieti. Preto som sa rozhodol zmigrovať na [OpenWrt][openwrt], čo je open-source linuxová distribúcia zameraná na routre. Vďaka tomu bolo mnoho funkcií priamo tam, vrátane OpenVPN na UDP a dobrá podpora DSLite.
+Zariadenia od Mikrotiku používajú ako ich systém [RouterOS][routeros]. Dáva používateľom funkcie, ktoré sa nachádzajú v oveľa drahších sieťových produktoch. Obzvlášť zbožňujem ich WinBox aplikáciu, ktorá mi pomáha spravovať moje zariadenia cez jednoduché UI. Avšak, ako som to používal, našiel som niekoľko chýb a tiež mi chýbali niektoré funkcie. Napríklad, RouterOS podporuje OpenVPN iba cez TCP, čím stúpa prevádzková réžia. Taktiež, keď môj poskytovateľ zaviedol IPv6 v konfigurácii DS-Lite, podpora v RouterOS bola obmedzená a mal som problém pristupovať k natívnej IPv6 sieti. Preto som sa rozhodol zmigrovať na [OpenWrt][openwrt], čo je open-source linuxová distribúcia zameraná na routre. Vďaka tomu bolo mnoho funkcií priamo tam, vrátane OpenVPN na UDP a dobrá podpora DSLite.
 
 OpenWrt mal k dispozícii mnoho softvérových balíčkov. Ak mi niečo chýbalo, mohol som pripraviť balíček sám (a aj som to spravil). A ak som našiel chybu, mohol som ju nahlásiť a poskytnúť patch (aj to som spravil). No jedného dňa v linuxovom jadre zahodili podporu pre moje flashové úložisko. Zrazu najnovšie verzie OpenWrt nefungovali s mojim routrom správne a ja som musel zostať u starej verzie systému. Išlo o problém z pohľadu bezpečnosti, ako aj použiteľnosti. Už som viac nemohol používať najnovší softvér. Keďže šlo o môj hlavný router, nemohol som s ním experimentovať a pripravovať patche. Testovanie mojich zmien nebolo možné. Túto starú OpenWrt distribúciu som nechal na mojom routri bežať vyše roka. Počas tejto doby som hľadal alternatívne riešenie, ktoré je dostatočne výkonné, aby zvýšilo výkon mojej VPN a ktoré by mi umožnilo rozbehať upraviteľný firmvér.
 
@@ -61,8 +57,6 @@ V mojej druhej lokalite používam [Turris Omniu][turris], ktorá používa fork
 Potom som si spomenul na môj [Odroid C2][odroid-c2]. Je to vývojová doska s jedným ethernetovým portom a niekoľkými USB2 portami. Čo je však dôležité, že dokáže utiahnuť Ethernet cez jej RJ45 port v plnej rýchlosti jedného gigabitu. Pokiaľ by ste chceli použiť ako router takéto zariadenie, potrebujete aspoň dve rozhrania — jedno smerujúce k routru od vášho poskytovateľa (WAN) a jedno, ktoré smeruje k vašim zariadeniam (LAN). Rozmýšľal som, že použijem tento interný ethernetový port pre LAN, pretože najvyššia rýchlosť je na lokálnej sieti zásadná. Avšak u WAN mi stačila oveľa menšia priepustnosť, pretože rýchlosť môjho Internetu bola len okolo 100 Mbit/sekundu. Na tento účel som našiel veľmi slušné adaptéry z USB3 na Ethernet. Odroid C2 podporuje niekoľko linuxových distribúcií, vrátane Ubuntu a [ArchLinux ARM][archlinuxarm]. Preto je iste možné vyrobiť z neho router a rozhodne by som to spravil, keby nevyšla nová revízia Raspberry Pi. Hlavným problémom Odroidu C2 je, že nemá priamu podporu v linuxovom jadre a to jadro, ktoré je upravené, aby jeho podporu malo, je už dosť staré. Taktiež distribúcia ArchLinux ARM, ktorú som sa chystal použiť, nie je vyslovene navrhnutá pre routre. Toto riešenie by mohlo fungovať, ale s vysokou pravdepodobnosťou by zabralo oveľa viac času nastaviť ho.
 
 V posledný víkend som už bol rozhodnutý ísť cestou s Odroidom C2. Ale v tom som sa pozrel na moje krásne nové Raspberry Pi 4 a rozmyslel som si to. Vlastním takmer všetky revízie Raspberry Pi a používam ich v mojich IoT projektoch. Aj to bol dôvod, prečo som si kúpil Raspberry Pi 4. Predchádzajúce generácie RPi neboli pre použitie ako routra až tak vhodné, pretože ich ethernetové rozhranie bolo interne smerované cez USB2 rozbočovač, čím sa účinne obmedzuje priepustnosť na [zhruba 200 Mbit/sekundu][rpi-throughput]. Avšak RPi4 konečne dokáže naplno zahltiť celú gigabitovú linku, pretože má novú I/O architektúru. A tiež konečne poskytuje USB3 porty, ktoré s mojim externým adaptérom z USB3 na Ethernet fungujú skvele. Hlavnou výhodou RPi4 nad Odroidom C2 je, že má priamu podporu v jadre. Preto je jednoduché použiť takmer najaktuálnejšie linuxové jadro. Kvôli jeho popularite je aj podpora komunity lepšia. A ako bonus pridalo preňho OpenWrt podporu v jej vývojových zostavách. Preto by mala byť migrácia z môjho existujúceho routra na Raspberry Pi relatívne bezbolestná. Poďme sa teraz pozrieť na tento proces.
-
----
 
 ## Meníme Raspberry Pi na router
 Ako som už spomenul, potreboval som mať dve ethernetové rozhrania, pričom mi Raspberry poskytuje iba jedno. Rozhodol som sa použiť interný ethernetový port pre moju lokálnu LAN a adaptér z USB na Ethernet pre WAN. Samozrejme, toto priradenie nie je podmienkou. Ak použijete USB adaptér pre LAN, aj takto by vám to malo fungovať. V mojom prípade je LAN port na RPi pripojený k 24-portovému gigabitovému ethernetovému switchu, aby som mohol poskytovať konektivitu pre viac ako jedno zariadenie. Môžete si kúpiť akýkoľvek lacný switch s gigabitovými portami.
@@ -214,8 +208,6 @@ Po reštarte môžete pristupovať k webovému rozhraniu vo vašom prehliadači 
   <figcaption>LuCI webové rozhranie</figcaption>
 </div>
 
----
-
 ## Záver
 V mojom prípade bol experiment s použitím Raspberry Pi ako môjho nového routra úspešný a rozhodol som sa spraviť z toho moje trvalé riešenie. Po dlhom čase mám OpenWrt s najnovšími opravami. Výkon mojej VPN je značne vyšší a to ešte nespomínam, že mi toto riešenie dáva 4 GB RAM a takmer 60 GB úložisko, čím získavam nové možnosti, ako prevádzkovanie vlastného proxy servera alebo nastavenie pravidiel vo firewalle, ktoré sú náročnejšie na výkon. Teší ma, že máme konečne vývojové dosky, ktoré sú schopné nahradiť sieťový hardvér. Takéto dosky možno výrazne ovplyvnia segment sieťových produktov pre domácnosti v nasledujúcich rokoch. Ak máte zvyšné Raspberry Pi, povzbudzujem vás k tomu, aby ste ho tiež skúsili použiť ako router. Je to zaujímavý zážitok.
 
@@ -236,8 +228,8 @@ V mojom prípade bol experiment s použitím Raspberry Pi ako môjho nového rou
 [odroid-c2]: https://wiki.odroid.com/odroid-c2/odroid-c2
 [archlinuxarm]: https://archlinuxarm.org/platforms/armv8/amlogic/odroid-c2
 [rpi-throughput]: https://www.jeffgeerling.com/blogs/jeff-geerling/getting-gigabit-networking
-[arp]: https://en.wikipedia.org/wiki/Address_Resolution_Protocol
-[usb-wiki]: https://en.wikipedia.org/wiki/USB
+[arp]: https://sk.wikipedia.org/wiki/Protokol_rozli%C5%A1ovania_adries
+[usb-wiki]: https://sk.wikipedia.org/wiki/Univerz%C3%A1lna_s%C3%A9riov%C3%A1_zbernica
 [openwrt-rpi-guide]: https://openwrt.org/toh/raspberry_pi_foundation/raspberry_pi
 [openwrt-rpi4-snapshot]: https://downloads.openwrt.org/snapshots/targets/bcm27xx/bcm2711/
 [luci]: https://openwrt.org/docs/guide-user/luci/luci.essentials

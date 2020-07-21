@@ -37,15 +37,13 @@ Počas roka som narazil na drobné nedostatky, vďaka ktorým nebolo použitie t
 ## Neustále zvyšovanie cien
 Odkedy som začal používať LastPass, jeho ročný prémiový plán bol každým rokom drahší. Čo začalo ako pohodlná služba za 12 dolárov ročne, [stojí aktuálne 36 dolárov][lastpass-plans] (máj 2020). Nevadí mi platiť vyššie sumy, ak dostanem dokonalý produkt, kde všetko bez zaváhania funguje — o LastPasse to už viac neplatí. Keď sa blížil koniec môjho prémiového plánu, aktívne som začal hľadať náhradu.
 
----
-
 <div className="Image__Large">
   <img src="./images/security-lock.png" alt="Zámok" />
   <figcaption>Zdroj: Thomas Breher, Pixabay</figcaption>
 </div>
 
 ## A víťazom sa stáva Enpass
-Nedávne roky boli na poli správcov hesiel veľmi turbulentné. LastPass získal mnoho konkurentov, mnohí z nich ponúkli porovnateľné funkcie za rovnakú alebo nižšiu cenu. Keď som sa rozhodol zmigrovať na iné riešenie, spravil som si prieskum, aby som si zistil, ktoré riešenia sú pre mňa dobré. Pred pár dňami som čítal blogový príspevok od Nextcloudu, kde [porovnávajú rôznych správcov hesiel][nextcloud-pass]. Uviedli tam isté skvelé možnosti a Enpass vyzeral sľubne. Len nedávno jeho autori pridali podporu pre [WebDAV][webdav], ktorý mi umožňuje použiť môj lokálny [Nextcloud server][nextcloud] ako "cloud." Inými slovami, mám plnú kontrolu nad mojimi heslami.
+Nedávne roky boli na poli správcov hesiel veľmi turbulentné. LastPass získal mnoho konkurentov, mnohí z nich ponúkli porovnateľné funkcie za rovnakú alebo nižšiu cenu. Keď som sa rozhodol zmigrovať na iné riešenie, spravil som si prieskum, aby som si zistil, ktoré riešenia sú pre mňa dobré. Pred pár dňami som čítal blogový príspevok od Nextcloudu, kde [porovnávajú rôznych správcov hesiel][nextcloud-pass]. Uviedli tam isté skvelé možnosti a Enpass vyzeral sľubne. Len nedávno jeho autori pridali podporu pre [WebDAV][webdav], ktorý mi umožňuje použiť môj lokálny [Nextcloud server][nextcloud] ako „cloud.“ Inými slovami, mám plnú kontrolu nad mojimi heslami.
 
 ### Funkcie Enpassu:
 - Umožňuje synchronizovať heslá s lokálnym Nextcloud serverom
@@ -69,25 +67,21 @@ Jednou z novších funkcií je podpora pre autentifikačné tokeny [TOTP][totp].
 
 Svoje heslá som rozdelil do dvoch samostatných trezorov. Jeden je pracovný a druhý môj osobný. Fyzicky sú heslá uložené v samostatných súboroch, ale Enpass dokáže zobraziť položky zo všetkých trezorov na jednom mieste.
 
----
-
 ## Migrácia
-LastPass podporuje exportovanie položiek do jedného veľkého JSON súboru. Enpass by mal podporovať import takéhoto súboru, avšak neviem vám to povedať s istotou. Rozhodol som sa prejsť všetky svoje položky a zadať ich ručne. Mojím hlavným dôvodom bolo, že som mal skvelú príležitosť zrevidovať moje účty, aktualizovať heslá a odstrániť tie účty, ktoré nepoužívam. GDPR ["právo byť zabudnutý"][gdpr-forget] sa občas zíde.
+LastPass podporuje exportovanie položiek do jedného veľkého JSON súboru. Enpass by mal podporovať import takéhoto súboru, avšak neviem vám to povedať s istotou. Rozhodol som sa prejsť všetky svoje položky a zadať ich ručne. Mojím hlavným dôvodom bolo, že som mal skvelú príležitosť zrevidovať moje účty, aktualizovať heslá a odstrániť tie účty, ktoré nepoužívam. GDPR [„právo byť zabudnutý“][gdpr-forget] sa občas zíde.
 
 <div className="Image__Large">
   <img src="./images/password-app.jpg" alt="Heslo" />
   <figcaption>Zdroj: Gino Crescoli, Pixabay</figcaption>
 </div>
 
-Keď už som nainštaloval rozšírenie do prehliadača od Enpassu, migrácia prebiehala rýchlo. Hneď ako som sa prihlásil na webovú stránku s prístupovými údajmi z LastPassu, Enpass tieto údaje odchytil a ponúkol ich uloženie do jedného z lokálnych trezorov. Všetko, čo som musel spraviť, bolo prezrieť pridávanú položku a kliknúť na tlačidlo "Uložiť". Občas som opravil alebo pridal dodatočné informácie. Mnoho položiek v mojom LastPass trezore obsahovalo dodatočné poznámky ako zoznam kódov na obnovu.
+Keď už som nainštaloval rozšírenie do prehliadača od Enpassu, migrácia prebiehala rýchlo. Hneď ako som sa prihlásil na webovú stránku s prístupovými údajmi z LastPassu, Enpass tieto údaje odchytil a ponúkol ich uloženie do jedného z lokálnych trezorov. Všetko, čo som musel spraviť, bolo prezrieť pridávanú položku a kliknúť na tlačidlo „Uložiť.“ Občas som opravil alebo pridal dodatočné informácie. Mnoho položiek v mojom LastPass trezore obsahovalo dodatočné poznámky ako zoznam kódov na obnovu.
 
 Enpass vám umožňuje pridať vlastné polia. Definoval som si teda polia ako *Kódy na obnovu* a všetky kódy som zapísal na jeden riadok. Enpass má možnosť označiť polia ako citlivé, aby sa zabránilo náhodnému úniku informácie. Namiesto kódu vidíte bodky, ako pri oknách, kde zadávate heslá.
 
 Skvelou funkciou je podpora pre značky. Položke môžete priradiť viacero značiek, vďaka čomu ju veľmi jednoducho viete nájsť. Napríklad, môj [MailChimp][mailchimp] účet som označil ako *Nástroje na produktivitu*, *Blog*, *Podnikanie* a *Mailing list*. LastPass mal kategórie a položku ste mohli pridať len do jednej kategórie. Označovanie je oveľa lepšie.
 
 Migráciu som dokončil za niekoľko hodín. Keď som zmigroval všetky dáta, nakoniec som šiel do správy účtu LastPassu a požiadal o úplné odstránenie účtu.
-
----
 
 ## Záver
 Enpass je riešenie pre moje potreby! Jednoduchý, ale výkonný nástroj s doživotnou licenciou. Chýbajú mi funkcie ako podpora pre YubiKey, ale tie časom môžu pribudnúť. Keďže všetko beží lokálne na mojom počítači, silné hlavné heslo by malo na zaistenie bezpečnosti viac ako stačiť.
@@ -105,7 +99,7 @@ Pokojne mi napíšte do komentárov, aké riešenia používate na správu hesie
 [dashlane]: https://www.dashlane.com/
 [nextcloud]: https://nextcloud.com/
 [nextcloud-pass]: https://nextcloud.com/blog/password-managers-for-nextcloud/
-[webdav]: https://en.wikipedia.org/wiki/WebDAV
+[webdav]: https://cs.wikipedia.org/wiki/WebDAV
 [gdpr-forget]: https://gdpr-info.eu/art-17-gdpr/
 [authy]: https://authy.com/
 [mailchimp]: https://mailchimp.com/

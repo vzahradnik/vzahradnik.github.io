@@ -20,8 +20,6 @@ Linus talks about solutions like [OpenVPN][openvpn] and [IPSec][ipsec] like horr
 
 Before I explain how WireGuard works and tell you what I like about it, let's analyze existing solutions first.
 
----
-
 ## IPsec
 IPsec is a de-facto standard in the industry. Once you set the tunnel up, the performance is rather good. IPsec design and building blocks are entirely open and free to read through a set of RFCs. Written mostly by academia, it has a perfect separation of layers — for example, key exchange ([IKEv2][ike]) is separate from the secured data transmission ([ESP][esp]). As a downside, setting all these blocks is inherently complex. In Linux, solutions like [strongSwan][strongswan] make it a little bit easier, but I wouldn't say easy.
 
@@ -40,8 +38,6 @@ IPsec can work in two modes — site-to-site, where you interconnect two LANs, o
 - ❌ Difficult to debug
 
 In my case, I didn't have static IP addresses, but at least they were public. One end of the tunnel was in Bratislava, the other end was across the country in Chmiňany, and I was using Mikrotik routers on both ends. Change of dynamic IP was a problem. If you use a VPN like OpenVPN, you can specify a domain name instead of an IP address of your peer. Therefore, you can use dynamic DNS services, which are integrated into many consumer routers out-of-the-box. However, IPsec doesn't expect such a scenario, and you need to configure everything. I ended up writing a slightly complicated script that updated interface configs, firewall rules, and many other quirks. You can still find it in my [GitHub repo][mikrotik-ipsec-script]. This setup worked, and the performance was OK. But one day I changed my ISP, I didn't have a public IP anymore, and I had to find another solution which could connect two ends again. I ended up with OpenVPN, which was also supported on Mikrotik [RouterOS][routeros].
-
----
 
 ## OpenVPN
 This solution has a classic client-server architecture. You need to run an OpenVPN server on a router (or any device) exposed via a public IP address. The other end may be behind NAT with a private IP. So long as there's a way how the client can reach the server, OpenVPN works fine. Once the client initiates a session, NAT rules are dynamically applied along the way to keep the session open. To make sure the NAT rules stay applied, once in a time, the client sends a keepalive packet across the tunnel. If a dynamic IP address is changed, the VPN connection drops for a brief time. However, the client usually connects through a domain name, which gets updated to the new server IP, and the connection gets established.
@@ -63,8 +59,6 @@ Mikrotik uses a custom implementation of OpenVPN, which works only through TCP. 
 Albeit OpenVPN runs better over UDP, its performance is still weak. One of the main reasons is that in Linux, it's implemented as a userspace client. When OpenVPN generates a packet, it's copied several times until it lefts the hardware NIC interface. Also, OpenVPN doesn't work efficiently with multi-core CPUs.
 
 Configuring OpenVPN is more straightforward than setting up an IPsec. However, it's still rather difficult. People need to know how to generate OpenSSL keys, preferably with the [easy-rsa][easy-rsa] scripts shipped with the OpenVPN. Security in OpenVPN is also a concern. In the past, researchers found multiple vulnerabilities inside the OpenSSL library and in the core [OpenVPN library][openvpn-vulnerabilities] as well. The codebase is vast, which makes auditing and finding bugs more difficult.
-
----
 
 ## WireGuard
 In this place, I need to mention that IPsec and OpenVPN are rather old protocols. Over time, people found pitfalls in their designs, but it's not easy, sometimes not even possible, to fix principal design flaws. WireGuard authors were well aware of both IPsec and OpenVPN problems found in real-world scenarios and wrote the protocol to solve them.
@@ -319,8 +313,6 @@ WireGuard is supported on many platforms. Outside of Linux, you can use its app 
   <figcaption>WireGuard in LuCI webinterface</figcaption>
 </div>
 
----
-
 ## Throughput
 I use WireGuard for over two weeks now. I don't have exact throughput data because, due to the COVID-19 situation, the Internet is heavily utilized, and my speed varies during the day. However, I did some quick tests outside peak hours, and the results were awe-inspiring.
 
@@ -328,13 +320,11 @@ My Internet download speed on the peer in Chmiňany is close to 100 Mbps. The re
 
 These are rough data only for an illustration. If you want at least some benchmark, check out the paper where WireGuard authors compare WireGuard, IPsec, and OpenVPN. The difference between OpenVPN and WireGuard is enormous.
 
----
-
 ## Conclusion
 I believe WireGuard has a bright future, and I look forward to seeing improved support on existing platforms and devices, as well as added support on new ones. In the IPsec section, I briefly mentioned [ePDG][ePDG], which runs inside your mobile carrier's cloud to transport voice over IPsec. Even if the standard defines IPsec for the transport, I can imagine replacing it with WireGuard over time, and overall seeing WireGuard used in many applications where IPsec dominated for years.
 
 [//]: # (Used references)
-[rpi-as-a-home-router]: https://www.zahradnik.io/Raspberry-Pi-as-a-home-router
+[rpi-as-a-home-router]: https://www.zahradnik.io/raspberry-pi-as-a-home-router
 [rpi4-specs]: https://www.raspberrypi.org/products/raspberry-pi-4-model-b/
 [wireguard]: https://www.wireguard.com/
 [wg-whitepaper]: https://www.wireguard.com/papers/wireguard.pdf
