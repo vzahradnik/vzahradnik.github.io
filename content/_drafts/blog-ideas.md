@@ -2,6 +2,8 @@
 Ideas for future articles.
 
 ## Top priority posts
+- Cloudflare výpadok, centralizácia
+- [VPN, ktorá uchováva logy](https://www.zerohedge.com/technology/zero-logs-vpn-company-exposes-millions-user-logs)
 - Ako nahrať osobné stretnutie Toastmasters - mikrofón, fotoaparát...
 - Raspberry Pi a Controllino
 - Facebook - under-the-hood bugs
