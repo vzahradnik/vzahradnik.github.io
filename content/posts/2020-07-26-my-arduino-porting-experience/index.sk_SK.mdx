@@ -10,7 +10,7 @@ comments: true
 secret: true
 ---
 
-Portovanie softvéru na nové architektúry alebo platformy ma vždy lákalo. Predstavte si, že softvér, ktorý nebol pre vaše zariadenie napísaný, na ňom zrazu beží. Vždy som obdivoval ľudí, ktorí vyvíjajú emulátory pre staršie (ale aj nové konzoly), robia reverzné inžiniérstvo, prípadne napíšu softvér na konzolu bez prístupu k devkitu.
+Portovanie softvéru na nové architektúry alebo platformy ma vždy lákalo. Predstavte si, že softvér, ktorý nebol pre vaše zariadenie napísaný, na ňom zrazu beží. Vždy som obdivoval ľudí, ktorí vyvíjajú emulátory pre staršie (ale aj nové hracie konzoly), robia reverzné inžiniérstvo, prípadne napíšu softvér na konzolu bez prístupu k devkitu.
 
 ## Špecifiká Arduino platformy
 Moja práca bola o poznanie jednoduchšia, ale napriek tomu som sa veľa naučil. Mal som za úlohu rozbehať C-čkovskú knižnicu, ktorá bola písaná pre platformy Windows, Linux a macOS, na platforme Arduino. Autori knižnice spomínali, že portovanie na nové platformy, vrátane mikrokontrolérov, by nemalo byť zložité, avšak Arduino je dosť špecifické. Predovšetkým ide o to, že Arduino nepredstavuje len jednu čipovú architektúru. Je to framework, s ktorým sú kompatibilné viaceré vývojové dosky postavené na odlišných architektúrach — MIPS, ARM, RISC. Zároveň autori definovali v tomto frameworku základné funkcie, ktoré musíte vo vašich programoch použiť. Inak sa vám nepodarí ani vypísať do konzoly „Ahoj, svet.“ V neposlednom rade, tieto čipy sú relatívne málo výkonné, majú sotva 2 kB pamäte, ale zaujímavé sú pre nás preto, že umožňujú programovať aplikácie bežiace v reálnom čase.
@@ -18,24 +18,24 @@ Moja práca bola o poznanie jednoduchšia, ale napriek tomu som sa veľa naučil
 Mikrokontrolér nám vie garantovať, že sa kritická úloha bude pravidelne vykonávať, napríklad cez prerušenia. Raspberry Pi môže byť oveľa výkonnejšie, ale aplikácie vyžadujúce beh v reálnom čase dobre nepodporuje. O tom som sa presvedčil už keď sme na ňom robili [stopky pre hasičské súťaže][firefighter-stopwatch] a ukázalo sa, že RPi nie je schopné prijímať stabilný tok impulzov. Niektoré skrátka nezachytilo, pretože pod Linuxom práve bežala na zlomok sekundy iná úloha, a prepočet z impulzov na otáčky motora nám kolísal rádovo o plus/mínus 100 otáčok. Mikrokontrolér nemá nad sebou žiadny operačný systém, váš kód beží priamo na ňom. Preto máte oveľa väčšiu kontrolu, ako zabezpečiť beh kódu kritického na čas.
 
 ## Real-time operačné systémy
-Samozrejme, existujú aj real-time operačné systémy. Tie sú upravené na beh úloh kritických na čas, pričom programuje sa pre nich jednoduchšie. Máte viac pamäte, dospelejší systém, výkonnejší procesor a plnohodnotnú implementáciu jazyka C/C++, prípadne aj tých vysokoúrovňových ako Rust či Python/MicroPython. Pre Raspberry Pi som však nič aktuálne nenašiel. Vraj by na ňom mal bežať [FreeRTOS][free-rtos] od Amazonu, ale informácie sú ešte pre RPi2. Na najnovšom RPi4 teda nemám žiadnu záruku. Potom je tu projekt, ktorý ma osobne zaujíma už dlhšie, [Zephyr Project][zephyr]. Ten však Raspberry Pi nemá v zozname podporovaných platforiem. Takže to zhrniem, programovanie aplikácií pre real-time operačné systémy má zmysel preskúmať hlbšie a rozhodne sa na to v blízkej dobe pozriem.
+Samozrejme, existujú aj real-time operačné systémy. Tie sú upravené na beh úloh kritických na čas, pričom sa pre nich programuje jednoduchšie. Máte viac pamäte, dospelejší systém, výkonnejší procesor a plnohodnotnú implementáciu jazyka C/C++, prípadne aj iných ako Rust či Python/MicroPython. Pre Raspberry Pi som však nič aktuálne nenašiel. Vraj by na ňom mal bežať [FreeRTOS][free-rtos] od Amazonu, ale informácie sú ešte pre RPi2. Na najnovšom RPi4 teda nemám žiadnu záruku. Potom je tu projekt, ktorý ma osobne zaujíma už dlhšie, [Zephyr Project][zephyr]. Ten však Raspberry Pi nemá v zozname podporovaných platforiem. Takže to zhrniem, programovanie aplikácií pre real-time operačné systémy má zmysel preskúmať hlbšie a rozhodne sa na to v blízkej dobe pozriem.
 
 ## SimpleMotionV2
-Potrebujem rozbehať komunikáciu s driverom, ktorý ovláda servomotor. Je dôležité, aby komunikácia prebiehala veľmi rýchlo, niekoľko sto krát za sekundu, aby som vedel prečítať reálne údaje z motora a aby som stihol pohyb motora korigovať, ak vyhodnotím, že pohyb sa vychyľuje z normy. Používame driver [IONI][ioni-drive] od firmy Granite Devices. Komunikácia prebieha po zbernici RS485, pričom firma vyvinula vlastný komunikačný protokol, SimpleMotion. RS485 totiž definuje len fyzické parametre prenosovej linky a je na vás, ako budete informácie prenášať.
+Potrebujem rozbehať komunikáciu s driverom, ktorý ovláda servomotor. Je dôležité, aby komunikácia prebiehala veľmi rýchlo, niekoľko sto krát za sekundu. Potrebujem čítať reálne údaje z motora a korigovať pohyb motora, ak vyhodnotím, že pohyb sa vychyľuje z normy. V našom projekte používame driver [IONI][ioni-drive] od firmy Granite Devices. Komunikácia prebieha po zbernici RS485, pričom firma vyvinula vlastný komunikačný protokol, SimpleMotion. RS485 totiž definuje len fyzické parametre prenosovej linky a je na vás, ako budete informácie prenášať.
 
-Firma dáva k produktu IONI aj nástroj Granity, pomocou ktorého viete nastaviť parametre driveru. Avšak ten beží len na niektorých platformách a hlavne v našej aplikácii, kde potrebujeme čítať dáta v reálnom čase veľmi často, je nepoužiteľný. Šiel som teda viac do hĺbky. Knižnica pre protokol SimpleMotion je k dispozícii ako open-source na ich [GitHube][simplemotion-github].
+Firma dáva k produktu IONI aj nástroj [Granity][granity], pomocou ktorého viete nastaviť parametre driveru. Avšak ten beží len na niektorých platformách, a hlavne v našej aplikácii, kde potrebujeme čítať dáta v reálnom čase veľmi často, je nepoužiteľný. Šiel som teda viac do hĺbky. Knižnica pre protokol SimpleMotion je k dispozícii ako open-source na ich [GitHube][simplemotion-github].
 
 ## Skôr než začneme
-Kým začneme portovať knižnicu na novú platformu, potrebujeme dať dokopy čo najviac informácií. V mojom prípade som si naštudoval, ako funguje RS485 zbernica. Ďalej som si pozrel všetko, čo som našiel, k driveru IONI a preštudoval som si celú wiki k protokolu SimpleMotion. Nebolo toho však veľa. Informácie sú strohé a neúplné. Dozviete sa, že do driveru môžete zapisovať príkazy dávkovo do buffera a že si ich bude spúšťať sám, čím sa vyhnete potrebe realtime hardvéru, a druhou možnosťou je práve tá, že príkazy zapisujeme postupne a to veľmi rýchlo.
+Kým začneme portovať knižnicu na novú platformu, potrebujeme dať dokopy čo najviac informácií. V mojom prípade som si naštudoval, ako funguje RS485 zbernica. Ďalej som si pozrel všetko, čo som našiel, k driveru IONI a preštudoval som si celú wiki k protokolu SimpleMotion. Nebolo toho však veľa. Informácie sú strohé a neúplné. Dozviete sa, že do driveru môžete zapisovať príkazy dávkovo do buffera a že si ich bude spúšťať sám, čím sa vyhnete potrebe realtime hardvéru, a druhou možnosťou je práve tá, že príkazy zapisujeme priebežne a to veľmi rýchlo. Podľa wiki je horný limit až [nejakých 20 000 príkazov][simplemotion-port] za sekundu.
 
-Wiki sa odkazuje na zopár príkladov, ako takúto komunikáciu rozbehať. No musím hneď dodať, že už päť rokov tam nikto nič nepridal a u väčšiny existujúcich príkladov je komentár, že nič nerobia.
+Wiki sa odkazuje na zopár príkladov, ako takúto komunikáciu rozbehať. No musím hneď dodať, že už päť rokov ich nikto neaktualizoval a u väčšiny existujúcich príkladov je komentár, že nič nerobia.
 
 <div className="Image__Medium">
   <img src="./images/examples-not-implemented.png" alt="Nefungujúce príklady" />
   <figcaption>Nefungujúce príklady</figcaption>
 </div>
 
-Najlepší zdroj informácií mi paradoxne poskytol zdrojový kód knižnice, a to nie je bohvie čo. V jej repozitári som našiel podadresár `doc`, kde bol uvedený popis protokolu. Zjednodušene, potom, ako otvoríte RS485 linku, komunikujete so zariadeniami asymetricky v modeli master/slave. Váš počítač, respektíve mikrokontrolér, je master. Komunikuje s jedným, alebo viacerými slave zariadeniami. Všetky zariadenia sú pripojené na tú istú zbernicu a každé zariadenie má priradenú jedinečnú adresu uzla. Vy, ako master, viete parametre čítať alebo zapisovať. V oboch prípadoch potrebujete vedieť názov parametra a adresu uzla.
+Najlepší zdroj informácií mi paradoxne poskytol zdrojový kód knižnice, a to nie je bohvie čo. V jej repozitári som našiel podadresár `doc`, kde bol uvedený popis protokolu. Zjednodušene, potom, ako otvoríte RS485 linku, komunikujete so zariadeniami asymetricky podľa modelu master/slave. Váš počítač, respektíve mikrokontrolér, je master. Komunikuje s jedným, alebo viacerými slave zariadeniami. Všetky zariadenia sú pripojené na tú istú zbernicu a každé zariadenie má priradenú jedinečnú adresu uzla. Vy, ako master, viete parametre čítať alebo zapisovať. V oboch prípadoch potrebujete vedieť názov parametra a adresu uzla.
 
 Všetky parametre sú zadefinované na [wiki stránke][simplemotion-parameters] protokolu a takisto v [hlavičkovom súbore knižnice][simplemotion-parameters-source].
 
@@ -44,7 +44,7 @@ Súbor Readme nám dáva užitočné informácie k portovaniu. Uvádza zoznam po
 Pre účely tohto článku sem tieto poznatky uvediem. Neskôr sa na ne budem odvolávať.
 
 ### Nutné súbory
-- simplemotion.c/.h - Jadro celej knižnice. Definuje API, ktoré volajú používatelia z ich kódu, napríklad funkciu `smOpenBus( const char * devicename )`, ktorá inicializuje komunikáciu, alebo funkciu `smRead1Parameter( ... )`, ktorá prečíta zo slave zariadenia nejakú hodnotu
+- simplemotion.c/.h - Jadro celej knižnice. Definuje API, ktoré volajú používatelia z ich kódu, napríklad funkciu `smOpenBus( ... )`, ktorá inicializuje komunikáciu, alebo funkciu `smRead1Parameter( ... )`, ktorá prečíta zo slave zariadenia nejakú hodnotu
 - sm485.h - Definície príkazov pre komunikáciu po RS485
 - sm_consts.c - Predpočítané CRC tabuľky
 - simplemotion_defs.h - Parametre, ktoré môžeme poslať slave zariadeniam
@@ -52,7 +52,7 @@ Pre účely tohto článku sem tieto poznatky uvediem. Neskôr sa na ne budem od
 - busdevice.c/.h - Zabezpečuje komunikáciu po RS485 zbernici
 
 ### Nepovinné súbory
-- bufferedmotion.c/.h - Kód, ktorý pridáva možnosť posielať príkazy do driveru v dávkach. Driver si ich uloží do zásobníka a postupne ich vykoná
+- bufferedmotion.c/.h - Kód, ktorý pridáva možnosť posielať príkazy do driveru v dávkach. Driver si ich uloží do zásobníka a postupne ich vykonáva
 - devicedeployment.c/.h - Kód, ktorý umožňuje do driveru nahrať firmvér, prípadne poslať doňho nastavenia
 - súbory v priečinku drivers/ - Ovládače pre základné platformy, ktoré implementujú funkčnosť vyžadovanú kódom v `busdevice.h` a zjednodušujú zostavenie RS485 komunikácie
 
@@ -92,7 +92,7 @@ drivers/tcpip/tcpclient.c:255:16: warning: cast from pointer to integer of diffe
 ```
 
 ## Zostavenie knižnice na cieľovej platforme
-Toto by mal byť váš prvý cieľ. Očakáva sa, že knižnicu na novej platformu neskompilujete. Knižnica, ktorá by sa skompilovala bez akýchkoľvek úprav, je zrejme dosť jednoduchá. [Arduino IDE][arduino-ide], vývojové prostredie pre Arduino, nepoužíva žiadne Makefile súbory. Ak vytvoríte v Arduino IDE sketch (projektový súbor s príponou .ino), tento súbor [prejde niekoľkými fázami][arduino-sketch-build-process], kým sa zostaví. Najprv sa predspracuje a transformuje sa na plnohodnotný C++ kód. Arduino preprocesor doňho doplní chýbajúce `#include` riadky a zahrnie doňho obsah hlavičkových súborov, predovšetkým `Arduino.h`. Takisto automaticky vytvorí deklarácie funkcií, ktoré máte definované vo vašom projekte. Následne sa snaží dohľadať potrebné závislosti (knižnice) pre váš projekt, vybrať cieľovú architektúru podľa typu vývojovej dosky a v poslednom kroku všetky tieto informácie predá kompilátoru. Ten sa pokúsi kód zostaviť a ak uspeje, firmvér sa nahrá do mikrokontroléra.
+Toto by mal byť váš prvý cieľ. Očakáva sa, že knižnicu na novej platforme neskompilujete. Knižnica, ktorá by sa skompilovala bez akýchkoľvek úprav, je zrejme dosť jednoduchá. [Arduino IDE][arduino-ide], vývojové prostredie pre Arduino, nepoužíva žiadne Makefile súbory. Ak vytvoríte v Arduino IDE sketch (projektový súbor s príponou .ino), tento súbor [prejde niekoľkými fázami][arduino-sketch-build-process], kým sa zostaví. Najprv sa predspracuje a transformuje sa na plnohodnotný C++ kód. Arduino preprocesor doňho doplní chýbajúce `#include` riadky a zahrnie doňho obsah hlavičkových súborov, predovšetkým `Arduino.h`. Takisto automaticky vytvorí deklarácie funkcií, ktoré máte definované vo vašom projekte. Následne sa snaží dohľadať potrebné závislosti (knižnice) pre váš projekt, vybrať cieľovú architektúru podľa typu vývojovej dosky a v poslednom kroku všetky tieto informácie predá kompilátoru. Ten sa pokúsi kód zostaviť a ak uspeje, firmvér sa nahrá do mikrokontroléra.
 
 Z toho, ako funguje zostavovanie kódu na Arduino, vyplýva, že knižnicu nedokážeme zostaviť priamo. Potrebujeme vytvoriť nejaký jednoduchý sketch, ktorý bude volať funkciu z tejto knižnice. Môže to byť hocičo. Arduino IDE nájde v projekte závislosť na vašu knižnicu a pokúsi sa ju zostaviť. Pravdepodobne v tomto kroku zlyhá, tak ako u mňa.
 
@@ -142,7 +142,7 @@ Prekvapivo po tejto úprave sa knižnica zostavila. Rozhodne to však neznamená
 ...
 ```
 
-Prekvapilo ma, že tieto súbory pre moju architektúru našiel. Arduino framework tieto súbory neimplementuje, takže pravdepodobne budú súčasťou kompilátora [GCC pre architektúru AVR][avr-gcc], ktorú používam. Neskôr som túto domnienku aj potvrdil. Paralelne s Arduino IDE mám rozbehané aj [PlatformIO][platformio], ktoré si sťahuje závislosti, ako napríklad tento kompilátor, do adresára `.platformio/packages`. Priamo v ňom som našiel adresár `toolchain-atmelavr`, obsahujúci hlavičkové súbory poskytujúce kompilátorom, a tiež adresár `framework-arduino-avr`, poskytujúci hlavičkové súbory Arduino frameworku. Možnosť pozrieť si tieto súbory a hľadať v nich definície funkcií či C++ tried sa ukázala ako veľmi výhodná.
+Prekvapilo ma, že tieto súbory pre moju architektúru našiel. Arduino framework tieto súbory neimplementuje, takže pravdepodobne budú súčasťou kompilátora [GCC pre architektúru AVR][avr-gcc], ktorú používam. Neskôr som túto domnienku aj potvrdil. Paralelne s Arduino IDE mám rozbehané aj [PlatformIO][platformio], ktoré si sťahuje závislosti, ako napríklad tento kompilátor, do adresára `.platformio/packages`. Priamo v ňom som našiel adresár `toolchain-atmelavr`, obsahujúci hlavičkové súbory poskytované kompilátorom, a tiež adresár `framework-arduino-avr`, poskytujúci hlavičkové súbory Arduino frameworku. Možnosť pozrieť si tieto súbory a hľadať v nich definície funkcií či C++ tried sa ukázala ako veľmi výhodná.
 
 Môj kompilátor implementuje väčšinu štandardnej knižnice jazyka C, preto kompilácia prebehla. No v knižnici SimpleMotion sú aj volania, ktoré vyžadujú smerník na súbor a podobne. Prirodzene, na mikrokontroléri so súbormi pracovať nemôžeme. Kód sa síce zostaví, ale to neznamená, že aj funguje. V ďalšom kroku som sa rozhodol zmapovať, aké funkcie zo štandardnej knižnice C knižnica SimpleMotion vlastne volá. Vo všetkých súboroch som teda zakomentoval include riadky a pozoroval, na čom padne kompilácia. Kompilácia mi vygenerovala asi cez 2000 riadkov chýb, ale väčšina sa opakovala. Prehľadne som si zmapoval, aké funkcie knižnica používa a určil som tie, ktoré potrebujem nahradiť za nejaký funkčný Arduino variant.
 
@@ -182,7 +182,7 @@ Môj kompilátor implementuje väčšinu štandardnej knižnice jazyka C, preto 
 ...
 ```
 
-Už na prvý pohľad vidím, že so súbormi pracuje len kód na nahrávanie firmvéru do driverov, `devicedeployment.c`. Je to logické, odniekiaľ tie dáta potrebuje čítať. Táto funkčnosť však nie je kritická, je uvedená len ako voliteľná, a preto som ju zablokoval. Využil som na to direktívy preprocesora. Keď kompilujete knižnicu pre Arduino, niekde sa zadefinuje direktíva `ARDUINO`. Následne si môžem kontrolovať, či beží kód v tomto prostredí takto:
+Už na prvý pohľad vidím, že so súbormi pracuje len kód na nahrávanie firmvéru do driverov, `devicedeployment.c`. Je to logické, odniekiaľ tie dáta potrebuje čítať. Táto funkčnosť však nie je kritická, je uvedená len ako voliteľná, a preto som ju zablokoval. Využil som na to direktívy preprocesora. Keď kompilujete knižnicu pre Arduino, niekde sa zadefinuje flag `ARDUINO`. Následne si môžem kontrolovať, či beží kód v tomto prostredí. Robí sa to takto:
 ```c
 #ifdef ARDUINO
 // Veci špecifické pre Arduino
@@ -214,28 +214,23 @@ Na oba prípady sa teraz podrobne pozrieme.
 ## Komunikácia so zbernicou RS485 (busdevice.h)
 Tento modul je základom komunikácie s ostatnými zariadeniami protokolom SimpleMotion. Definuje štyri callback funkcie a ak ich implementujete pre vaše zariadenie, mala by komunikácia začať fungovať. Zvyšok kódu v `busdevice.h/.c` je už platformovo nezávislý. Tieto štyri funkcie zabezpečujú otvorenie a zatvorenie komunikačného kanála, čítanie dát zo zbernice a posielanie dát po zbernici. Je tam ešte jedna funkcia, ktorá slúži napríklad na to, že sa flushne RX/TX buffer.
 
-Autori tejto knižnice zároveň pripravili ovládače pre najbežnejšie platformy. Tie zabezpečia komunikáciu po RS485 cez sériovú linku, prípadne cez USB prevodník s čipom FTDI. Sú platformovo špecifické, fungujú pre Windows, Linux a macOS. Štandardne sú tieto ovládače zakázané a používateľ ich musí povoliť pri kompilácii flagom `ENABLE_BUILT_IN_DRIVERS`. V takom prípade si používateľ zavolá funkciu `smOpenBus( const char * devicename )`, kde jej zadá ako parameter názov portu (povedzme `/dev/ttyS0`). Kód sa postupne snaží volať jednotlivé ovládače a pokiaľ niektorý z nich nevráti chybu, komunikácia sa považuje za úspešnú. Tieto ovládače priamo v sebe implementujú tieto štyri základné funkcie konkrétne pre ich cieľovú architektúru.
+Autori tejto knižnice zároveň pripravili ovládače pre najbežnejšie platformy. Tie zabezpečia komunikáciu po RS485 cez sériovú linku, prípadne cez USB prevodník s čipom FTDI. Sú platformovo špecifické, fungujú pod Windowsom, Linuxom, aj macOS. Štandardne sú tieto ovládače zakázané a používateľ ich musí povoliť pri kompilácii flagom `ENABLE_BUILT_IN_DRIVERS`. V takom prípade si používateľ zavolá funkciu `smOpenBus( const char * devicename )`, kde jej zadá ako parameter názov portu (povedzme `/dev/ttyS0`). Kód sa postupne snaží volať jednotlivé ovládače a pokiaľ niektorý z nich nevráti pri inicializácii chybu, komunikácia sa považuje za úspešnú. Ovládače priamo v sebe implementujú tieto štyri základné callback funkcie.
 
-Alternatívou je implementovať tieto callback funkcie priamo vo vašom kóde. V takom prípade zavoláte vo vašom kóde funkciu `smOpenBusWithCallbacks( ... )`, ktorej definujete pomocou parametrov referencie na tieto callback funkcie. Aj keď je tento spôsob funkčný a úspešne som ho otestoval s mojím [Controllinom][controllino], keďže robíme Arduino knižnicu, môžeme si dovoliť začleniť kód na inicializáciu zbernice priamo do knižnice v podobe nového ovládača. Zatiaľ som implementoval jednoduchý ovládač pre priemyslové Controllino Maxi/Mega, ktoré práve používam.
+Alternatívou je implementovať tieto callback funkcie priamo vo vašom kóde. V takom prípade zavoláte vo vašom kóde funkciu `smOpenBusWithCallbacks( ... )`, ktorej definujete pomocou parametrov referencie na callback funkcie. Aj keď je tento spôsob funkčný a úspešne som ho otestoval s mojím [Controllinom][controllino], keďže robíme Arduino knižnicu, môžeme si dovoliť začleniť kód na inicializáciu zbernice priamo do knižnice v podobe nového ovládača. Zatiaľ som implementoval jednoduchý ovládač pre priemyslové Controllino Maxi/Mega, ktoré práve používam a tiež pre [ESP32 Grey od M5Stack][m5stack-grey].
 
-Ak sa nám doteraz knižnicu darilo úspešne skompilovať, po povolení flagu `ENABLE_BUILT_IN_DRIVERS` sa to zmení. Zrazu sa začnú kompilovať všetky ovládače z priečinka `drivers` a kým kompilátor poskytoval niektoré základné hlavičkové súbory štandardného C-čka, u ovládačov už narazíte. Pracujú napríklad so socketmi, majú volania na `pthread`, a tak ďalej. Najprv som skúšal upraviť kód pomocou `#ifdef ARDUINO #endif` blokov, len aby kód skompiloval. Ukázalo sa, že kód je už taký špecifický, že to nemá cenu. Nakoniec som spravil niečo podobné ako pri súbore `devicedeployment.h` vyššie. Zablokoval som všetok existujúci kód pre každý ovládač, no tentokrát som musel zachovať aspoň základnú implementáciu callbackov. Tie sa totiž volajú v knižnici a tá očakáva, že také funkcie existujú. Na Arduine sa funkcie úspešne zavolajú, ale vrátia pri inicializácii ovládača chybu. Inak je telo funkcií prázdne.
+Ak sa nám doteraz knižnicu darilo úspešne skompilovať, po povolení flagu `ENABLE_BUILT_IN_DRIVERS` sa to zmení. Zrazu sa začnú kompilovať všetky ovládače z priečinka `drivers` a kým kompilátor poskytoval niektoré základné hlavičkové súbory štandardného C-čka, u ovládačov už narazíte. Pracujú napríklad so socketmi, majú volania na `pthread`, a tak ďalej. Najprv som skúšal upraviť kód pomocou `#ifdef ARDUINO #endif` blokov, len aby kód skompiloval. Ukázalo sa, že kód je už taký špecifický, že to nemá cenu. Nakoniec som spravil niečo podobné ako pri súbore `devicedeployment.h` vyššie a zablokoval som všetok existujúci kód pre každý ovládač.
 
 ```c
-...
+#ifndef SM_D2XX_H
+#define SM_D2XX_H
+
 #ifndef ARDUINO
 // Original code
-#else
-// Dummy implementations for Arduino platform
-smBusdevicePointer serialPortOpen(const char * port_device_name, smint32 baudrate_bps, smbool *success)
-{
-    *success=smfalse;
-
-    return (smBusdevicePointer) NULL;
-}
-...
+#endif // ARDUINO
+#endif
 ```
 
-Po tejto úprave už kompilácia opäť bežala. Mohol som sa pustiť do vytvorenia ovládača pre RS485 komunikáciu pre Controllino. Ako som už napísal, základom je implementovať zopár funkcií, ktoré si knižnica zavolá. Controllino má ukážkový príklad pre RS485, komunikácia sa dá rozbehať na pár riadkoch kódu. Pre predstavu, takto jednoducho zabezpečím čítanie dát:
+Po tejto úprave už kompilácia opäť bežala. Mohol som sa pustiť do vytvorenia ovládača pre RS485 komunikáciu pre Controllino a ESP32 Grey. Ako som už napísal, základom je implementovať zopár funkcií, ktoré si knižnica zavolá. Obe dosky majú ukážkové príklady pre RS485 komunikáciu. Rozbehať zbernicu sa dá už pár riadkami kódu. Oba ovládače sú si veľmi podobné, fungovanie si vysvetlíme na ovládači pre Controllino. Pre predstavu, takto jednoducho zabezpečíme čítanie dát:
 
 ```cpp
 smint32 controllinoRs485PortRead(smBusdevicePointer busdevicePointer, smuint8 *buf, smint32 size)
@@ -271,7 +266,7 @@ if(smIsHandleOpen(handle)==smtrue)
 ...            }
 ```
 
-Všimnite si, že jedno volanie `fprintf(...)` som nahradil niekoľkými volaniami funkcie `print(...)`. Tá neumožňuje špecifikovať formát a spojiť viacero premenných do jedného reťazca. Rozmýšľal som, že by som jej alokoval zásobník, do ktorého by som zapisoval hotové reťazce pomocou funkcie `snprintf(...)`, nakoniec som sa však rozhodol šetriť pamäť. Nie je jej až tak veľa a rýchlosti by to tiež veľmi nepomohlo. Výpis na konzolu je veľmi pomalý a je skutočne vhodný len počas ladenia programu. V produkčnom programe kompiláciu výpisov zakážete odstránením direktívy `ENABLE_DEBUG_PRINTS`. To môžete spraviť aj priamo vo vašom Arduino sketchi, a to takto:
+Všimnite si, že jedno volanie `fprintf(...)` som nahradil niekoľkými volaniami funkcie `print(...)`. Tá neumožňuje špecifikovať formát a spojiť viacero premenných do jedného reťazca. Rozmýšľal som, že by som jej alokoval zásobník, do ktorého by som zapisoval hotové reťazce pomocou funkcie `snprintf(...)`, nakoniec som sa však rozhodol šetriť pamäť. Nie je jej až tak veľa a rýchlosti by to tiež veľmi nepomohlo. Výpis na konzolu je veľmi pomalý a je skutočne vhodný len počas ladenia programu. V produkčnom programe kompiláciu výpisov zakážete vymazaním flagu `ENABLE_DEBUG_PRINTS`. To môžete spraviť aj priamo vo vašom Arduino sketchi, a to takto:
 
 ```c
 #undef ENABLE_DEBUG_PRINTS
@@ -308,13 +303,13 @@ Myslel som si, že prípona súboru je nepodstatná a že Arduino automaticky po
          smDebug(handle,SMDebugLow,"Previous SM call failed and changed the SM_STATUS value obtainable with getCumulativeStatus(). Status before failure was %d, and new error flag valued %d has been now set.\n",(int)smBus[handle].cumulativeSmStatus,(int)stat);
 ```
 
-Tento problém som sa rozhodol vyriešiť tak, že všetok C++ kód pre Arduino som začlenil do samostatného modulu, ktorého API sa dá volať aj z C-čkovského kódu. Vytvoril som modul `arduino_helper.h/.c` a umiestnil som ho priamo k ovládaču pre Controllino. Celkovo sa moje zmeny v knižnici dosť sprehľadnili. Pôvodný súbor `simplemotion.c` má minimum zmien a všetko dôležité sa deje v tomto module.
+Konkrétne túto chybu som vyriešil tak, že som upravil deklaráciu funkcie, aby očakávala ako parameter reťazcovú konštantu `char const *`. Avšak povedal som si, že najlepšie bude, ak všetok Arduino C++ kód oddelím do samostatného modulu, ktorého API sa dá volať aj z C-čkovského kódu. Vytvoril som modul `arduino_helper.h/.cpp` a umiestnil som ho priamo k ovládačom pre Controllino a pre M5stack. Celkovo sa moje zmeny v knižnici dosť sprehľadnili. Pôvodný súbor `simplemotion.c` má minimum zmien a všetko dôležité sa deje v tomto module.
 
 ## Problémy s linkerom a kľúčové slovo extern
 Myslel som si, že viem, čo kľúčové slovo `extern` robí. Po hodinách ladenia som si však uvedomil, že moje vedomosti ani zďaleka nestačili. Teraz mu už však rozumiem dobre.
 
 Toto kľúčové slovo má tri významy:
-Prvý význam: Ak ho uvediete u premennej, sprístupníte ju aj ostatným modulom. Zvyčajne takéto premenné umiestníte do hlavičkového súboru, aby si ich mohli ľahko sprístupniť ostatné moduly.
+Prvý význam: Ak ho uvediete u premennej, sprístupníte ju aj ostatným modulom. Zvyčajne takéto premenné umiestníte do hlavičkového súboru, aby ich mali ostatné moduly jednoducho dostupné.
 
 Príklad:
 ```
@@ -339,7 +334,7 @@ void someFunction() {
 
 Štandardne sú premenné viditeľné len v tom module, kde ich zadefinujete. Týmto výrazom to zmeníte. V hlavnom C-čkovskom súbore už túto premennú priamo používame, a rovnako tak aj v iných moduloch, ktoré si tento hlavičkový súbor načítajú. Názov premennej musí byť v celej knižnici jedinečný, inak sa bude linker sťažovať.
 
-Druhý význam: Ak ho uvediete pri deklarácii funkcie, sprístupníte ju aj ostatným modulom. U funkcií platí, že `extern` je uvedený implicitne a nemusíte ho uvádzať. Aj tu platí, že názov funkcie musí byť v celej knižnici jedinečný. C-čko nepozná menné priestory.
+Druhý význam: Ak `extern` uvediete pri deklarácii funkcie, sprístupníte ju aj ostatným modulom. U funkcií platí, že `extern` je uvedený implicitne a nemusíte ho uvádzať. Aj tu však platí, že názov funkcie musí byť v celej knižnici jedinečný. C-čko nepozná menné priestory.
 
 Príklad:
 ```
@@ -364,7 +359,7 @@ void someFunction() {
 
 Tretí význam: `extern "C"` Tento príklad je pri interoperabilite C/C++ najdôležitejší. C++ kompilátor názvy funkcií [upravuje][extern-c]. Robí to preto, aby vedel rozlíšiť viacero funkcií, ktoré majú rovnaký názov, ale iné parametre (typické preťažovanie funkcií). Aby však bolo možné volať C++ funkcie z C-čkovského kódu (a opačne), týmto príkazom poviete kompilátoru, aby funkcie nepremenoval. Inými slovami, v knižnici môžete mať C++ kód v jednom module, C kód v iných moduloch, a napriek tomu spolu môžu komunikovať prostredníctvom funcií.
 
-V praxi sa tento blok pridáva cez direktívy preprocesora. Ak si hlavičkový súbor načíta modul napísaný v C++, vie, že funkcie majú názvy kompatibilné s C-čkovským kódom. A modul napísaný v C-čku direktívu extern vôbec neuvidí.
+V praxi sa tento blok pridáva cez direktívy preprocesora. Ak si hlavičkový súbor načíta modul napísaný v C++, vie, že funkcie majú mať názvy kompatibilné s C-čkovským kódom. A modul napísaný v C-čku direktívu extern vôbec neuvidí.
 
 ```c
 #ifndef SIMPLEMOTION_H
@@ -387,8 +382,40 @@ LIB int smDescribeStatus(char* str, size_t size, int32_t status);
 
 > Direktíva `__cplusplus` je definovaná len vtedy, ak sa súbor, ktorý hlavičku includuje, kompiluje v režime C++. V praxi to znamená, že musí mať koncovku `.h` alebo `.cpp`.
 
+## Externý kód nekompatibilný s C
+Keď som pridával podporu pre ESP32 dosky, na skompilovanie projektu som musel pridať do knižnice viacero hlavičkových súborov. Ukázalo sa, že po pridaní sa začne kompilátor sťažovať na chyby ako napríklad `neznámy typ s názvom class`. Zjavne kód knižnice pre ESP32 neobsahuje direktívu `extern "C"` a definuje v sebe triedy. Keď pridáte takéto hlavičkové súbory do knižnice, súbory v režime C sa nezostavia.
+
+```bash
+/home/vzahradnik/.platformio/packages/framework-arduinoespressif32/cores/esp32/Stream.h:38:13: error: expected '=', ',', ';', 'asm' or '__attribute__' before ':' token
+ class Stream: public Print
+             ^
+In file included from .pio/libdeps/m5stack-grey/SimpleMotionV2-Arduino/src/drivers/arduino/arduino_helper.h:22:0,
+                 from .pio/libdeps/m5stack-grey/SimpleMotionV2-Arduino/src/simplemotion.h:24,
+                 from .pio/libdeps/m5stack-grey/SimpleMotionV2-Arduino/src/simplemotion_private.h:8,
+                 from .pio/libdeps/m5stack-grey/SimpleMotionV2-Arduino/src/sm_consts.c:1:
+/home/vzahradnik/.platformio/packages/framework-arduinoespressif32/libraries/Wire/src/Wire.h:38:1: error: unknown type name 'class'
+ class TwoWire: public Stream
+```
+
+Riešenie tohto problému sa ukázalo byť jednoduché. Vedel som, že objektový kód sa môže zostaviť len v režime C++ a že chyby vznikajú len pri kompilácii súborov v režime C. Využil som direktívu, ktorá mi overí, v akom režime modul kompilujem. Tentokrát som však nepridal kľúčové slovo `extern "C"`, ale problematické hlavičkové súbory. Zostavovanie už prebehlo bez problémov.
+
+```cpp
+#ifdef __cplusplus
+#ifdef ESP32
+#include <Wire.h>
+#include <FS.h>
+#include <SPIFFS.h>
+#include <SD.h>
+#include <HTTPClient.h>
+#endif
+
+extern "C" {
+#endif
+...
+```
+
 ## Funkcie, ktoré majú ako parametre C++ objekty
-Ak máte niekde v kóde funkcie, ktoré očakávajú ako parameter smerník na objekt, takýto kód sa neskompiluje. Pre C-čkovské moduly je pojem trieda neznámy a vyhlásia pri tomto type chybu. Momentálne som problém obišiel tak, že som zadefinoval funkciu, ktorá očakáva smerník na blok `void` a neskôr v C++ kóde si tento smerník pretypujem na C++ objekt. Viem, že to nie je dokonalé, ale funguje to.
+Ak máte niekde v kóde funkcie, ktoré očakávajú ako parameter smerník na objekt, takýto kód sa neskompiluje. Ako som už ukázal, pre C-čkovské moduly je pojem trieda neznámy a kompilátor vyhlási pri tomto type chybu. Momentálne som problém obišiel tak, že som zadefinoval funkciu, ktorá očakáva smerník na blok `void` a neskôr v C++ kóde si tento smerník pretypujem na C++ objekt. Viem, že to nie je dokonalé, ale funguje to.
 
 Najprv som si zadefinoval cez typedef nový typ:
 ```c
@@ -405,7 +432,7 @@ V Arduino sketchi normálne pošlem odkaz na objekt `Serial`:
 smSetDebugOutput(SMDebugLow, &Serial);
 ```
 
-Ten sa pretypuje na `ArduinoSerial`, prelezie cez C-čkovský kód až do `arduino_helper` modulu, kde si ho pretypujem na smerník na objekt `Print`. Následne už môžem zapisovať na sériovú linku, ako som zvyknutý.
+Ten sa pretypuje na `ArduinoSerial`, prelezie cez C-čkovský kód až do `arduino_helper` modulu, kde si ho pretypujem na smerník na objekt `Print`. Následne už môžem zapisovať na sériovú linku tak, ako som zvyknutý.
 ```cpp
 /*
  * arduino_helper.cpp
@@ -422,8 +449,8 @@ void arduinoPrintMessage(const char* message) {
 #endif // DEBUG PRINTS
 ```
 
-## Makrá a upozornenia
-Aj keď mi kompilácia zbehne, všimol som si množstvo chýb v makrách. Analýzou som zistil, že makrá sa používajú len v troch funkciách určených prevažne na debugovanie. Odnastavením flagu `ENABLE_DEBUG_PRINTS` sa väčšiny upozornení zbavím. V tejto chvíli ešte neviem, či je to problém. To ukáže až ďalšie testovanie.
+## Bitové operácie, makrá a upozornenia
+Aj keď mi kompilácia zbehne, všimol som si množstvo chýb v makrách. Analýzou som zistil, že makrá sa používajú len v troch funkciách určených prevažne na debugovanie. Odnastavením flagu `ENABLE_DEBUG_PRINTS` sa väčšiny upozornení zbavím. Toto však nemôže byť trvalé riešenie.
 
 ```bash
 ...
@@ -436,10 +463,29 @@ pio/libdeps/uno/SimpleMotionV2-Arduino/src/simplemotion.cpp: In function 'int sm
 ...
 ```
 
+Po hlbšej analýze som našiel problém. Arduino dosky postavené na platforme AVR definujú veľkosť typ `int` 16 bajtov. To som potvrdil pre istotu tak, že som skompiloval jednoduchý sketch, kde bolo volanie `sizeof(int)`. Dostal som hodnotu 2 bajty, čiže 16 bitov. Knižnica SimpleMotion definuje bitové masky a u niektorých hodnôt prekračujeme rozsah 16 bitov. Problém sa nachádza na dvoch miestach — v súbore definícii `simplemotion_defs.h` a tiež v súbore, kde sa nachádza kód na výpočet CRC, `crc.c`.
+
+Za väčšinu upozornení bol zodpovedný jeden riadok:
+```bash
+#define BV(bit) (1<<(bit))
+```
+
+Chybu som upravil tak, že som namiesto typu int použil long, ktorý má na platforme AVR 4 bajty.
+```bash
+#ifdef __AVR__
+/* Int on Arduino AVR boards is only 2 bytes, which is not enough
+ * for all values defined here. We'll use long instead.
+ */
+#define BV(bit) (1L<<(bit))
+#else
+#define BV(bit) (1<<(bit))
+#endif
+```
+
+Prečo som nepoužil `#ifdef ARDUINO`? Nuž, Arduino framework beží na rôznych platformách. Ukázalo sa, že napríklad na platforme ESP32 upozornenia nedostávam, pretože typ int má dostatok bajtov. Preto je lepšie upraviť definíciu makra len pre tie platformy, kde je to nutné. Podobné úpravy som spravil aj v kóde na výpočet CRC. Knižnica sa už zostavuje bez chýb.
+
 ## Rozdiely v kompilácii medzi PlatformIO a Arduino IDE
 Už som spomenul viacero problémov s kompiláciou pod Arduino IDE. Ak však siahnete na alternatívy, u nich môžete naraziť na iné problémy. Vo všeobecnosti však ladím knižnicu tak, aby bežala pod PlatformIO IDE. Proces zostavovania je oveľa jasnejší a mám nad ním väčšiu kontrolu. Zároveň sa kompiluje všetok kód knižnice, nie len vybrané časti podľa toho, ako sa Arduino IDE rozhodne. Keď kompilujem pod PlatformIO, odpadá mi viacero problémov. Chybové výpisy sú oveľa prehľadnejšie. A hlavne, v takto skompilovanom projekte správne funguje aj výpis na sériovú linku. Niečo, čo zatiaľ v Arduino IDE poriešené nemám.
-
-U PlatformIO však narážam na iný problém. Driver IONI nemám u seba, ale je pripojený na jedno Raspberry Pi asi 500 kilometrov ďaleko. Mám naňom rozbehanú vzdialenú plochu cez VNC. Arduino IDE je na Raspberry Pi podporované, ale PlatformIO už nie. Najjednoduchšie riešenie mi príde skompilovať firmvér lokálne a nejako ho nahrať cez Raspberry Pi priamo na vývojovú dosku.
 
 <div className="Image__Medium">
   <img src="./images/platformio-successful-build.png" alt="Projekt v PlatformIO IDE" />
@@ -452,15 +498,12 @@ Už keď som začal na porte knižnice pre Arduino robiť, bolo mi jasné, že z
 - Je potrebné napísať príklady použitia do adresára `examples`
 - Je potrebné zadefinovať manifest knižnice s aktuálnym popisom
 - A je potrebné dať žiadosť o pridanie knižnice do oficiálnych repozitárov pre Arduino IDE a PlatformIO
-- Bolo by tiež vhodné nastaviť automatizované spúšťanie zostavy pre Arduino dosky cez Travis CI s využitím testovacieho frameworku [Arduino CI][arduino-ci]
+- Bolo by tiež vhodné nastaviť automatizované spúšťanie zostavy pre Arduino dosky cez [Travis CI][travis-ci] s využitím testovacieho frameworku [Arduino CI][arduino-ci]
 
-Fork som vytvoril pod organizáciou, s ktorou spolupracujem. Nájdete ho [tu][simplemotion-fork]. V tejto chvíli ešte neviem, do akej miery ho budem udržiavať. Rád by som však knižnicu odovzdal komunite dostatočne funkčnú, aby fungovala pod Arduino IDE aj PlatformIO. Keďže zatiaľ mám podporu hlavne pre Controllino, dal by sa implementovať aj ovládač pre Arduino RS485 rozširujúcu kartu (hat), prípadne nejaké ďalšie funkcie.
-
-## Ďalšie kroky
-V tejto chvíli viem, že základná inicializácia funguje. Ostáva skúsiť vymeniť si prvé správy s IONI driverom a ak to nebude fungovať, je potrebné zistiť prečo. Ďalej je potrebné upraviť manifest knižnice, aby obsahoval všetky aktuálne informácie o našom projekte, odstrániť chyby spojené s kompiláciou a verím, že knižnica bude dobre slúžiť.
+Fork som vytvoril pod organizáciou, s ktorou spolupracujem. Nájdete ho [tu][simplemotion-fork]. V tejto chvíli ešte neviem, do akej miery ho budem udržiavať. Rád by som však knižnicu odovzdal komunite dostatočne funkčnú, aby fungovala pod Arduino IDE aj PlatformIO. Keďže zatiaľ mám podporu hlavne pre Controllino a jednu dosku s čipom ESP32, rozhodne je možné pridať ovládače aj pre ďalšie dosky alebo rozširujúce moduly.
 
 ## Záver
-Tento projekt ma naučil jedno. Každý port je špecifický a vždy musíte vedieť, čo robíte. Som si istý, že niektoré problémy, na ktoré som narazil, by iných neprekvapili. Ja ako vývojár, ktorý programuje vo viacerých jazykoch, som rád, že som sa dokázal relatívne rýchlo adaptovať a úspešne projekt dokončiť. Moje znalosti sú opäť o niečo väčšie a verím, že sú prenositeľné aj na iné projekty, na ktorých budem v budúcnosti robiť.
+Tento projekt ma naučil jedno: každý port je špecifický a vždy musíte vedieť, čo robíte. Som si istý, že niektoré problémy, na ktoré som narazil, by iných neprekvapili. Ja ako vývojár, ktorý programuje vo viacerých jazykoch, som rád, že som sa dokázal relatívne rýchlo adaptovať a úspešne projekt dokončiť. Moje znalosti sú opäť o niečo väčšie a verím, že sú prenositeľné aj na iné projekty, na ktorých budem v budúcnosti robiť.
 
 Portovanie kódu bol pre mňa zaujímavý rébus. Úloha, ktorá nebola jednoduchá a zároveň som sa nemal ani veľmi koho pýtať. Hlavne pre krátkosť času. O to viac som na výsledok hrdý.
 
@@ -471,11 +514,13 @@ Máte skúsenosti s portovaním kódu? Pochváľte sa v komentári nižšie.
 [free-rtos]: https://freertos.org/
 [zephyr]: https://www.zephyrproject.org/
 [ioni-drive]: https://granitedevices.com/miniature-servo-drive-ioni/
+[granity]: https://granitedevices.com/wiki/Granity
 [simplemotion-github]: https://github.com/GraniteDevices/SimpleMotionV2
 [simplemotion-wiki]: https://granitedevices.com/wiki/SimpleMotion_V2
 [simplemotion-examples]: https://github.com/GraniteDevices/SimpleMotionV2Examples
 [simplemotion-parameters]: https://granitedevices.com/wiki/List_of_SimpleMotion_parameters
 [simplemotion-parameters-source]: https://github.com/GraniteDevices/SimpleMotionV2/blob/master/simplemotion_defs.h
+[simplemotion-port]: https://granitedevices.com/wiki/SimpleMotion_V2_port
 [travis-ci]: https://travis-ci.com/
 [arduino-ide]: https://www.arduino.cc/en/Main/Software
 [arduino-sketch-build-process]: https://arduino.github.io/arduino-cli/sketch-build-process/
@@ -486,3 +531,4 @@ Máte skúsenosti s portovaním kódu? Pochváľte sa v komentári nižšie.
 [arduino-ci]: https://github.com/ianfixes/arduino_ci
 [simplemotion-fork]: https://github.com/JSC-electronics/SimpleMotionV2-Arduino
 [controllino]: https://www.controllino.biz/
+[m5stack-grey]: https://m5stack.com/products/grey-development-core
