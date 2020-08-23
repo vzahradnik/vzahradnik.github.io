@@ -40,6 +40,8 @@ IPsec môže fungovať v dvoch režimoch — site-to-site, kde prepájate dve LA
 
 V mojom prípade som nemal statické IP adresy, ale aspoň boli verejné. Jeden koniec tunela bol v Bratislave a ten druhý na druhom konci krajiny, v Chmiňanoch. Na oboch koncoch som používal routre od Mikrotiku. Zmena dynamickej IP adresy bola problém. Ak používate VPN ako OpenVPN, môžete namiesto IP adresy vášho rovesníka (peer) zadať názov domény. Preto môžete použiť dynamické DNS služby, ktoré sú integrované v mnohých spotrebných routroch od výroby. Avšak IPsec takýto scenár neočakáva a musíte nastaviť všetko. Skončil som tak, že som si napísal trochu komplikovaný skript, ktorý aktualizoval konfiguráciu na rozhraniach, pravidlá firewallu a mnoho ďalších záludností. Stále ho môžete nájsť v mojom [repozitáre na GitHube][mikrotik-ipsec-script]. Takto mi IPsec fungoval a výkon bol v pohode. No jedného dňa som zmenil poskytovateľa Internetu, už som nemal verejnú IP adresu a musel som si nájsť iné riešenie, ako opäť prepojiť dva konce. Skončil som pri OpenVPN, ktorú Mikrotik [RouterOS][routeros] tiež podporoval.
 
+*Aktualizácia 23.8.2020: Mikrotik [vydal novú betaverziu][winbox-beta-wireguard] Router OS a medzi novými funkciami pribudla podpora pre WireGuard. Nepotrvá dlho a budete môcť WireGuard používať aj v stabilných verziách systému. Konfigurácia VPN cez nástroj WinBox by tak mala byť ešte o niečo jednoduchšia.*
+
 ## OpenVPN
 Toto riešenie má klasickú architektúru typu klient-server. OpenVPN server musíte spustiť na routri (alebo akomkoľvek zariadení), ktoré má dostupnú verejnú IP adresu. Druhý koniec môže byť za NATom s privátnou IP. Za predpokladu, že sa klient dokáže pripojiť k serveru, OpenVPN funguje bez problémov. Len čo klient iniciuje reláciu, po ceste sa dynamicky aplikujú NAT pravidlá, aby relácia ostala otvorená. Aby sme sa uistili, že NAT pravidlá zostanú aplikované, raz za čas klient pošle cez tunel tzv. keepalive paket. Keď sa dynamická IP adresa zmení, VPN spojenie sa na krátky čas preruší. Avšak klient sa zvyčajne pripája prostredníctvom názvu domény, ktorý je aktualizovaný na novú IP adresu servera, a preto sa spojenie znovu vytvorí.
 
@@ -344,3 +346,4 @@ Verím, že má WireGuard jasnú budúcnosť a teším sa na vylepšenú podporu
 [openvpn-vulnerabilities]: https://openvpn.net/security-advisories/
 [routeros]: https://mikrotik.com/software
 [luci]: https://openwrt.org/docs/guide-user/luci/luci.essentials
+[winbox-beta-wireguard]: https://forum.mikrotik.com/viewtopic.php?f=1&t=165248

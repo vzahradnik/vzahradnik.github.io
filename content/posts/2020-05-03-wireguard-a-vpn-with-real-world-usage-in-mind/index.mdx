@@ -39,6 +39,8 @@ IPsec can work in two modes — site-to-site, where you interconnect two LANs, o
 
 In my case, I didn't have static IP addresses, but at least they were public. One end of the tunnel was in Bratislava, the other end was across the country in Chmiňany, and I was using Mikrotik routers on both ends. Change of dynamic IP was a problem. If you use a VPN like OpenVPN, you can specify a domain name instead of an IP address of your peer. Therefore, you can use dynamic DNS services, which are integrated into many consumer routers out-of-the-box. However, IPsec doesn't expect such a scenario, and you need to configure everything. I ended up writing a slightly complicated script that updated interface configs, firewall rules, and many other quirks. You can still find it in my [GitHub repo][mikrotik-ipsec-script]. This setup worked, and the performance was OK. But one day I changed my ISP, I didn't have a public IP anymore, and I had to find another solution which could connect two ends again. I ended up with OpenVPN, which was also supported on Mikrotik [RouterOS][routeros].
 
+*Update 8/23/2020: Mikrotik [has released a new beta version][winbox-beta-wireguard] of Router OS. Among new features is WireGuard support. It won't take long, and you will be able to use WireGuard in stable versions of the system. VPN configuration via the WinBox tool should be even more straightforward.*
+
 ## OpenVPN
 This solution has a classic client-server architecture. You need to run an OpenVPN server on a router (or any device) exposed via a public IP address. The other end may be behind NAT with a private IP. So long as there's a way how the client can reach the server, OpenVPN works fine. Once the client initiates a session, NAT rules are dynamically applied along the way to keep the session open. To make sure the NAT rules stay applied, once in a time, the client sends a keepalive packet across the tunnel. If a dynamic IP address is changed, the VPN connection drops for a brief time. However, the client usually connects through a domain name, which gets updated to the new server IP, and the connection gets established.
 
@@ -343,3 +345,4 @@ I believe WireGuard has a bright future, and I look forward to seeing improved s
 [openvpn-vulnerabilities]: https://openvpn.net/security-advisories/
 [routeros]: https://mikrotik.com/software
 [luci]: https://openwrt.org/docs/guide-user/luci/luci.essentials
+[winbox-beta-wireguard]: https://forum.mikrotik.com/viewtopic.php?f=1&t=165248
