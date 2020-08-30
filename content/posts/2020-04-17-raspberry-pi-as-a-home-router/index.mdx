@@ -120,7 +120,84 @@ As a next step, it's a good practice to set up a password:
 passwd <your-new-password>
 ```
 
-To proceed further, we need to have Internet connectivity inside OpenWrt. In my case, I changed the Raspberry Pi IP address inside the `/etc/config/network` file. If you statically assign an IP from a range matching your LAN, you can hook up the Raspberry as a regular client behind your existing router. It makes further steps easier. There is no universal guideline; you're on your own.
+To proceed further, we need to have Internet connectivity inside OpenWrt. In my case, I changed the Raspberry Pi IP address inside the `/etc/config/network` file. If you statically assign an IP from a range matching your LAN, you can hook up the Raspberry as a regular client behind your existing router. It makes further steps easier.
+
+To edit the `network` file, you can use the pre-installed `vi` text editor. If you never used `vi` or `vim`, here's a brief overview. When you open a file, you're in a command mode. Use your arrow keys to move the cursor to the point you want to change. Then, press "i" to switch to the editing mode, in which you can write a text and delete an existing text using the `Delete` key. After you make your changes, press `Escape` to get back into the command mode, and store your file by typing `:wq <Enter>` (i.e., command: write and quit).
+
+Start editing the `network` file:
+
+```bash
+root@OpenWrt:~# vim /etc/config/network
+```
+
+Adjust the `wan` section to match your current LAN config, i.e., assign to RPi a static IP, which is not used in your network, set a proper default gateway address pointing to your current router, and set a DNS. Here's an example from my configuration:
+
+```bash
+config interface 'wan'                
+        option ifname 'eth1' 
+        option proto 'static'   
+        option ipaddr '192.168.0.2'   
+        option netmask '255.255.255.0'
+        option gateway '192.168.0.1'  
+        option ipv6 'auto'         
+        option peerdns '0'            
+        option dns '193.17.47.1 185.43.135.1'
+```
+
+After you write your changes, apply your new configuration by rebooting your RPi or typing the following command:
+
+```
+root@OpenWrt:~# /etc/init.d/network restart
+'radio0' is disabled
+```
+
+Now your RPi should be connected to the Internet, which you can confirm with the `ping` command. First, ping a well-known public IP address:
+
+```bash
+root@OpenWrt:~# ping 8.8.8.8
+PING 8.8.8.8 (8.8.8.8): 56 data bytes
+64 bytes from 8.8.8.8: seq=0 ttl=118 time=35.707 ms
+64 bytes from 8.8.8.8: seq=1 ttl=118 time=35.544 ms
+^C
+--- 8.8.8.8 ping statistics ---
+2 packets transmitted, 2 packets received, 0% packet loss
+```
+
+If this command worked, your RPi has a connection. Let's also verify your DNS name resolution works, and that you're able to connect to services using their domain names:
+
+```bash
+root@OpenWrt:~# ping www.google.com
+PING www.google.com (172.217.23.228): 56 data bytes
+64 bytes from 172.217.23.228: seq=0 ttl=118 time=33.452 ms
+64 bytes from 172.217.23.228: seq=1 ttl=118 time=33.279 ms
+^C
+--- www.google.com ping statistics ---
+2 packets transmitted, 2 packets received, 0% packet loss
+```
+
+When you have a working Internet connection, feel free to install any text editor, which suits you better than `vi`, or whatever package you need. I recommend `nano`. First, update your package list:
+
+```bash
+opkg update
+Downloading http://downloads.openwrt.org/snapshots/targets/bcm27xx/bcm2711/packages/Packages.gz
+...
+```
+
+And then install `nano`:
+
+```bash
+root@OpenWrt:~# opkg install nano
+Installing nano (5.2-1) to root...
+...
+```
+
+From now on, you can edit your files like so:
+
+```bash
+nano /etc/config/network
+```
+
+At this point, you should be ready to proceed with the next steps. If you get stuck somewhere, shoot me a comment below this post.
 
 ### Enabling USB-to-Ethernet adapter
 If you check your available interfaces, you'll most likely see only the internal `eth0` interface, even if your USB adapter is connected. In my case, I had to find out which chipset my adapter is using and install the appropriate kernel module.

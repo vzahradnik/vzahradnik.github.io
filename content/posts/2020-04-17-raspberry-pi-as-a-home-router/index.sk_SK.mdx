@@ -121,7 +121,84 @@ V ďalšom kroku je dobrým zvykom nastaviť si heslo:
 passwd <vaše-nové-heslo>
 ```
 
-Aby sme mohli pokračovať, potrebujeme v OpenWrt mať internetovú konektivitu. V mojom prípade som zmenil IP adresu Raspberry Pi v súbore `/etc/config/network`. Ak staticky priradíte IP adresu z rozsahu zodpovedajúcemu vašej LAN, môžete pripojiť vaše Raspberry ako obyčajného klienta za váš existujúci router. Ďalšie kroky si tým zjednodušíte. Neexistuje univerzálny postup, ten váš musíte nájsť vy sami.
+Aby sme mohli pokračovať, potrebujeme v OpenWrt mať internetovú konektivitu. V mojom prípade som zmenil IP adresu Raspberry Pi v súbore `/etc/config/network`. Ak staticky priradíte IP adresu z rozsahu zodpovedajúcemu vašej LAN, môžete pripojiť vaše Raspberry ako obyčajného klienta za váš existujúci router. Ďalšie kroky si tým zjednodušíte.
+
+Aby ste mohli upraviť súbor `network`, môžete použiť predinštalovaný textový editor `vi`. Pokiaľ ste `vi` alebo `vim` nikdy predtým nepoužívali, tu je stručný prehľad. Keď otvoríte súbor, nachádzate sa v príkazovom režime. Použite šípky na klávesnici na presunutie kurzoru na miesto, ktoré chcete zmeniť. Potom stlačte "i" na prepnutie do režimu úprav, v ktorom môžete písať text a mazať existujúci text pomocou klávesu `Delete`. Keď vaše zmeny dokončíte, stlačte `Escape` pre návrat späť do príkazového režimu, a uložte súbor napísaním `:wq <Enter>` (t.j. príkaz: zapísať a skončiť).
+
+Začnite upravovať súbor `network`:
+
+```bash
+root@OpenWrt:~# vim /etc/config/network
+```
+
+Upravte sekciu `wan`, aby zodpovedala vašej aktuálnej konfigurácii LAN, t.j. priraďte RPi statickú IP, ktorá sa vo vašej sieti nepoužíva, nastavte správnu adresu predvolenej brány, ktorá smeruje na váš aktuálny router, a nastavte DNS. Tu je príklad z mojej konfigurácie:
+
+```bash
+config interface 'wan'                
+        option ifname 'eth1' 
+        option proto 'static'   
+        option ipaddr '192.168.0.2'   
+        option netmask '255.255.255.0'
+        option gateway '192.168.0.1'  
+        option ipv6 'auto'         
+        option peerdns '0'            
+        option dns '193.17.47.1 185.43.135.1'
+```
+
+Keď vaše zmeny uložíte, aplikujte novú konfiguráciu buď tým, že reštartujete RPi alebo napísaním príkazu:
+
+```
+root@OpenWrt:~# /etc/init.d/network restart
+'radio0' is disabled
+```
+
+Teraz by malo byť vaše RPi pripojené k Internetu, čo viete potvrdiť príkazom `ping`. Najprv pingnite dobre známu verejnú IP adresu:
+
+```bash
+root@OpenWrt:~# ping 8.8.8.8
+PING 8.8.8.8 (8.8.8.8): 56 data bytes
+64 bytes from 8.8.8.8: seq=0 ttl=118 time=35.707 ms
+64 bytes from 8.8.8.8: seq=1 ttl=118 time=35.544 ms
+^C
+--- 8.8.8.8 ping statistics ---
+2 packets transmitted, 2 packets received, 0% packet loss
+```
+
+Pokiaľ tento príkaz fungoval, vaše RPi je pripojené. Overme tiež, že funguje preklad mien z DNS a že sa viete pripojiť k službám pomocou názvov ich domén:
+
+```bash
+root@OpenWrt:~# ping www.google.com
+PING www.google.com (172.217.23.228): 56 data bytes
+64 bytes from 172.217.23.228: seq=0 ttl=118 time=33.452 ms
+64 bytes from 172.217.23.228: seq=1 ttl=118 time=33.279 ms
+^C
+--- www.google.com ping statistics ---
+2 packets transmitted, 2 packets received, 0% packet loss
+```
+
+Potom čo už máte fungujúce internetové pripojenie, pokojne si nainštalujte ktorýkoľvek textový editor, ktorý vám vyhovuje viac ako `vi`, prípadne akýkoľvek balíček, ktorý potrebujete. Odporúčam `nano`. Najprv aktualizujte zoznam balíčkov:
+
+```bash
+opkg update
+Downloading http://downloads.openwrt.org/snapshots/targets/bcm27xx/bcm2711/packages/Packages.gz
+...
+```
+
+A potom nainštalujte `nano`:
+
+```bash
+root@OpenWrt:~# opkg install nano
+Installing nano (5.2-1) to root...
+...
+```
+
+Odteraz môžete súbory upravovať takto:
+
+```bash
+nano /etc/config/network
+```
+
+V tejto chvíli by ste mali byť pripravení pokračovať v ďalších krokoch. Pokiaľ sa na nejakom bode zaseknete, napíšte mi komentár pod týmto príspevkom.
 
 ### Rozbehanie adaptéra z USB na Ethernet
 Keď si pozriete vaše dostupné rozhrania, s najväčšou pravdepodobnosťou uvidíte iba interné rozhranie `eth0`, aj keď je váš USB adaptér pripojený. V mojom prípade som si musel zistiť, akú čipovú sadu môj adaptér používa, a nainštalovať príslušný modul jadra.
