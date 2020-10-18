@@ -18,7 +18,7 @@ import ArticleControls from "../sections/article/Article.Controls";
 import ArticlesNext from "../sections/article/Article.Next";
 import ArticleSEO from "../sections/article/Article.SEO";
 import ArticleShare from "../sections/article/Article.Share";
-
+import ArticleFooter from './article.footer.template';
 import Disqus from "gatsby-plugin-disqus";
 
 import { Template } from "@types";
@@ -48,7 +48,7 @@ const Article: Template = ({ pageContext, location }) => {
   const name = results.allSite.edges[0].node.siteMetadata.name;
   const siteUrl = results.allSite.edges[0].node.siteMetadata.siteUrl;
 
-  const { article, authors, mailchimp, next } = pageContext;
+  const { article, authors, next } = pageContext;
 
   const disqusConfig = {
     url: `${siteUrl + location.pathname}`,
@@ -105,7 +105,7 @@ const Article: Template = ({ pageContext, location }) => {
           <ArticleShare />
         </MDXRenderer>
       </ArticleBody>
-      {mailchimp && article.subscription && <Subscription />}
+      <ArticleFooter pageContext={pageContext} />
       <DisqusContainer>
         <Disqus config={disqusConfig} />
       </DisqusContainer>
@@ -208,23 +208,5 @@ const DisqusContainer = styled.div`
   ${mediaqueries.tablet`
     padding: 16px 8 8;
     text-align: center;
-  `}
-`;
-
-const Content = styled.div`
-  margin: 0 auto;
-  width: 100%;
-  max-width: 640px;
-
-  ${mediaqueries.tablet`
-    h3 {
-      padding: 0 50px;
-    }
-  `}
-
-  ${mediaqueries.phone`
-    h3 {
-      padding: 0 24px;
-    }
   `}
 `;

@@ -127,7 +127,7 @@ const HeroHeading = styled(Headings.h1)`
   `}
 `;
 
-const HeroSubheading = styled.div<>`
+const HeroSubheading = styled.div<{ }>`
   font-size: 23px;
   font-weight: normal;
   color: ${p => p.theme.colors.grey};
