@@ -24,6 +24,8 @@ Predtým, než vysvetlím, ako WireGuard funguje, a poviem vám, čo sa mi na ň
 ## IPsec
 IPsec je de-facto priemyselný štandard. Keď už rozbeháte tunel, výkon je, dá sa povedať, slušný. Návrh IPsec a jeho stavebné prvky sú úplne otvorené a môžete si ich bezplatne prečítať v kolekcii RFC dokumentov. Napísaný prevažne akademikmi, má dokonalé oddelenie vrstiev — napríklad, výmena kľúčov ([IKEv2][ike]) je oddelená od zabezpečeného dátového prenosu ([ESP][esp]). Nevýhodou je však to, že nastaviť tieto prvky je dosť zložité. V Linuxe to riešenia ako [strongSwan][strongswan] trochu uľahčujú, ale nepovedal by som, že nastaviť IPsec je jednoduché.
 
+> Poznámka (18.10.2020): V [diskusii pod anglickou verziou článku][post-english] niektorí čítatelia spomenuli, že protokol IKE prípadne IPsec som úplne nepochopil. Myslím si, že základné fungovanie protokolu chápem dostatočne dobre, avšak profesionálne sa sieťovým technológiám už pár rokov nevenujem. Pripúšťam, že niektoré veci, ktoré tu uvádzam, môžu byť neaktuálne alebo uvedené nesprávne. Na tom, že je IPsec zbytočne zložitý protokol však trvám aj naďalej. Ďakujem čitateľom za upozornenie.
+
 Na IPsec sa mi páči, že ESP obsah je možné priamo zabaliť za IP časťou paketu. Je to preto, že ESP je registrovaný ako jeden z [povolených protokolov][ip-protocols], ktoré môžete nastaviť vo vnútri poľa „Next Header“ v IP hlavičke. Ak vašu VPN nastavíte takto, znížite prevádzkovú réžiu. Avšak v dnešnom zaNATovanom svete, IPsec dáta sú väčšinou zapuzdrené vnútri UDP.
 
 IPsec môže fungovať v dvoch režimoch — site-to-site, kde prepájate dve LAN siete alebo v režime RoadWarrior, ktorý sa používa, keď chcete pripojiť vaše zariadenie do firemnej siete. RoadWarrior neumožňuje (pokiaľ viem) prepojenie celých LAN sietí. Osobne si myslím, že nikto takýto scenár nepredpokladal. Takže musíte použiť čistý site-to-site režim a ten má mnoho nevýhod.
@@ -347,3 +349,4 @@ Verím, že má WireGuard jasnú budúcnosť a teším sa na vylepšenú podporu
 [routeros]: https://mikrotik.com/software
 [luci]: https://openwrt.org/docs/guide-user/luci/luci.essentials
 [winbox-beta-wireguard]: https://forum.mikrotik.com/viewtopic.php?f=1&t=165248
+[post-english]: https://zahradnik.io/wireguard-a-vpn-with-real-world-usage-in-mind
