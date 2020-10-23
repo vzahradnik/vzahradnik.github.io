@@ -26,16 +26,16 @@ Potrebujem rozbehať komunikáciu s driverom, ktorý ovláda servomotor. Je dôl
 Firma dáva k produktu IONI aj nástroj [Granity][granity], pomocou ktorého viete nastaviť parametre driveru. Avšak ten beží len na niektorých platformách, a hlavne v našej aplikácii, kde potrebujeme čítať dáta v reálnom čase veľmi často, je nepoužiteľný. Šiel som teda viac do hĺbky. Knižnica pre protokol SimpleMotion je k dispozícii ako open-source na ich [GitHube][simplemotion-github].
 
 ## Skôr než začneme
-Kým začneme portovať knižnicu na novú platformu, potrebujeme dať dokopy čo najviac informácií. V mojom prípade som si naštudoval, ako funguje RS485 zbernica. Ďalej som si pozrel všetko, čo som našiel, k driveru IONI a preštudoval som si celú wiki k protokolu SimpleMotion. Nebolo toho však veľa. Informácie sú strohé a neúplné. Dozviete sa, že do driveru môžete zapisovať príkazy dávkovo do buffera a že si ich bude spúšťať sám, čím sa vyhnete potrebe realtime hardvéru, a druhou možnosťou je práve tá, že príkazy zapisujeme priebežne a to veľmi rýchlo. Podľa wiki je horný limit až [nejakých 20 000 príkazov][simplemotion-port] za sekundu.
+Kým začneme portovať knižnicu na novú platformu, potrebujeme dať dokopy čo najviac informácií. V mojom prípade som si naštudoval, ako funguje RS485 zbernica. Ďalej som si pozrel všetko, čo som našiel, k driveru IONI a preštudoval som si celú [wiki][simplemotion-wiki] k protokolu SimpleMotion. Nebolo toho však veľa. Informácie sú strohé a neúplné. Dozviete sa, že do driveru môžete zapisovať príkazy dávkovo do buffera a že si ich bude spúšťať sám, čím sa vyhnete potrebe realtime hardvéru, a druhou možnosťou je práve tá, že príkazy zapisujeme priebežne a to veľmi rýchlo. Podľa wiki je horný limit až [nejakých 20 000 príkazov][simplemotion-port] za sekundu.
 
-Wiki sa odkazuje na zopár príkladov, ako takúto komunikáciu rozbehať. No musím hneď dodať, že už päť rokov ich nikto neaktualizoval a u väčšiny existujúcich príkladov je komentár, že nič nerobia.
+Wiki sa odkazuje na zopár [príkladov][simplemotion-examples], ako takúto komunikáciu rozbehať. No musím hneď dodať, že už päť rokov ich nikto neaktualizoval a u väčšiny existujúcich príkladov je komentár, že nič nerobia.
 
 <div className="Image__Medium">
   <img src="./images/examples-not-implemented.png" alt="Nefungujúce príklady" />
   <figcaption>Nefungujúce príklady</figcaption>
 </div>
 
-Najlepší zdroj informácií mi paradoxne poskytol zdrojový kód knižnice, a to nie je bohvie čo. V jej repozitári som našiel podadresár `doc`, kde bol uvedený popis protokolu. Zjednodušene, potom, ako otvoríte RS485 linku, komunikujete so zariadeniami asymetricky podľa modelu master/slave. Váš počítač, respektíve mikrokontrolér, je master. Komunikuje s jedným, alebo viacerými slave zariadeniami. Všetky zariadenia sú pripojené na tú istú zbernicu a každé zariadenie má priradenú jedinečnú adresu uzla. Vy, ako master, viete parametre čítať alebo zapisovať. V oboch prípadoch potrebujete vedieť názov parametra a adresu uzla.
+Najlepší zdroj informácií mi paradoxne poskytol zdrojový kód knižnice, a to nie je bohvie čo. V jej repozitári som našiel podpriečinok `doc`, kde bol uvedený popis protokolu. Zjednodušene, potom, ako otvoríte RS485 linku, komunikujete so zariadeniami asymetricky podľa modelu master/slave. Váš počítač, respektíve mikrokontrolér, je master. Komunikuje s jedným, alebo viacerými slave zariadeniami. Všetky zariadenia sú pripojené na tú istú zbernicu a každé zariadenie má priradenú jedinečnú adresu uzla. Vy, ako master, viete parametre čítať alebo zapisovať. V oboch prípadoch potrebujete vedieť názov parametra a adresu uzla.
 
 Všetky parametre sú zadefinované na [wiki stránke][simplemotion-parameters] protokolu a takisto v [hlavičkovom súbore knižnice][simplemotion-parameters-source].
 
@@ -96,7 +96,7 @@ Toto by mal byť váš prvý cieľ. Očakáva sa, že knižnicu na novej platfor
 
 Z toho, ako funguje zostavovanie kódu na Arduino, vyplýva, že knižnicu nedokážeme zostaviť priamo. Potrebujeme vytvoriť nejaký jednoduchý sketch, ktorý bude volať funkciu z tejto knižnice. Môže to byť hocičo. Arduino IDE nájde v projekte závislosť na vašu knižnicu a pokúsi sa ju zostaviť. Pravdepodobne v tomto kroku zlyhá, tak ako u mňa.
 
-Knižnicu samozrejme ešte nemáte v registri Arduino knižníc. Arduino vám umožňuje nainštalovať cez IDE `.zip` archív s kódom knižnice, alebo si viete knižnicu nakopírovať sami. Arduino IDE hľadá knižnice v konkrétnych adresároch, v mojom prípade:
+Knižnicu samozrejme ešte nemáte v registri Arduino knižníc. Arduino vám umožňuje nainštalovať cez IDE `.zip` archív s kódom knižnice, alebo si viete knižnicu nakopírovať sami. Arduino IDE hľadá knižnice v konkrétnych priečinkoch, v mojom prípade:
 ```bash
 [vzahradnik@EliteBook ~]$ ls -la Arduino/libraries/
 total 4
@@ -108,7 +108,7 @@ drwxr-xr-x 1 vzahradnik vzahradnik 146 jul 26 11:16 SimpleMotionV2-Arduino
 [vzahradnik@EliteBook ~]$
 ```
 
-Je úplne jedno, ako pomenujete adresár s knižnicou. Arduino IDE hľadá hlavičkové súbory vo všetkých týchto adresároch.
+Je úplne jedno, ako pomenujete priečinok s knižnicou. Arduino IDE hľadá hlavičkové súbory vo všetkých týchto priečinkoch.
 
 Môj úplne prvý Arduino sketch vyzeral nejako takto:
 <div className="Image__Medium">
@@ -142,7 +142,7 @@ Prekvapivo po tejto úprave sa knižnica zostavila. Rozhodne to však neznamená
 ...
 ```
 
-Prekvapilo ma, že tieto súbory pre moju architektúru našiel. Arduino framework tieto súbory neimplementuje, takže pravdepodobne budú súčasťou kompilátora [GCC pre architektúru AVR][avr-gcc], ktorú používam. Neskôr som túto domnienku aj potvrdil. Paralelne s Arduino IDE mám rozbehané aj [PlatformIO][platformio], ktoré si sťahuje závislosti, ako napríklad tento kompilátor, do adresára `.platformio/packages`. Priamo v ňom som našiel adresár `toolchain-atmelavr`, obsahujúci hlavičkové súbory poskytované kompilátorom, a tiež adresár `framework-arduino-avr`, poskytujúci hlavičkové súbory Arduino frameworku. Možnosť pozrieť si tieto súbory a hľadať v nich definície funkcií či C++ tried sa ukázala ako veľmi výhodná.
+Prekvapilo ma, že tieto súbory pre moju architektúru našiel. Arduino framework tieto súbory neimplementuje, takže pravdepodobne budú súčasťou kompilátora [GCC pre architektúru AVR][avr-gcc], ktorú používam. Neskôr som túto domnienku aj potvrdil. Paralelne s Arduino IDE mám rozbehané aj [PlatformIO][platformio], ktoré si sťahuje závislosti, ako napríklad tento kompilátor, do priečinka `.platformio/packages`. Priamo v ňom som našiel priečinok `toolchain-atmelavr`, obsahujúci hlavičkové súbory poskytované kompilátorom, a tiež priečinok `framework-arduino-avr`, poskytujúci hlavičkové súbory Arduino frameworku. Možnosť pozrieť si tieto súbory a hľadať v nich definície funkcií či C++ tried sa ukázala ako veľmi výhodná.
 
 Môj kompilátor implementuje väčšinu štandardnej knižnice jazyka C, preto kompilácia prebehla. No v knižnici SimpleMotion sú aj volania, ktoré vyžadujú smerník na súbor a podobne. Prirodzene, na mikrokontroléri so súbormi pracovať nemôžeme. Kód sa síce zostaví, ale to neznamená, že aj funguje. V ďalšom kroku som sa rozhodol zmapovať, aké funkcie zo štandardnej knižnice C knižnica SimpleMotion vlastne volá. Vo všetkých súboroch som teda zakomentoval include riadky a pozoroval, na čom padne kompilácia. Kompilácia mi vygenerovala asi cez 2000 riadkov chýb, ale väčšina sa opakovala. Prehľadne som si zmapoval, aké funkcie knižnica používa a určil som tie, ktoré potrebujem nahradiť za nejaký funkčný Arduino variant.
 
@@ -284,7 +284,7 @@ Ten najčastejší bol problém linkera.
   <figcaption>Knižnica sa nezostaví</figcaption>
 </div>
 
-Tento problém som riešil aspoň hodinu. Súbory som v adresári mal a kód ich volal správne, tak prečo ich Arduino linker nevie nájsť? Asi to súvisí s ich [špecifikáciou knižníc][arduino-library-specification]. Kedysi sa kód Arduino knižníc ukladal priamo do koreňa repozitára. Keď nájde Arduino takto organizovaný kód, automaticky predpokladá, že všetky C-čkovské súbory sú v tej istej hierarchii, kód v podadresároch neskompiluje vôbec. Riešením bolo preorganizovať kód tak, aby zodpovedal novšej špecifikácii. Tá očakáva kód knižnice v adresári `src` a tiež definovaný manifest s popisom knižnice v koreni repozitára. Po týchto jednoduchých úpravách už kód kompiloval.
+Tento problém som riešil aspoň hodinu. Súbory som v priečinku mal a kód ich volal správne, tak prečo ich Arduino linker nevie nájsť? Asi to súvisí s ich [špecifikáciou knižníc][arduino-library-specification]. Kedysi sa kód Arduino knižníc ukladal priamo do koreňa repozitára. Keď nájde Arduino takto organizovaný kód, automaticky predpokladá, že všetky C-čkovské súbory sú v tej istej hierarchii, kód v podpriečinkoch neskompiluje vôbec. Riešením bolo preorganizovať kód tak, aby zodpovedal novšej špecifikácii. Tá očakáva kód knižnice v priečinku `src` a tiež definovaný manifest s popisom knižnice v koreni repozitára. Po týchto jednoduchých úpravách už kód kompiloval.
 
 ## Výpis na sériovú linku nefunguje
 Na tento problém som opäť narazil pri kompilácii projektu cez Arduino IDE. Keď skompilujem sketch a zahrniem doňho moju knižnicu, nefunguje výpis na sériovú linku. Dlho som skúmal, či nemám v kóde niečo, čo by narušilo základnú funkčnosť výpisu Arduino frameworku, ale nič som nenašiel. Predpokladám, že opäť len Arduino IDE niečo do kompilácie nezahrnulo. Rovnaký projekt som vyskúšal aj v prostredí [PlatformIO][platformio], kde výpis na sériovú linku funguje bezchybne. Osobne si myslím, že pri portovaní je dobré sa vyhnúť čo najviac problémom a preto odporúčam stabilné prostredie, kde máte zostavovanie viac pod kontrolou. Knižnicu by ste mali odladiť pre Arduino IDE až úplne na záver, keď už viete, že kód funguje.
@@ -463,14 +463,14 @@ pio/libdeps/uno/SimpleMotionV2-Arduino/src/simplemotion.cpp: In function 'int sm
 ...
 ```
 
-Po hlbšej analýze som našiel problém. Arduino dosky postavené na platforme AVR definujú veľkosť typ `int` 16 bajtov. To som potvrdil pre istotu tak, že som skompiloval jednoduchý sketch, kde bolo volanie `sizeof(int)`. Dostal som hodnotu 2 bajty, čiže 16 bitov. Knižnica SimpleMotion definuje bitové masky a u niektorých hodnôt prekračujeme rozsah 16 bitov. Problém sa nachádza na dvoch miestach — v súbore definícii `simplemotion_defs.h` a tiež v súbore, kde sa nachádza kód na výpočet CRC, `crc.c`.
+Po hlbšej analýze som našiel problém. Arduino dosky postavené na platforme AVR definujú veľkosť typu `int` 16 bitov. To som potvrdil pre istotu tak, že som skompiloval jednoduchý sketch, kde bolo volanie `sizeof(int)`. Dostal som hodnotu 2 bajty, čiže 16 bitov. Knižnica SimpleMotion definuje bitové masky a u niektorých hodnôt prekračujeme rozsah 16 bitov. Problém sa nachádza na dvoch miestach — v súbore definícii `simplemotion_defs.h` a tiež v súbore, kde sa nachádza kód na výpočet CRC, `crc.c`.
 
 Za väčšinu upozornení bol zodpovedný jeden riadok:
 ```bash
 #define BV(bit) (1<<(bit))
 ```
 
-Chybu som upravil tak, že som namiesto typu int použil long, ktorý má na platforme AVR 4 bajty.
+Chybu som upravil tak, že som namiesto typu `int` použil `long`, ktorý má na platforme AVR 4 bajty.
 ```bash
 #ifdef __AVR__
 /* Int on Arduino AVR boards is only 2 bytes, which is not enough
@@ -494,8 +494,8 @@ Už som spomenul viacero problémov s kompiláciou pod Arduino IDE. Ak však sia
 
 ## Hard fork
 Už keď som začal na porte knižnice pre Arduino robiť, bolo mi jasné, že zmeny nebude možné do upstreamu začleniť. Pridať riadky špecifické pre Arduino nestačí. Aby bola knižnica kompatibilná, je potrebné preusporiadať kód.
-- Všetok zdrojový kód musí ísť do podadresára `src`
-- Je potrebné napísať príklady použitia do adresára `examples`
+- Všetok zdrojový kód musí ísť do podpriečinka `src`
+- Je potrebné napísať príklady použitia do priečinka `examples`
 - Je potrebné zadefinovať manifest knižnice s aktuálnym popisom
 - A je potrebné dať žiadosť o pridanie knižnice do oficiálnych repozitárov pre Arduino IDE a PlatformIO
 - Bolo by tiež vhodné nastaviť automatizované spúšťanie zostavy pre Arduino dosky cez [Travis CI][travis-ci] s využitím testovacieho frameworku [Arduino CI][arduino-ci]
