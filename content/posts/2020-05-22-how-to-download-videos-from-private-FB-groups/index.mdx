@@ -91,6 +91,8 @@ Youtube-dl is a tool I sometimes use when I want to download a video from YouTub
 
 This application is written in Python and runs everywhere; I have it installed on my server just in case. While its main features are well documented, individual extractors like Facebook don't have any documentation besides its [source code][facebook-extractor]. The best way to test if youtube-dl can download a video is to try it out and see yourself.
 
+*Update 10/23/2020: youtube-dl source repository has been taken down after the [DMCA notice from RIAA][riaa]. The authors published [on their website][ytdl-website] latest source code archive and binaries; however, the future of this project is uncertain at the moment. I decided to create a repository mirror from its latest snapshot on my own git server. You can find the code [here][ytdl-mirror].*
+
 ### Downloading a protected FB video
 Under normal circumstances, youtube-dl works perfectly for downloading public videos. However, video from a private Facebook group is a different case. If you try to download it, youtube-dl eventually asks you for login credentials:
 
@@ -162,3 +164,6 @@ Please let me know your opinions in the comments.
 [mpeg-dash]: https://en.wikipedia.org/wiki/Dynamic_Adaptive_Streaming_over_HTTP
 [youtube-dl]: https://ytdl-org.github.io/youtube-dl/index.html
 [facebook-extractor]: https://github.com/ytdl-org/youtube-dl/blob/master/youtube_dl/extractor/facebook.py
+[riaa]: https://github.com/github/dmca/blob/master/2020/10/2020-10-23-RIAA.md
+[ytdl-website]: https://youtube-dl.org/
+[ytdl-mirror]: https://gitlab.darka.sk/vzahradnik/youtube-dl
