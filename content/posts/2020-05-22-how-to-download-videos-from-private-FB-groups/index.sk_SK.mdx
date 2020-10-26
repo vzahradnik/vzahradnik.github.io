@@ -92,6 +92,8 @@ Youtube-dl je nástroj, ktorý občas používam, keď si chcem stiahnuť z YouT
 
 Táto aplikácia je napísaná v Pythone a beží všade. Pre prípad ju mám nainštalovanú aj na svojom serveri. Zatiaľ čo sú hlavné funkcie dobre zdokumentované, individuálne extraktory ako Facebook nemajú žiadnu dokumentáciu okrem ich [zdrojového kódu][facebook-extractor]. Najlepší spôsob, ako otestovať, či dokáže youtube-dl stiahnuť video, je to jednoducho vyskúšať.
 
+*Aktualizácia 23.10.2020: zdrojový repozitár youtube-dl bol odstránený po [DMCA výzve od organizácie RIAA][riaa]. Autori [na ich webstránke][ytdl-website] zverejnili archív najnovšieho zdrojového kódu a binárky. Avšak v tejto chvíli je budúcnosť projektu neistá. Rozhodol som sa preto vytvoriť zrkadlo repozitára z jeho nedávnej zálohy na mojom vlastnom git serveri. Kód nájdete [tu][ytdl-mirror].*
+
 ### Stiahnutie chráneného FB videa
 Za normálnych okolností funguje youtube-dl perfektne na sťahovanie verejných videí. Avšak video zo súkromnej skupiny na Facebooku je iný prípad. Pokiaľ sa ho pokúsite stiahnuť, youtube-dl vás nakoniec požiada o prihlasovacie údaje:
 
@@ -163,3 +165,6 @@ Dajte mi, prosím, vedieť váš názor do komentára.
 [mpeg-dash]: https://en.wikipedia.org/wiki/Dynamic_Adaptive_Streaming_over_HTTP
 [youtube-dl]: https://ytdl-org.github.io/youtube-dl/index.html
 [facebook-extractor]: https://github.com/ytdl-org/youtube-dl/blob/master/youtube_dl/extractor/facebook.py
+[riaa]: https://github.com/github/dmca/blob/master/2020/10/2020-10-23-RIAA.md
+[ytdl-website]: https://youtube-dl.org/
+[ytdl-mirror]: https://gitlab.darka.sk/vzahradnik/youtube-dl
