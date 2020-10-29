@@ -311,7 +311,7 @@ This keyword has three meanings:
 First, if you specify it as a variable modifier, then you make this variable available to other modules. Usually, you place such variables in a header file so that other modules can easily access them.
 
 Example:
-```
+```c
 /* Header main.h */
 extern int variable;
 
@@ -320,14 +320,14 @@ extern int variable;
 #include "main.h"
 
 int main() {
-	variable = 0;
+    variable = 0;
 }
 
 /* Another module */
 #include "main.h"
 
 void someFunction() {
-	variable = 1;
+    variable = 1;
 }
 ```
 
@@ -336,7 +336,7 @@ By default, variables are visible only in the module where you define them. The 
 Second meaning: If you specify `extern` in function declaration, then you make this function available to other modules. For functions, the `extern` keyword is specified by default, and you do not need to explicitly specify it. Here too, however, the function name must be unique throughout the library. The C language does not recognize namespaces.
 
 Example:
-```
+```c
 /* Header main.h */
 extern int doSomeStuff();
 
@@ -345,14 +345,14 @@ extern int doSomeStuff();
 #include "main.h"
 
 int main() {
-	doSomeStuff();
+    doSomeStuff();
 }
 
 /* Another module */
 #include "main.h"
 
 void someFunction() {
-	doSomeStuff();
+    doSomeStuff();
 }
 ```
 
@@ -466,12 +466,12 @@ pio/libdeps/uno/SimpleMotionV2-Arduino/src/simplemotion.cpp: In function 'int sm
 After a deeper analysis, I found a problem. Arduino boards built on the AVR platform define the size of an `int` type as 16 bits. I confirmed this by compiling a simple sketch where I added the call to `sizeof(int)`. I got a value of 2 bytes, i.e., 16 bits. The SimpleMotion library defines bitmasks, and for some values, we exceed the range of 16 bits. The problem is located in two places — the definition file `simplemotion_defs.h` and the file where the code for calculating CRC is, `crc.c`.
 
 For most of the warnings, only a single line was responsible:
-```bash
+```c
 #define BV(bit) (1<<(bit))
 ```
 
 I fixed the error by using `long` instead of `int`, which has 4 bytes on the AVR platform.
-```bash
+```c
 #ifdef __AVR__
 /* Int on Arduino AVR boards is only 2 bytes, which is not enough
  * for all values defined here. We'll use long instead.

@@ -312,7 +312,7 @@ Toto kľúčové slovo má tri významy:
 Prvý význam: Ak ho uvediete u premennej, sprístupníte ju aj ostatným modulom. Zvyčajne takéto premenné umiestníte do hlavičkového súboru, aby ich mali ostatné moduly jednoducho dostupné.
 
 Príklad:
-```
+```c
 /* Hlavička main.h */
 extern int variable;
 
@@ -321,14 +321,14 @@ extern int variable;
 #include "main.h"
 
 int main() {
-	variable = 0;
+    variable = 0;
 }
 
 /* Ďalší modul */
 #include "main.h"
 
 void someFunction() {
-	variable = 1;
+    variable = 1;
 }
 ```
 
@@ -337,7 +337,7 @@ void someFunction() {
 Druhý význam: Ak `extern` uvediete pri deklarácii funkcie, sprístupníte ju aj ostatným modulom. U funkcií platí, že `extern` je uvedený implicitne a nemusíte ho uvádzať. Aj tu však platí, že názov funkcie musí byť v celej knižnici jedinečný. C-čko nepozná menné priestory.
 
 Príklad:
-```
+```c
 /* Hlavička main.h */
 extern int doSomeStuff();
 
@@ -346,14 +346,14 @@ extern int doSomeStuff();
 #include "main.h"
 
 int main() {
-	doSomeStuff();
+    doSomeStuff();
 }
 
 /* Ďalší modul */
 #include "main.h"
 
 void someFunction() {
-	doSomeStuff();
+    doSomeStuff();
 }
 ```
 
@@ -466,12 +466,12 @@ pio/libdeps/uno/SimpleMotionV2-Arduino/src/simplemotion.cpp: In function 'int sm
 Po hlbšej analýze som našiel problém. Arduino dosky postavené na platforme AVR definujú veľkosť typu `int` 16 bitov. To som potvrdil pre istotu tak, že som skompiloval jednoduchý sketch, kde bolo volanie `sizeof(int)`. Dostal som hodnotu 2 bajty, čiže 16 bitov. Knižnica SimpleMotion definuje bitové masky a u niektorých hodnôt prekračujeme rozsah 16 bitov. Problém sa nachádza na dvoch miestach — v súbore definícii `simplemotion_defs.h` a tiež v súbore, kde sa nachádza kód na výpočet CRC, `crc.c`.
 
 Za väčšinu upozornení bol zodpovedný jeden riadok:
-```bash
+```c
 #define BV(bit) (1<<(bit))
 ```
 
 Chybu som upravil tak, že som namiesto typu `int` použil `long`, ktorý má na platforme AVR 4 bajty.
-```bash
+```c
 #ifdef __AVR__
 /* Int on Arduino AVR boards is only 2 bytes, which is not enough
  * for all values defined here. We'll use long instead.
