@@ -288,6 +288,8 @@ Po reštarte môžete pristupovať k webovému rozhraniu vo vašom prehliadači 
 ## Záver
 V mojom prípade bol experiment s použitím Raspberry Pi ako môjho nového routra úspešný a rozhodol som sa spraviť z toho moje trvalé riešenie. Po dlhom čase mám OpenWrt s najnovšími opravami. Výkon mojej VPN je značne vyšší a to ešte nespomínam, že mi toto riešenie dáva 4 GB RAM a takmer 60 GB úložisko, čím získavam nové možnosti, ako prevádzkovanie vlastného proxy servera alebo nastavenie pravidiel vo firewalle, ktoré sú náročnejšie na výkon. Teší ma, že máme konečne vývojové dosky, ktoré sú schopné nahradiť sieťový hardvér. Takéto dosky možno výrazne ovplyvnia segment sieťových produktov pre domácnosti v nasledujúcich rokoch. Ak máte zvyšné Raspberry Pi, povzbudzujem vás k tomu, aby ste ho tiež skúsili použiť ako router. Je to zaujímavý zážitok.
 
+*Aktualizácia 1.11.2020: Nedávno Nadácia Raspberry Pi uviedla [nový výpočtový modul][rpi4-compute] postavený na Raspberry Pi 4. Ma rovnaký procesor a väčšinu funkcií RPi4, ale tiež ponúka veci navyše, hlavne port PCIe x1. Pred pár dňami som na Hacker News čítal [príspevok podobný tomu môjmu][rpi4-intel-nic]. Avšak namiesto použitia externého adaptéra z USB na Ethernet použil autor sieťovú kartu od Intelu. Dokázal dosiahnuť priepustnosť 3 Gbit/s, čo je maximum zbernice PCIe x1. Rozbehanie sieťovej karty nebolo vôbec zložité. Použil lacný adaptér na PCIe x16 a zo zdrojových kódov si zostavil ovládač. Myslím si, že stojí za to si to prečítač a je to slušná alternatíva k môjmu prístupu, ak chcete z vášho RPi vyžmýkať ešte viac výkonu.*
+
 [//]: # (Used references)
 [rpi4-specs]: https://www.raspberrypi.org/products/raspberry-pi-4-model-b/
 [openvpn]: https://openvpn.net/
@@ -311,3 +313,5 @@ V mojom prípade bol experiment s použitím Raspberry Pi ako môjho nového rou
 [openwrt-rpi4-snapshot]: https://downloads.openwrt.org/snapshots/targets/bcm27xx/bcm2711/
 [luci]: https://openwrt.org/docs/guide-user/luci/luci.essentials
 [nginx]: https://nginx.org/
+[rpi4-compute]: https://hackaday.com/2020/10/19/new-raspberry-pi-4-compute-module-so-long-so-dimm-hello-pcie/
+[rpi4-intel-nic]: https://www.jeffgeerling.com/blog/2020/5-gbps-ethernet-on-raspberry-pi-compute-module-4
