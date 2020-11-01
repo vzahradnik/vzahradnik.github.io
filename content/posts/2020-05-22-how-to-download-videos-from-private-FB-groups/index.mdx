@@ -58,27 +58,29 @@ https://m.facebook.com/vladimir.zahradnik1/videos/3175253852495827/
 
 Now you should see a Facebook page designed for mobile phones.
 
-<div className="Image__Medium">
-  <img src="./images/en/FB-mobile.png" alt="Facebook page for mobile phones" />
-  <figcaption>Facebook page for mobile phones</figcaption>
+*Update 11/01/2020: As one of the readers pointed out, the method presented here wasn't working anymore. Facebook has changed their webpage for mobile devices, and now it is using an internal web player to play the video; you can't right-click on the video to save it. I found a simple workaround. Today, I made a quick walkthrough; I picked a random Facebook video for this demonstration. The procedure for the videos in private groups should be the same. In this tutorial, I am using Firefox, but the procedure in Chrome should be very similar. The video below follows from the point of opening the mobile version of the web.*
+
+<div class="Image__Medium">
+  <YouTube videoId="groE04ridXE" />
+  <figcaption>Method #1, updated</figcaption>
 </div>
 
-### Step 3: Right-click on the video and save it
-Mobile version of the web points to a video file in its entirety; there are no chunks. Therefore downloading such a file is straightforward. The downside of this approach is that the downloaded video is low-quality. Still, I prefer to have at least something to watch than nothing at all.
+### Step 3: Open the Network tab from the Web Developer menu
+The mobile version of the web points to a video file in its entirety; it is not split into smaller chunks. The downside of this approach is that the downloaded video is low-quality. Still, I prefer to have at least something to watch than nothing at all. In my original method, you could right-click on the video file and then click on the `Save Link As...` menu item. This approach doesn't work anymore. Still, there's a way how to download the video.
 
-To download the video, right-click on it and then click on the `Save Link As...` menu item.
+Each webpage has some resources, which the browser needs to download. Your video is one of them. All these resources are visible in a Network tab of the Developer console. There are several ways how to access this tab:
+1. Click on the "hamburger" menu button in the top-right corner. Then, click on the `Web Developer` menu and select the `Network` subitem
+2. Hit Ctrl+Shift+E
+3. Right-click on the video, click on the `Inspect Element` menu item and then click on the `Network` tab
 
-<div className="Image__Medium">
-  <img src="./images/en/save-video-file.gif" alt="Save video" />
-  <figcaption>Save video</figcaption>
-</div>
+### Step 4: Hit F5 to refresh the webpage
+Refreshing your webpage is an optional step, but it guarantees that all webpage resources are re-downloaded, including your video. Just hit `F5`, and you should see how your browser downloads the resources.
 
-As an alternative, you can display the web page's full source code and search for an "mp4" text. You can save the video the same way as described above.
+### Step 5: Hit the Play button
+After you start playing the video, you should see the video resource appear in the Network tab. There's a `Media` filter you can use to see only the relevant files.
 
-<div className="Image__Medium">
-  <img src="./images/en/source-code-mp4.png" alt="Page source code with video URL" />
-  <figcaption>Page source code with video URL</figcaption>
-</div>
+### Step 6: Download the video
+Finally, you can right-click on the video resource and open it in a new tab. You have a direct link to the video file on this tab, and you can download your video after clicking on the `Save Link As...` menu item.
 
 ## Method #2: HD download
 Unlike the first method, the procedure I'm about to describe was not covered by anyone, despite much better results. It allows you to download videos in HD, preserving the highest quality possible.

@@ -59,27 +59,29 @@ https://m.facebook.com/vladimir.zahradnik1/videos/3175253852495827/
 
 Teraz by ste mali vidieť stránku na Facebooku navrhnutú pre mobilné telefóny.
 
-<div className="Image__Medium">
-  <img src="./images/sk/FB-mobile.png" alt="Stránka na Facebooku pre mobilné telefóny" />
-  <figcaption>Stránka na Facebooku pre mobilné telefóny</figcaption>
+*Aktualizácia 1.11.2020: Ako poukázala jedna moja čitateľka, metóda, ktorú som tu uviedol, už viac nefunguje. Facebook stránku pre mobilné zariadenia zmenil. Teraz používa na prehratie videa interný webový prehrávač. Už na video nemôžete kliknúť a uložiť si ho. Našiel som však jednoduchý spôsob, ako video stiahnuť. Dnes som spravil rýchly návod a na demonštráciu som si vybral náhodné video z Facebooku. Postup pre videá v súkromných skupinách by mal byť rovnaký. V tomto návode používam Firefox, ale postup v Chrome by mal byť veľmi podobný. Video nižšie pokračuje z bodu otvorenia mobilnej verzie webu.*
+
+<div class="Image__Medium">
+  <YouTube videoId="groE04ridXE" />
+  <figcaption>Prvý spôsob, aktualizovaný</figcaption>
 </div>
 
-### Tretí krok: Kliknite pravým tlačidlom na video a uložte ho
-Verzia webu pre mobily odkazuje na súbor videa, ktorý je už celistvý. Nie je rozdrobený na menšie kúsky. A preto je stiahnutie takéhoto súboru priamočiare. Nevýhodou tohto prístupu je, že je video stiahnuté v nízkej kvalite. Stále však radšej preferujem mať niečo, čo si môžem pozrieť, ako vôbec nič.
+### Tretí krok: Otvorte kartu Sieť z menu pre webových vývojárov
+Mobilná verzia webu ukazuje na video súbor v jeho celistvosti. Video nie je rozdelené na menšie úseky. Nevýhodou tohto prístupu je, že stiahnuté video je v nižšej kvalite. Avšak aj napriek tomu uprednostňujem mať aspoň niečo, ako vôbec nič. V mojom pôvodnej metóde ste si mohli stiahnuť video kliknutím na video a následne na položku v menu `Uložiť cieľ odkazu ako...`. Tento prístup už viac nefunguje. Avšak stále je tu spôsob, ako video stiahnuť.
 
-Aby ste si video stiahli, kliknite naňho pravým tlačidlom myši a potom kliknite na položku v menu `Uložiť cieľ odkazu ako...`.
+Každá webstránka má nejaké zdroje, ktoré si prehliadač potrebuje stiahnuť. Vaše video je jedným z nich. Všetky tieto zdroje sú viditeľné na karte Sieť vo vývojárskej konzole. Existuje niekoľko spôsobov, ako sa na túto kartu dostať:
+1. Kliknite na tlačidlo menu v pravom hornom rohu. Potom kliknite na menu  `Webový vývojár` a vyberte položku `Sieť`
+2. Stlačte Ctrl+Shift+E
+3. Kliknite pravým tlačidlom myši na video, kliknite na položku `Preskúmať prvok` a potom kliknite na kartu `Sieť`
 
-<div className="Image__Medium">
-  <img src="./images/sk/save-video-file.gif" alt="Uloženie videa" />
-  <figcaption>Uloženie videa</figcaption>
-</div>
+### Štvrtý krok: Stlačte F5 na obnovenie webstránky
+Obnovenie webstránky je voliteľný krok, ale zaručuje vám, že všetky zdroje webovej stránky sa znova stiahnu, vrátane vášho videa. Jednoducho stlačte `F5` a mali by ste vidieť ako prehliadač sťahuje zdroje.
 
-Ako alternatívu si môžete zobraziť celý zdrojový kód webovej stránky a hľadať v ňom text „mp4.“ Video si môžete uložiť rovnakým spôsobom, ako je popísaný vyššie.
+### Piaty krok: Stlačte tlačidlo Prehrať
+Potom, čo začnete prehrávať video, by ste mali vidieť vaše video na karte Sieť. Môžete použiť filter `Médiá` na zobrazenie iba relevantných súborov.
 
-<div className="Image__Medium">
-  <img src="./images/sk/source-code-mp4.png" alt="Zdrojový kód stránky s URL odkazom na video" />
-  <figcaption>Zdrojový kód stránky s URL odkazom na video</figcaption>
-</div>
+### Šiesty krok: Stiahnite si video
+Nakoniec kliknite pravým tlačidlom myši na zdroj videa a otvorte ho na novej karte. Na tejto karte máte priamy odkaz na súbor videa a môžete si ho stiahnuť po kliknutí na položku menu `Uložiť cieľ odkazu ako...`.
 
 ## Druhý spôsob: Stiahnutie v HD
 Na rozdiel od prvého spôsobu, spôsob, ktorý tu popíšem, ešte nikto nepokryl. A to napriek oveľa lepším výsledkom. Umožňuje vám stiahnuť si videá v HD, čím sa zachová tá najvyššia možná kvalita.
