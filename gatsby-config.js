@@ -3,9 +3,9 @@ module.exports = {
     title: `Vladimír Záhradník | Blog`,
     name: `Vladimír Záhradník`,
     siteUrl: `https://www.zahradnik.io`,
-    description: `A personal blog about technology and entrepreneurship.`,
+    description: `A personal blog about everything around us.`,
     hero: {
-      heading: `Welcome to my site about technology and entrepreneurship.`,
+      heading: `Welcome to my world. It's lovely to see you here!`,
       maxWidth: 652,
     },
     social: [
