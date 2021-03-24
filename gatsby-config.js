@@ -37,6 +37,14 @@ module.exports = {
         name: `instagram`,
         url: `https://www.instagram.com/vladimir.zahradnik`,
       },
+      {
+        name: `patreon`,
+        url: `https://www.patreon.com/vzahradnik`,
+      },
+      {
+        name: `paypal`,
+        url: `https://paypal.me/vzahradnik`,
+      },
     ],
   },
   plugins: [
