@@ -54,7 +54,6 @@ module.exports = {
         contentPosts: "content/posts",
         contentAuthors: "content/authors",
         basePath: "/",
-        mailchimp: false,
         authorsPage: true,
         sources: {
           local: true,
@@ -65,8 +64,8 @@ module.exports = {
     {
       resolve: "gatsby-plugin-manifest",
       options: {
-        name: `Novela by Narative`,
-        short_name: `Novela`,
+        name: `Vladimír Záhradník | Blog`,
+        short_name: `Vladimír Záhradník`,
         start_url: `/`,
         background_color: `#fff`,
         theme_color: `#fff`,
@@ -94,18 +93,6 @@ module.exports = {
         anonymizeIP: true,
         autoStartWithCookiesEnabled: false,
       },
-    },
-    {
-      resolve: "gatsby-plugin-mailchimp",
-      options: {
-        endpoint: 'https://zahradnik.us4.list-manage.com/subscribe/post?u=c838929e4f4a4860aaa982d2c&amp;id=ab314a0059',
-      },
-    },
-    {
-      resolve: "gatsby-plugin-disqus",
-      options: {
-        shortname: `zahradnik-io`
-      }
     },
     {
     	resolve: "gatsby-plugin-sitemap"

@@ -5,8 +5,7 @@
   "license": "MIT",
   "scripts": {
     "build": "gatsby build",
-    "serve": "gatsby serve",
-    "develop": "gatsby develop",
+    "dev": "gatsby develop",
     "clean": "gatsby clean"
   },
   "dependencies": {
@@ -14,8 +13,6 @@
     "gatsby": "^2.24.80",
     "gatsby-plugin-cookiehub-banner": "^0.1.0",
     "gatsby-plugin-google-analytics-gdpr": "^0.0.5",
-    "gatsby-plugin-disqus": "^1.2.2",
-    "gatsby-plugin-mailchimp": "^5.2.2",
     "gatsby-plugin-manifest": "^2.4.35",
     "gatsby-plugin-sitemap": "^2.4.17",
     "react": "^16.14.0",

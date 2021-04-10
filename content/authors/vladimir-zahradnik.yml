@@ -1,0 +1,20 @@
+name: Vladimír Záhradník
+bio: |
+  Hi, I'm Vladimír Záhradník — an IT guy, blogger, entrepreneur, a creative soul
+  from the bottom of my heart, and a music lover.
+
+  I believe in sharing information. That's why I regularly contribute to open-source,
+  write blogs, and shoot videos. If we help each other, we can build a better place
+  for everyone. Join me on my journey!
+avatar: ./avatars/vladimir-zahradnik.jpg
+social:
+  - url: https://github.com/vzahradnik
+  - url: https://medium.com/@vladimir.zahradnik
+  - url: https://www.youtube.com/channel/UCogZ6qxqKa_WIsw7NnU2IaA
+  - url: https://twitter.com/VladoZahradnik
+  - url: https://www.linkedin.com/in/vladimirzahradnik
+  - url: https://www.facebook.com/vzahradnik
+  - url: https://www.instagram.com/vladimir.zahradnik
+  - url: https://www.patreon.com/vzahradnik
+  - url: https://paypal.me/vzahradnik
+featured: true
