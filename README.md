@@ -1,4 +1,4 @@
 # zahradnik.io
-In this repository, I host the code for my personal blog. It's built using [GitHub Actions](https://github.com/features/actions) and hosted on [GitHub Pages](https://pages.github.com/).
+In this repository, I host the code for my personal blog.
 
-The website is built using [Gatsby](https://www.gatsbyjs.org/) with the [Novela](https://github.com/narative/gatsby-theme-novela) template from [Narative](https://www.narative.co).
+The website is built using [Gatsby](https://www.gatsbyjs.org/) with the [Novela](https://github.com/zahradnik-io/gatsby-theme-novela) template from [Narative](https://www.narative.co). As they recently discontinued this theme, I maintain my own fork.
