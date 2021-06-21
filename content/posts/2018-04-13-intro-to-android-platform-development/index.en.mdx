@@ -1,0 +1,227 @@
+---
+title: Android platform development
+excerpt: A gentle introduction to the world of embedded Android development
+author: Vladimír Záhradník
+date: 2018-04-13
+categories: android aosp development jsc
+hero: ./images/hero.jpg
+lang: en_US
+---
+
+Getting started with Android platform development can be intimidating at first. Albeit you can find some documentation on the [AOSP homepage][AOSP], it is by far not complete. And as soon as you try to add some features to the Android source code, once you look at the massive codebase, you may feel lost. If you start searching the net, you'll find blog posts, maybe similar to this one, scattered across the Internet. Many of them are outdated, but even so, provide vital information, which could at least guide you where to start looking.
+
+This article will try to explain terminology related to Android platform development. It won't be comprehensive, but I hope that it will provide a good starting point for your endeavors.
+
+# Android ecosystem and AOSP
+Let's start by defining what AOSP is and how it relates to the Android ecosystem. AOSP is an acronym for the [Android Open Source Project][AOSP]. This project contains source code for the Android stack, which Google made public to allow other users and companies to build their flavors of Android. Usually, it involves porting AOSP code to run on their embedded platform. At the time of writing, the latest version of AOSP is 8.1.0, codename [Oreo][android-oreo], see [Build Numbers][aosp-build-numbers]. You can build your flashable image, usually called [ROM][what-is-android-rom], which you can run on your device; however, you'll quickly discover that it lacks some features.
+
+- [Android Open Source Project (AOSP)][aosp]
+- [Google Apps][google-apps]
+- Vendor binaries and OEM apps
+
+Image with pure AOSP has limited functionality. If you build it for a phone, you can make phone calls with it. There's also a web browser for basic Internet browsing and few other apps. But you won't find any app store there. If you want to install a new app into such limited ROM, you can do this via [Android Debug Bridge][adb].
+
+```sh
+adb install application_name.apk
+```
+
+Or you can copy the application into SD card or internal storage, e.g., using [MTP][mtp], and install it by clicking on its file name in Android, which will show install dialog. Either way, you need to obtain the application in [APK][apk] format.
+
+## Differences between ROMs
+ROM acronym stands for read-only memory. In reality, it's a flashable binary file, and it's called ROM just because it's flashed into device disk partition, which your device usually mounts in read-only mode. Hence under normal circumstances, it is not possible to modify the content of this ROM.
+
+Perhaps you wondered in the past, how it is possible that some pre-installed applications cannot be uninstalled, but only disabled. The reason is they are stored in this ROM directly, which Android doesn't typically modify. If you do factory data reset, these applications will still be there.
+
+### Stock vs. custom ROM
+Stock ROM is an operating system pre-installed into a device by its manufacturer. Usually, when we talk about Android, it comes pre-installed with various OEM applications and customized Android UI. This bundle creates new operating systems based on AOSP. Opinions on these enhancements vary among users, but in general, most phone users don't care that much, and they use what is pre-installed. Usually, stock ROMs get online updates. Notable examples of such systems are [Emotion UI by Huawei][emui], [TouchWiz by Samsung][touchwiz], [Sense by HTC][sense], [MIUI by Xiaomi][miui], or Xperia UI by Sony. These AOSP-derived systems mostly don't have their changes published, and you can't include enhancements from these systems in your own Android ROM. [MIUI][miui] is an exception; you can find its source code on [GitHub][miui-source]. Stock ROM is often the most stable software you can run on your device because its manufacturer is directly responsible for development and testing.
+
+On the other hand, any person or community can make a custom ROM. It could be a modified stock ROM (in any way), or you can build it from scratch. For example, a stock ROM can be customized by removing pre-installed apps and adding others. You should always find a description of changes along with the downloadable file. Updating custom ROM to a newer version, if it's released, is performed almost in all cases manually by a user, but there are few exceptions.
+
+I already mentioned that custom ROM might not necessarily be Android-based. A good example is the recent port of [Sailfish OS for Xperia X][sailfish-os]. This phone was initially shipped with Android but can run a Linux-based system.
+
+### AOSP ROM
+When we talk about AOSP ROM, it's a custom ROM, which people make from AOSP source code with minimal changes. The look and feel of such a ROM are closest to what Google offers on its flagship phones like [Google Pixel 2][pixel].
+
+Often this ROM has AOSP in its name, and most of the time, it is released by an individual who owns the same phone or tablet as you. [Look here][nexus5-aosp8] to see the feature page for such a ROM.
+
+## Community Android distributions
+They are heavily based on the AOSP source code but have their changes implemented on top of it. Usually, all of their modifications are publicly available, for example on GitHub. Their look and feel are very similar to an AOSP ROM, but often these distributions have additional visual enhancements implemented on top of the AOSP code. Because these distributions are community-driven, as long as some developer still uses a phone like you, there is a good chance you'll have support for your phone long after your phone's manufacturer stopped publishing updates. The more popular your device is, the more extended support it usually gets. And you can always support the device by yourself, as people say, "make your hands dirty."
+
+Most notable community Android distributions are:
+- [Lineage OS][lineage-os], former [CyanogenMod][cyanogenmod]
+- [Android Open Kang Project][aokp]
+
+Lineage OS is, in my opinion, by far prevalent between the two. Its most significant advantage is support for a wide range of phones, tablets, and also a few Android TV boxes.
+
+## Vendors, OEMs, binary drivers, and OEM apps
+Maybe you think that vendor and OEM are the same, I thought so too. But they are different. A detailed explanation follows.
+
+### Vendor
+The vendor is a manufacturer of the chip or chips used inside your device. Usually, it's a highly integrated circuit, known as [SoC][system-on-a-chip]. Such SoCs contain CPU, memory, Bluetooth, WiFi and also have a separate circuitry that handles cellular connectivity, called [baseband processor][baseband-processor]. When Google releases a new major Android version, the vendor adopts the code to work correctly with his chips. Notable vendors are Qualcomm, Broadcom, MediaTek, and Intel.
+
+Vendor of an SoC provides reference Android implementation, based on AOSP, which can be adapted by OEM. This implementation also includes binary drivers for SoC components. Binary driver in this context means that OEM doesn't have access to the driver's source code.
+
+### OEM
+Original Equipment Manufacturer, or OEM, is your phone/tablet manufacturer. They pick an SoC on which they create a product — they'll design a case for it, choose a proper display and other components, and put all these pieces together to make a fully functioning product. OEM is a customer of a vendor.
+
+In some cases, OEM may also be a vendor for some components. A typical example is Sony, which uses cameras developed by their division. In such cases, Sony provides drivers and the necessary code to make the cameras work.
+
+OEM does all the component integration, and testing, AOSP customization, and usually also bundles their OEM apps into the system. They could add capabilities to the system, introduce alternative app stores, or just provide alternatives to some apps from Google.
+
+If you want to know more, look at [this article from Sony][android-update-roll-out].
+
+## Android kernel
+Android kernel is based on a vanilla Linux kernel, into which Android developers added patches to support their [specific functionality][embedded-android]:
+- Wake locks
+- Low-memory killer
+- Binder IPC driver
+- Anonymous shared memory (ashmem)
+- Alarm driver
+- Logger
+
+Throughout the time, most of these extensions were made more generic and merged into vanilla Linux, but you need to turn them on in the kernel configuration; and various drivers are still only in [Linux Staging tree][linux-staging].
+
+To build the Linux kernel with the support for [Android][androized-kernel] you just need to add necessary configs into the Linux build configuration:
+
+```sh
+CONFIG_ASHMEM=y
+CONFIG_STAGING=y
+CONFIG_ANDROID=y
+CONFIG_ANDROID_BINDER_IPC=y
+CONFIG_ANDROID_LOGGER=y
+CONFIG_ANDROID_RAM_CONSOLE=y
+CONFIG_ANDROID_LOW_MEMORY_KILLER=y
+```
+
+Vanilla kernel, even with Android-enabled extensions, won't most likely boot on your device. Therefore, SoC vendors usually provide modified kernel sources based on vanilla code. Later, these sources are used by OEMs to customize the kernel for their devices. Because the Linux kernel has a [GPLv2][linux-license] license, vendor and OEM changes should be available for anyone who requests them. Usually, modified kernel sources are on OEM's GitHub, like [this repo for Xperia devices][xperia-kernel]. Some OEMs ignore licenses and don't provide the modified kernel for their devices. Therefore it's always a good practice to do some research before you buy a phone.
+
+Most of the time, you won't need to compile the kernel from source, and you just use one built for stock ROM, which should work just fine if your ROM and stock ROM match with the same major Android version. However, if you want to embed additional functionality into the kernel, for example, to enable IPv6 support, you'll need to build it from sources.
+
+## Linaro
+Linaro is an organization, which among other things, assists its members with platform enablement and maintains patched Androidized kernel, which closely follows the Linux master tree. Vendors and subsequently, OEMs often derive their device kernels from the Linaro tree. Among the [members][linaro-members] are Google, Qualcomm, Samsung, and many others.
+
+## Baseband processor and certification
+In the era of feature phones, the baseband processor was the only processor in the phone. It handled cellular connectivity, Bluetooth, phone display, user interaction, and many other things.
+
+Smartphones still use this baseband processor, but it's used only as a modem, which connects to the cellular network. Main SoC handles all the interactive features like user interaction and display, and the baseband processor handles mobile connectivity. The baseband processor has its operating system, which is closed-source, and OEMs probably use it as a black box. The integration of this processor into the main SoC varies. One way how they communicate is through an internal serial link, which is available to the host system on `/dev/ttySx` interface, where `x` is some number. If you're familiar with AT commands for old dial-up modems, this interface will be familiar to you.
+
+For example, to dial a phone number, enter dial command:
+```sh
+atd<phone_number>
+```
+
+As a good AT command resource, look into [this document][gsm-at-commands].
+
+### Why a separate baseband processor?
+Only the vendors can answer the question; I'm only guessing in this case, but I think that one of the main reasons is certification with [FCC][fcc] in the USA and other similar organizations elsewhere.
+
+A device that connects into the cellular network has to work according to standards, especially those defined by [3GPP][3gpp]. Imagine a rogue phone that the operator allows in its mobile network. This phone will generate invalid requests or responses. We want to avoid such situations; each device needs to meet specific standards.
+
+In the case of a baseband processor, it gets certified for the hardware design and software implementation. Every time the software changes, this processor needs to be re-certified. By keeping the baseband processor as a separate unit used only as a modem, software for main SoC, i.e., Android, can be updated without requiring such a thorough re-certification. It doesn't mean that nobody tests the update. It's just not that much complex and time-consuming process. Remember, OEMs want to provide updates with security fixes in a timeframe of months, not years. And this solution allows it.
+
+If you're more interested in this subject, check out [this great article][gsm-phone-anatomy].
+
+## Android Compatibility Program
+When I discussed various ROM types, I also mentioned that OEMs could add various non-standard features into AOSP, customize the look and feel, but also change behavior. To some extent, it is desirable, as it allows the OEM to stand-out among others, and their system derived from AOSP may be one of the reasons why users buy phones from them.
+
+From the side of Google, however, they need to keep a close eye on how much the product derives from standard behavior. Therefore if OEM wants to bring a product, which can officially include all standard Google apps, such a product must pass the [Android Compatibility Program][android-compatibility].
+
+<div className="Image__Medium">
+  <img src="./images/cts-overview.png" alt="Android CTS" />
+  <figcaption>Android Compatibility Test Suite</figcaption>
+</div>
+
+The android-compatible device should:
+- Comply with the [Android Compatibility Definition Document (CDD)][android-cdd]. The CDD enumerates the software and hardware requirements of a compatible Android device.
+- Pass the [Compatibility Test Suite (CTS)][android-cts]. Use the CTS as an ongoing aid in evaluating compatibility during the development process.
+
+### Community ROMs
+Community Android distributions, derived from AOSP, do not adhere to this compatibility program and can't distribute Google apps officially. It's up to the user to get these apps somewhere on the Internet and install them.
+
+## Diverging from Android compatibility
+Sometimes it may be desirable for OEM to deviate from Android compatibility. They don't need Google apps because they build their products for other purposes.
+
+Imagine building a remote terminal, which will have a touch screen, few hardware buttons, and custom applications to control central heating and other IoT devices in your household. You can build such a device on any development platform, like Raspberry Pi. Thanks to AOSP openness, you can unleash your imagination. For example, you can extend the Android Framework and SDK to add new functionality.
+
+## Google Apps
+Google Mobile Services (GMS) are Google applications and services, which are not part of an AOSP. Google provides these applications to its partners, which pass the [Android Compatibility program][android-compatibility] and have the license to use such apps. They are often called [Google Apps][google-apps] in the community.
+
+All trusted Google partners might include these apps to their ROMs. This suite contains a YouTube app, Google Music, and, most importantly, [Google Play][google-play], which allows installing other applications from the official store.
+
+### The Open GApps Project
+Community ROMs do not pass Google's compatibility program and, therefore, do not contain any Google app. Users who want to use Google apps and services need to obtain these apps somewhere else and install them separately.
+
+In the past, you could find these apps scattered across the Internet. However, you usually saw the download links in the description of the custom ROM.
+
+Nowadays, the primary source of these apps is [The Open Gapps Project][google-apps]. It stores Google Apps APKs for different major AOSP revisions and different CPU architectures. Users extracted the binaries from official images of various OEMs. If you miss an app for your platform, it's because nobody provided it yet. Check out their [GitHub repository][opengapps-github] and consider contributing if you have APKs not present there.
+
+Downloading the proper GApps package is very easy and can be accomplished in three steps.
+
+First, select a platform supported by your device and your ROM. Nowadays, ARM64 (or ARMv8-A) is used almost on all newer phones. If you're not sure, search for phone specs or ask in the forums.
+
+In the next step, you have to pick the main Android version for which you want to download the package. Android 8 uses different apps than Android 6.
+
+Finally, you pick the GApps variant. Stock contains all the apps included on Google Nexus/Pixel devices but also takes more space than the mini or nano variant. If your device has a smaller internal memory, just install a nano or pico package. It contains just the necessary apps to get Play Store working, and then you can download only the apps you want.
+
+GApps contains an installation script, which installs the apps into a read-only system partition on the device.
+
+### Google restrictions for non-certified devices
+In 2018 Google started applying [restrictions][gapps-restrictions] to non-certified devices. It means you are no longer able to access Google Play if the model of your device is not white-listed. However, Google acknowledges custom ROMs and provides a way how to white-list your specific device. If you run an official ROM of let's say a Huawei device, well, tough luck!
+
+<div className="Image__Small">
+  <img src="./images/gplay-uncertified.jpg" alt="GApps Uncertified" />
+  <figcaption>'Device not certified' error message</figcaption>
+</div>
+
+### Alternatives to Google Apps
+Some users don't necessarily require Google applications, or they just don't want to use Google services at all. Instead, they prefer free software wherever possible. Usually, you can accomplish this by installing an alternative store called [F-Droid][f-droid].
+
+Besides F-Droid, there are other alternative stores like the [Amazon App Store][amazon-app-store], which manages Amazon itself. It can be installed as the only store or beside Google's store. All Amazon FireTV devices use this store. Underneath, they all use customized Android, after all.
+
+## Conclusion
+I hope that this article sheds some light on the whole Android ecosystem. If you want to find out more, check out the [XDA-Developers][xda-developers] website, which is very popular amongst platform developers and provides essential information, which often isn't anywhere else to find.
+
+If you found this article helpful or you have suggestions on how to improve this article, please let me know in the comments. Thanks!
+
+[//]: # (Used references)
+[what-is-android-rom]: http://droidlessons.com/what-are-roms-for-android/
+[xda-developers]: https://www.xda-developers.com/
+[android-oreo]: https://en.wikipedia.org/wiki/Android_Oreo
+[aosp]: https://source.android.com/
+[aosp-build-numbers]: https://source.android.com/source/build-numbers
+[google-apps]: http://opengapps.org/
+[f-droid]: https://f-droid.org/
+[android-compatibility]: https://source.android.com/compatibility/
+[adb]: https://developer.android.com/studio/command-line/adb.html
+[mtp]: https://en.wikipedia.org/wiki/Media_Transfer_Protocol
+[apk]: https://en.wikipedia.org/wiki/Android_application_package
+[sailfish-os]: https://jolla.com/sailfishx/
+[emui]: https://en.wikipedia.org/wiki/Huawei#EMUI
+[touchwiz]: https://en.wikipedia.org/wiki/TouchWiz
+[miui]: https://en.wikipedia.org/wiki/MIUI
+[miui-source]: https://github.com/MiCode/patchrom_miui
+[sense]: https://en.wikipedia.org/wiki/HTC_Sense
+[pixel]: https://www.gsmarena.com/google_pixel_2-8733.php
+[nexus5-aosp8]: https://forum.xda-developers.com/google-nexus-5/orig-development/aosp-oreo-8-0-0-nexus-5-t3664033
+[lineage-os]: https://lineageos.org/
+[cyanogenmod]: https://en.wikipedia.org/wiki/CyanogenMod
+[aokp]: http://aokp.co/
+[google-play]: https://play.google.com/store
+[opengapps-github]:https://github.com/opengapps/opengapps
+[amazon-app-store]: https://www.amazon.com/mobile-apps
+[system-on-a-chip]: https://en.wikipedia.org/wiki/System_on_a_chip
+[baseband-processor]: https://en.wikipedia.org/wiki/Baseband_processor
+[android-update-roll-out]: https://www.xda-developers.com/how-android-software-update-sony/
+[embedded-android]: https://www.amazon.com/Embedded-Android-Porting-Extending-Customizing/dp/1449308295
+[linux-staging]: https://lwn.net/Articles/324279/
+[androized-kernel]: https://www.linaro.org/blog/android-blog/androidization-of-linux-kernel/
+[linux-license]: https://github.com/torvalds/linux/blob/master/COPYING
+[xperia-kernel]: https://github.com/sonyxperiadev/kernel
+[linaro-members]: https://www.linaro.org/members/
+[gsm-at-commands]: http://www.zeeman.de/wp-content/uploads/2007/09/ubinetics-at-command-set.pdf
+[fcc]: https://en.wikipedia.org/wiki/Federal_Communications_Commission
+[3gpp]: https://en.wikipedia.org/wiki/3GPP
+[gsm-phone-anatomy]: ftp://ftp.freecalypso.org/pub/GSM/gsm_phone_anatomy.pdf
+[android-cdd]: https://source.android.com/compatibility/android-cdd.html
+[android-cts]: https://source.android.com/compatibility/cts/
+[gapps-restrictions]: https://www.xda-developers.com/how-to-fix-device-not-certified-by-google-error/
