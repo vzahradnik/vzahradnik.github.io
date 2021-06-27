@@ -1,0 +1,97 @@
+---
+title: A laptop powered by your phone — Meet NexDock
+excerpt: I dream of using my phone instead of laptop. NexDock is the first step to achieve my dream.
+author: Vladimír Záhradník
+date: 2021-06-26
+categories: convergence nexdock ubports continuum lumia950 pine64
+hero: ./images/hero.jpg
+lang: en_US
+---
+
+I have a dream — a long-lasting dream to use my mobile phone as a Linux laptop. So wherever I go, I can just plug my phone into a dock, and have all my work with me all the time. I don't want to use multiple devices. With projects like [UBPorts][ubports], my dream is slowly becoming a reality, but there's still a long way ahead of us. Today, I'll show you [NexDock][nexdock], which is a laptop powered by a smartphone or Raspberry Pi.
+
+## Pursuit of convergence
+Companies like Microsoft and Canonical worked on [convergence][convergence] for a long time. So when you plug your phone to a big screen, the user interface will transform itself into a desktop.
+
+In 2015, I bought Lumia 950. It was a phone from Microsoft, which had a dock into which you could plug your external display, keyboard, and mouse, and which offered desktop-like Windows experience with some limitations.
+
+<div className="Image__Large">
+  <img src="./images/lumia950-dock.jpg" alt="Lumia 950" />
+  <figcaption>Lumia 950 connected to a dock</figcaption>
+</div>
+
+It was a step in the right direction, but the experience was not very good. Canonical, the creator of the Ubuntu linux distribution, had a similar vision. They wanted to adapt Ubuntu to mobile phones, and to turn them into fully-usable computers when connected to dock.
+
+<div className="Image__Large">
+  <img src="./images/pine64-ubports.jpg" alt="Pine64" />
+  <figcaption>Ubuntu Touch running on my Pine Phone</figcaption>
+</div>
+
+Ultimately, they abandoned the idea, but the project still lives thanks to the community and the folks from UBPorts. And there are other groups with similar effort, like [Plasma Mobile][plasma-mobile].
+
+In 2018, 3-years later after Lumia 950 was released, Samsung came with their solution called [DeX][samsung-dex]. For the original version, you had to buy custom accessories; later a simple USB-C to HDMI adapter was enough. For quite some time, Samsung even provided a way how to run Linux on your phones. Sadly, their solution was abandoned in October 2019.
+
+Samsung DeX might be a viable solution, but it is bound only to Samsung devices. But nowadays, all modern Android smartphones are capable of HDMI output through their USB-C ports. Android 10 came with a [hidden desktop mode][android-desktop-mode], which introduced this desktop experience to a handful of non-Samsung phones. Back in the day, this mode was highly experimental. You could turn it on only through Developer options. But this mode is getting some care, and over time more and more upcoming mobile devices will offer decent support for it out-of-the-box.
+
+And here we come to NexDock. It's just a display with a keyboard, touchpad, and its own battery. All this is packed in an aluminum chasis reminding of ultrabook laptops. Sadly, my phone, OnePlus 6T, doesn't support HDMI output, so I have no experience with this desktop mode. Someone would think NexDock serves me as a paperweight, but they are wrong. NexDock supports also Raspberry Pi minicomputers, which I have plenty. Let me show you how it all works.
+
+## Meet NexDock
+I bought a model called NexDock Touch. It's currently sold-out, but you can pre-order [NexDock 360][nexdock-360]. NexDock resembles ultrabooks in many ways. On the left side, you can find a couple of USB-C ports, and one input HDMI port. You can use that when your device can't send image over USB.
+
+<div className="Image__Medium">
+  <img src="./images/nexdock-ports-left.jpg" alt="NexDock ports" />
+  <figcaption>NexDock Touch ports on left side</figcaption>
+</div>
+
+On the right side is a single USB-A port and a headphone jack. I was pleasantly surprised by a keyboard, which has a nice grip, and its keys are quite big.
+
+<div className="Image__Medium">
+  <img src="./images/nexdock-keyboard.jpg" alt="NexDock keyboard" />
+  <figcaption>NexDock Touch keyboard</figcaption>
+</div>
+
+Part of the accessories is a power charger, necessary cables and adapters. All you really need to hook up your device.
+
+The connection varies based on the device you have. NexDock gives you a nice brochure. Also, on their website you can find the list of all [supported devices][nexdock-support]. You need to connect Raspberry Pi 4 [using two cables][nexdock-rpi4], while one of them is a special Y-splitter. However, if you add one line into the configuration file, you can use a standard USB-C cable instead of this splitter. Just edit the `/boot/config.txt` file. When you're familiar with Raspberry Pi minicomputers, you know your way around.
+
+```
+# USB Type-C Host
+dtoverlay=dwc2,dr_mode=host
+```
+As you might know, the Raspberry Pi 4 has microHDMI output, so you also need an adapter to full-sized HDMI. It is also included in the accessories.
+
+On the Raspberry Pi, I installed the latest [Raspberry Pi OS][raspberry-pi-os]. Ubuntu will work also good, even [Windows 10 for ARM][rpi-win10] should work just fine. I didn't test it though.
+
+At the moment, I use NexDock primarily as a portable display for Raspberry Pi. It works just fine for that purpose.
+
+<div className="Image__Large">
+  <img src="./images/nexdock-rpi.jpg" alt="RPi connected to NexDock" />
+  <figcaption>Raspberry Pi 4 connected to NexDock Touch</figcaption>
+</div>
+
+If there was no visible Raspberry connected to the dock, you would have a feeling that you work with a real laptop. It has working Fn keys, brightness, and volume controls. All bells and whistles you got used to. Especially, if you're an embedded developer like me, such a solution saves your time tremendously. You don't have to disconnect your existing display, keyboard and mouse from your computer. Doing this repeatedly is a bummer.
+
+## Nothing is perfect
+Surprise, surprise! NexDock is not perfect. While it works OK most of the time, I found several use-cases where it failed me. I wanted to use my NexDock as a monitor, which I can hook up to my digital camera. The input HDMI port is picky, so I managed to get it work only once. Also, when you connect just the HDMI, the brightness and volume controls don't work at all, at least on my model. The microHDMI-to-HDMI adapter is bad-quality. It broke after a couple of uses. Luckily, these adapters are dirt cheap and easy to find. Imperfections like this bother me, but I still think it's a valuable device for a certain niche.
+
+## Conclusion
+Using my mobile phone instead of my laptop makes sense to me. The performance of smartphones is more than enough for common tasks. NexDock is a decent piece of hardware, and it can serve you well on your travels.
+
+What do you think about convergence? Does it make sense for you to use your phone instead of your laptop? Let me know in the comments. Also, feel free to check out my video on the same topic. Thanks, and see you around!
+
+<div class="Image__Medium">
+  <YouTube videoId="0xcQTIeObVA" />
+</div>
+
+[//]: # (Used references)
+[ubports]: https://ubports.com/
+[nexdock]: https://nexdock.com/
+[convergence]: https://ubports.com/convergence
+[plasma-mobile]: https://www.plasma-mobile.org/
+[samsung-dex]: https://www.samsung.com/us/explore/dex/
+[android-desktop-mode]: https://www.xda-developers.com/make-android-10-desktop-mode-useful/
+[nexdock-360]: https://nexdock.com/360-touch/
+[nexdock-support]: https://nexdock.com/support/
+[nexdock-rpi4]: https://nexdock.com/support-touch-2/raspberrypi-4/
+[raspberry-pi-os]: https://www.raspberrypi.org/software/
+[rpi-win10]: https://www.worproject.ml/

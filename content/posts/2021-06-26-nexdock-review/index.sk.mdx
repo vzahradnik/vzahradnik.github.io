@@ -1,0 +1,99 @@
+---
+title: Notebook z vášho mobilu — Spoznajte NexDock
+excerpt: Snívam o tom, že budem namiesto notebooku používať svoj mobil. NexDock je prvý krok k dosiahnutiu tohto sna.
+author: Vladimír Záhradník
+date: 2021-06-26
+categories: convergence nexdock ubports continuum lumia950 pine64
+hero: ./images/hero.jpg
+lang: sk_SK
+secret: true
+---
+
+Mám sen — dlhotrvajúci sen, že chcem používať môj mobil ako linuxový notebook. Takže kamkoľvek pôjdem, len vložím svoj telefón do docku, a všetku svoju prácu mám po celý čas so sebou. Nechcem používať viac zariadení. S projektami ako [UBPorts][ubports] sa môj sen pomaly stáva realitou, ale pred nami je ešte dlhá cesta. Dnes vám ukážem [NexDock][nexdock], čo je notebook poháňaný vašim smartfónom alebo Raspberry Pi.
+
+## Cesta ku kunvergencii
+Firmy ako Microsoft a Canonical pracovali na [konvergencii][convergence] dlhú dobu. Funguje to tak, že keď pripojíte k telefónu veľkú obrazovku, používateľské prostredie sa zmení na desktopové.
+
+V roku 2015 som si kúpil Lumiu 950. Bol to telefón od Microsoftu, ktorý mal tiež dock, do ktorého ste mohli pripojiť externý displej, klávesnicu a myš, a ktorý ponúkal s určitými obmedzeniami prostredie, ktoré pripomínalo to z plnohodnotného Windowsu.
+
+<div className="Image__Large">
+  <img src="./images/lumia950-dock.jpg" alt="Lumia 950" />
+  <figcaption>Lumia 950 pripojená k docku</figcaption>
+</div>
+
+Bol to krok správnym smerom, ale ten zážitok z používania nebol veľmi dobrý. Canonical, tvorca linuxovej distribúcie Ubuntu, mal podobnú víziu. Chceli prispôsobiť Ubuntu na mobily a premeniť ich po pripojení k docku na plnohodnotné počítače.
+
+<div className="Image__Large">
+  <img src="./images/pine64-ubports.jpg" alt="Pine64" />
+  <figcaption>Ubuntu Touch na mojom Pine Phone</figcaption>
+</div>
+
+Nakoniec túto myšlienku upustili, ale projekt stále žije vďaka komunite a ľuďom z UBPorts. A tiež existujú iné skupiny, ktoré sa snažia o niečo podobné, napríklad taká [Plasma Mobile][plasma-mobile].
+
+V roku 2018, 3 roky po vydaní Lumie 950, prišiel Samsung s ich riešením, ktoré nazval [DeX][samsung-dex]. Pre tú pôvodnú verziu ste si museli zakúpiť špeciálne príslušenstvo. Neskôr vám stačila obyčajná redukcia z USB-C na HDMI. Nejaký čas dokonca Samsung dával k dispozícii možnosť spúšťať na vašich telefónoch Linux. Žiaľ, toto riešenie prestali podporovať v októbri 2019.
+
+Samsung DeX môže predstavovať schopné riešenie, ale funguje iba so Samsung zariadeniami. Avšak v súčasnosti dokážu všetky moderné Android smartfóny zabezpečiť HDMI výstup cez USB-C. Android 10 prišiel so [skrytým desktopovým režimom][android-desktop-mode], ktorý priniesol túto možnosť na zopár telefónov mimo Samsungu. V tom čase bol tento režim vysoko experimentálny. Dokázali ste ho zapnúť iba cez Možnosti pre vývojárov. Tento režim však dostáva pozornosť a časom budú nadchádzajúce mobily prinášať slušnú podporu priamo od výroby.
+
+A tu sa dostávame k NexDocku. Ide o displej s klávesnicou, touchpadom a vlastnou batériou. Všetko toto je zabalené do hliníkového šasi, ktoré pripomína ultrabooky. Žiaľ, môj telefón, OnePlus 6T, HDMI výstup nepodporuje, takže skúsenosti s týmto desktopovým režimom nemám. Možno si niektorí myslíte, že mi slúži NexDock ako ťažítko, ale mýlite sa. NexDock podporuje aj minipočítače Raspberry Pi, a tých mám dostatok. Poďme sa pozrieť, ako to celé funguje.
+
+## Spoznajte NexDock
+Kúpil som si model NexDock Touch. Aktuálne je vypredaný, ale môžete si predobjednať [NexDock 360][nexdock-360]. NexDock v mnohom pripomína ultrabook. Na ľavej strane nájdete zopár USB-C portov a jeden HDMI port. Ten využijete v prípade, že vaše zariadenie nevie posielať obraz po USB.
+
+<div className="Image__Medium">
+  <img src="./images/nexdock-ports-left.jpg" alt="NexDock porty" />
+  <figcaption>NexDock Touch - porty na ľavej strane</figcaption>
+</div>
+
+Na pravej strane je jeden USB-A port a slúchadlový jack. Príjemne ma prekvapila klávesnica, ktorá je veľmi pohodlná a tlačidlá sú dosť veľké.
+
+<div className="Image__Medium">
+  <img src="./images/nexdock-keyboard.jpg" alt="NexDock klávesnica" />
+  <figcaption>Klávesnica NexDock Touch</figcaption>
+</div>
+
+Súčasťou balenia je nabíjačka, potrebné káble a redukcie. Skrátka všetko potrebné, aby ste zapojili vaše zariadenie.
+
+Podľa toho, aké zariadenie máte, sa zapojenie trochu líši. NexDock poskytuje prehľadnú brožúru a na ich webe nájdete takisto [zoznam podporovaných zariadení][nexdock-support]. Raspberry Pi 4 sa zapája [celkovo dvomi káblami][nexdock-rpi4], pričom ten jeden je rozdvojka v tvare Y. Ak však pridáte do konfiguračného súboru jeden riadok, viete namiesto tejto redukcie použiť štandardný USB-C kábel. Len upravte súbor `/boot/config.txt`. Keď poznáte minipočítače Raspberry Pi, viete, čo treba spraviť.
+
+```
+# USB Type-C Host
+dtoverlay=dwc2,dr_mode=host
+```
+
+Ako asi viete, Raspberry Pi má microHDMI výstup, takže potrebujete mať aj redukciu na plnohodnotné HDMI. Aj tú NexDock dodáva v príslušenstve.
+
+Na Raspberry som nainštaloval najnovší [Raspberry Pi OS][raspberry-pi-os]. Rovnako dobre vám bude fungovať aj Ubuntu, dokonca aj [Windows 10 pre ARM][rpi-win10] zariadenia. Otestované to však nemám.
+
+NexDock v tejto chvíli využívam hlavne ako prenosný monitor pre Raspberry Pi. Na tento účel funguje dokonale.
+
+<div className="Image__Large">
+  <img src="./images/nexdock-rpi.jpg" alt="RPi pripojené k NexDocku" />
+  <figcaption>Raspberry Pi 4 pripojené k NexDocku Touch</figcaption>
+</div>
+
+Keby ste nevideli pripojené Raspberry Pi, skutočne by ste mali pocit, že máte v ruke notebook. Fungujú Fn klávesy, nastavenie jasu, hlasitosti. Všetko, na čo ste zvyknutí. Hlavne, keď ste embedded vývojár ako ja, takéto riešenie vám šetrí čas. Nemusíte totiž odpájať obrazovku, klávesnicu a myš od vášho počítača. Je to otrava.
+
+## Nič nie je dokonalé
+Prekvapenie! NexDock nie je dokonalý. Hoci väčšinou funguje bez problémov, našiel som zopár prípadov, kedy ma sklamal. Chcel som použiť svoj NexDock ako monitor, ktorý viem zapojiť k môjmu digitálnemu fotoaparátu. Vstupný HDMI port je dosť vyberavý, takže sa mi podarilo NexDock rozbehať s mojím fotoaparátom iba raz. Takisto vtedy, keď je pripojené len HDMI, nemôžete používať ovládanie hlasitosti, pretože nefunguje, aspoň na mojom modele. Redukcia z microHDMI na HDMI je v dosť zlej kvalite. Rozlomila sa mi už po pár použitiach. Našťastie sú tieto adaptéry lacné a ľahko ich viete nájsť. Tieto chyby zamrzia, ale stále si myslím, že ide o hodnotné zariadenie pre istú cieľovku.
+
+## Záver
+Používať mobil ako počítač mi dáva zmysel. Dnešný výkon už dostačuje na bežnú prácu. NexDock je kvalitný kus hardvéru a môže byť slušný doplnok na pracovné cesty.
+
+Čo si myslíte o konvergencii? Dáva vám zmysel používať váš telefón namiesto notebooku? Dajte mi vedieť v komentároch nižšie. Takisto si môžete pozrieť moje video na tú istú tému. Vďaka a vidíme sa!
+
+<div class="Image__Medium">
+  <YouTube videoId="SW3AZZxTsAk" />
+</div>
+
+[//]: # (Used references)
+[ubports]: https://ubports.com/
+[nexdock]: https://nexdock.com/
+[convergence]: https://ubports.com/convergence
+[plasma-mobile]: https://www.plasma-mobile.org/
+[samsung-dex]: https://www.samsung.com/us/explore/dex/
+[android-desktop-mode]: https://www.xda-developers.com/make-android-10-desktop-mode-useful/
+[nexdock-360]: https://nexdock.com/360-touch/
+[nexdock-support]: https://nexdock.com/support/
+[nexdock-rpi4]: https://nexdock.com/support-touch-2/raspberrypi-4/
+[raspberry-pi-os]: https://www.raspberrypi.org/software/
+[rpi-win10]: https://www.worproject.ml/
