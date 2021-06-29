@@ -1,0 +1,25 @@
+name: Vladimír Záhradník
+bio: |
+  Zdravím, jsem Vlado Záhradník — ítečkář, blogger, podnikatel, z celého srdce
+  kreativní duše a milovník hudby.
+
+  Sdílím osobnostní typ Architekt (INTJ-A), což znamená, že jsem sebevědomý
+  individualista. Toto je důvod, proč tak zaníceně bojuji za svobodu
+  slova a jsem velmi citlivý na to, když jsou moje práva a svobody utiskované.
+  A ještě jedna věc: jsem brutálně upřímný a říkám, co si myslím.
+
+  Věřím v sdílení informací. Tato vášeň pohání mé pravidelné přispívání
+  do open-source, psaní blogů a natáčení videí. Pokud si navzájem pomůžeme,
+  můžeme vybudovat lepší místo pro každého. Přidejte se ke mně na mé cestě!
+avatar: ./avatars/vladimir-zahradnik.jpg
+social:
+  - url: https://github.com/vzahradnik
+  - url: https://medium.com/@vladimir.zahradnik
+  - url: https://www.youtube.com/channel/UCogZ6qxqKa_WIsw7NnU2IaA
+  - url: https://twitter.com/VladoZahradnik
+  - url: https://www.linkedin.com/in/vladimirzahradnik
+  - url: https://www.facebook.com/vzahradnik
+  - url: https://www.instagram.com/vladimir.zahradnik
+  - url: https://www.patreon.com/vzahradnik
+  - url: https://paypal.me/vzahradnik
+featured: true
