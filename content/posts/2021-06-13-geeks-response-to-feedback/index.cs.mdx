@@ -1,0 +1,50 @@
+---
+title: Geekova odpověď na zpětnou vazbu
+excerpt: Někdy i na mě přijde tvůrčí chvilka.
+author: Vladimír Záhradník
+date: 2021-06-13
+categories: feedback improvement analogy
+hero: ./images/hero.jpg
+lang: cs_CZ
+secret: true
+---
+
+Dnes jsem dostal cennou zpětnou vazbu. Zkusím problém naznačit v počítačové hantýrce.
+
+Lidské ústa představují fyzické rozhraní ([interface][interface]), jehož prostřednictvím dokážeme přenášet zprávy (informace) mezi dvěma nebo více lidmi (topologie [bod-bod][point-to-point] nebo [bod-mnoho bodů][point-to-multipoint]). Jsou vysílačem (TX, [transmitter][transmitter]).
+
+V počítačové terminologii ústa přirovnám k fyzickému rozhraní [RS-232][rs232].
+
+Abyste mohli přenášet informaci přes fyzické rozhraní, potřebujete [komunikační protokol][communication-protocol]. Při ústech je to řeč/jazyk a u rozhraní RS-232 například [sériový protokol][serial] nebo [Modbus][Modbus].
+
+Přijímačem (RX, [receiver][receiver]) jsou uši jiných lidí. Podobně na fyzickém rozhraní RS-232 poslouchají další počítače, které zjišťují změny signálu na lince a přijímají data.
+
+V počítačové terminologii existuje pojem [symbolová][symbol-rate] (zjednodušeně přenosová) rychlost a udává se v baudech/sekundu. Podobně i u úst umíme definovat rychlost, například v počtu slov za minutu. *Mimochodem, naše ústa jsou podle mě jedním z nejpomalejších lidských rozhraní. Snad už jen psaní na klávesnici je horší...*
+
+A teď si představte, co se stane, pokud jedno zařízení vysílá s rychlostí 115 200 baudů, ale ostatní ho poslouchají s rychlostí jen 100 000 baudů? Dojde ke ztrátě informace.
+
+Podobně je to i při lidech. Jestliže jeden mluví s rychlostí 400 slov za minutu, ale ostatní poslouchají s rychlostí 300 slov za minutu, ztratí se podstatná část informace a dochází také ke zkreslení výsledné zprávy.
+
+Dnes jsem zjistil, že tento problém nastává u mě. Většina lidí má přenosovou rychlost nastavenou mnohem níže než já a nestíhají mě vnímat. Zkrátka, když se rozpovídám a zapálím pro nějaké téma, hovořím příliš rychle a nejde mě zastavit.
+
+No zajímavé je to, že mně to příliš rychle nepřijde. Z mého pohledu ti ostatní přemýšlejí pomaleji než já.
+
+Jaké je řešení? Sladit přenosovou rychlost. Budu se muset naučit mluvit méně a pomaleji. A protože v hlavě mi to stále myslí na vyšší [frekvenci][frequency], hrozí zaplnění řečového [zásobníku][buffer]. Ale to si už nějak ošetřim 🙂
+
+Pokud budete mít někdy pocit, že mi nestíháte a unikají vám slova, prosím vás, klidně mě zastavte, přerušte, a já budu vědět, že mám zpomalit. Jen takhle se to naučím kontrolovat.
+
+Díky za pochopení, spolupráci, a doufám, že IT narážky vás pobavili. Počítače se v mnohém inspirují reálným světem.
+
+[//]: # (Used references)
+[rs232]: https://en.wikipedia.org/wiki/RS-232
+[point-to-point]: https://en.wikipedia.org/wiki/Point-to-point_(telecommunications)
+[point-to-multipoint]: https://en.wikipedia.org/wiki/Point-to-multipoint_communication
+[transmitter]: https://en.wikipedia.org/wiki/Transmitter
+[interface]: https://en.wikipedia.org/wiki/Interface_(computing)
+[communication-protocol]: https://en.wikipedia.org/wiki/Communication_protocol
+[serial]: https://en.wikipedia.org/wiki/Serial_communication
+[modbus]: https://en.wikipedia.org/wiki/Modbus
+[receiver]: https://en.wikipedia.org/wiki/Receiver_(information_theory)
+[symbol-rate]: https://en.wikipedia.org/wiki/Symbol_rate
+[frequency]: https://en.wikipedia.org/wiki/Frequency
+[buffer]: https://en.wikipedia.org/wiki/Data_buffer
