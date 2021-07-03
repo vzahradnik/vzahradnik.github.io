@@ -1,0 +1,228 @@
+---
+title: Vývoj Android platformy CZ
+excerpt: Lehký úvod do světa vývoje embedded Androidu
+author: Vladimír Záhradník
+date: 2018-04-13
+categories: android aosp development jsc
+hero: ./images/hero.jpg
+lang: cs_CZ
+secret: true
+---
+
+Začít s vývojem Android platformy může být zpočátku zastrašující. Přestože nějakou dokumentaci najdete na [domovské stránce AOSP][AOSP], není zdaleka úplná. A jen co se pokusíte přidat nějaké funkce do zdrojového kódu Androidu, jakmile se podíváte na ten masivní zdrojový kód, můžete se cítit ztraceni. Když začnete procházet Internet, najdete blogy, možná podobné tomuto. Mnohé z nich jsou zastaralé, ale i tak poskytují důležité informace, které vás alespoň nasměrují, kam se máte začít dívat.
+
+Tento článek se pokusí vysvětlit terminologii týkající se vývoje Android platformy. Nebude zdaleka úplný, ale doufám, že vám poskytne dobrý počáteční bod pro vaše snahy.
+
+# Android ekosystém a AOSP
+Začněme tím, že si nadefinujeme, co je to AOSP a jaký má vztah k Android ekosystému. AOSP je zkratka pro [Android Open Source Project][AOSP]. Tento projekt obsahuje zdrojový kód základního Android systému, který Google zveřejnil, aby umožnil ostatním uživatelům a společnostem vybudovat si jejich vlastní odnož Androidu. Obvykle to znamená přeportovat AOSP kód, aby běžel na jejich embedded platformě. V době psaní je nejnovější verze AOSP 8.1.0 s kódovým označením [Oreo][android-Oreo], viz [čísla sestav][AOSP-build-numbers]. Vy si umíte sestavit flashovateľný obraz, který se obvykle nazývá [ROM][what-is-android-rom] a který můžete spustit na vašem zařízení. Avšak velmi rychle zjistíte, že mu chybí některé funkce. Android software ve vašem telefonu obvykle obsahuje tyto stavební bloky:
+
+- [Android Open Source Project (AOSP)][aosp]
+- [Google Apps][google-apps]
+- Binárky výrobce čipsetu a OEM aplikace
+
+Obraz s čistým AOSP má omezenou funkčnost. Pokud ho sestavíte pro telefon, můžete na takovém zařízení telefonovat. Také je v něm webový prohlížeč na základní prohlížení webu a pár dalších aplikací. Ale nenajdete v něm žádný obchod s aplikacemi. Chcete-li nainstalovat do takto omezené ROMky novou aplikaci, umíte to udělat přes [Android Debug Bridge][adb].
+
+```sh
+adb install název_aplikace.apk
+```
+
+Nebo můžete aplikaci zkopírovat na SD kartu nebo vnitřní úložiště, např. pomocí [MTP][MTP], a nainstalovat ji kliknutím na její název souboru v Androidu, čímž se zobrazí instalační dialogové okno. Tak či tak, potřebujete získat aplikaci v [APK][apk] formátu.
+
+## Rozdíly mezi ROMkami
+Zkratka ROM znamená read-only memory (paměť určená pouze pro čtení). Ve skutečnosti je to flashovatelný binární soubor a jmenuje se ROM jen proto, že se flashuje na diskový oddíl zařízení, který se obvykle připojuje v režimu pouze pro čtení. Tedy za normálních okolností není možné modifikovat obsah této ROMky.
+
+Je možné, že jste se v minulosti divili, jak je možné, že některé předinstalované aplikace nelze odinstalovat, ale jen zakázat. Důvod je ten, že jsou uloženy přímo v této ROMce, kterou běžně Android neupravuje. Pokud telefon obnovíte do továrních nastavení, tyto aplikace v něm stále budou.
+
+### Originální (stock) vs. upravená  (custom) ROM
+Originální ROMka je operační systém předinstalován do zařízení jeho výrobcem. Obvykle, když se bavíme o Androidu, přichází předinstalovaná s různými OEM aplikacemi a upraveným Android UI prostředím. Jde v podstatě o systém odvozený od AOSP. Názory na takové vylepšení se mezi uživateli liší, ale obecně většina uživatelů telefonu tyto věci velmi neřeší a používají to, co je předinstalováno. Obvykle originální ROMky dostávají online aktualizace. Mezi významné příklady takových systémů patří [Emotion UI od Huawei][emui], [TouchWiz od Samsungu][TouchWiz], [Sense od HTC][sense], [MIUI od Xiaomi][MIUI] nebo Xperia UI od Sony. Tyto systémy odvozené od AOSP obvykle nemají jejich změny zveřejněny a vy nemůžete zahrnout vylepšení z takových systémů do vaší vlastní Android ROMky. [MIUI][MIUI] je výjimka, její zdrojový kód najdete na [GitHubu][MIUI-source]. Originální ROMka je často ten nejstabilnější software, jaký můžete na vašem zařízení mít, protože jeho výrobce je přímo odpovědný za vývoj a testování.
+
+Na druhé straně, kterákoli osoba nebo komunita může udělat upravenou ROMku. Může jít o upravenou originální ROMku (jakýmkoli způsobem) nebo může být sestavena od nuly. Například originální ROMku lze upravit vymazáním předinstalovaných aplikací a přidáním dalších. Vedle souboru ke stažení byste vždy měli najít popis změn. Aktualizaci upravené ROMky na novější verzi, pokud je vůbec vydána, dělá téměř ve všech případech ručně sám uživatel, ale existuje pár výjimek.
+
+Už jsem zmínil, že upravené ROMky nemusí být nutně založeny na Androidu. Dobrým příkladem je nedávný port [Sailfish OS pro Xperii X][Sailfish-os]. Tento telefon byl původně dodáván s Androidem, ale může na něm běžet systém založený na Linuxu.
+
+### AOSP ROM
+Když mluvíme o AOSP ROM, jde o upravenou ROMku, kterou lidé vytvářejí ze zdrojového kódu AOSP s minimálními změnami. Vzhled a chování takové ROMky mají nejblíže k tomu, co nabízí Google na jejich vlajkových telefonech jako [Google Pixel 2][pixel].
+
+Často má tato ROMka v názvu AOSP a většinu času ji vydává jednotlivec, který vlastní stejný telefon nebo tablet jako vy. [Podívejte se sem][nexus5-aosp8], abyste viděli stránky s funkcemi takové ROMky.
+
+## Komunitní Android distribuce
+Jsou z velké části postaveny na AOSP zdrojovém kódu, ale mají nad ním implementovány vlastní změny. Obvykle jsou všechny jejich úpravy veřejně dostupné, například na GitHubu. Jejich vzhled a chování jsou velmi podobné AOSP ROMce, ale často mají tyto distribuce implementovány dodatečné vizuální vylepšení nad kódem AOSP. Protože jsou tyto distribuce řízené komunitou, dokud nějaký vývojář používá telefon, jako je ten váš, je dobrá šance, že budete mít podporu pro váš telefon dávno poté, co výrobce vašeho telefonu přestal zveřejňovat aktualizace. Čím populárnější je vaše zařízení, tím rozšířenější podporu obvykle dostane. A vždy si můžete zařízení podporovat sami, jak se říká: „ušpinit si ruce.“
+
+Mezi nejznámější komunitní Android distribuce patří:
+- [Lineage OS][lineage-os], bývalý [CyanogenMod][CyanogenMod]
+- [Android Open Kang Project][AOKP]
+
+Lineage OS je podle mého názoru z těhle dvou mnohem rozšířenější. Jeho největší výhodou je podpora pro velké množství telefonů, tabletů a také pro Android TV krabičky.
+
+## Výrobci čipů (vendoři), výrobci zařízení (OEM), binární ovladače a OEM aplikace
+Možná si myslíte že výrobce čipu a zařízení je tentýž, také jsem si to myslel. Ale jsou různí. Následuje podrobný popis.
+
+### Výrobce čipu (vendor)
+Výrobce čipu produkuje čip nebo čipy použité uvnitř zařízení. Obvykle jde o vysoce integrovaný obvod, známý také jako [SoC][system-on-a-chip]. Takové SoC systémy obsahují procesor, paměť, Bluetooth, WiFi a také mají oddělené obvody, které zajišťují mobilní konektivitu, nazýváme je [baseband procesor][baseband-processor]. Když vydá Google novou hlavní verzi Androidu, výrobce čipu upraví kód, aby korektně fungoval s jeho čipy. Mezi významné výrobce patří Qualcomm, Broadcom, MediaTek a Intel.
+
+Výrobce SoC poskytuje referenční implementaci Androidu založenou na AOSP, kterou může výrobce zařízení přizpůsobit. Součástí této implementace jsou také binární ovladače pro SoC komponenty. Binární ovladače v tomto kontextu znamenají to, že výrobce zařízení nemá přístup k zdrojovým kódem ovladačů.
+
+### Výrobce zařízení (OEM)
+OEM (Original Equipment Manufacturer) je výrobce vašeho telefonu nebo tabletu. Vybere si SoC, na kterém postaví svůj produkt — navrhne pro něj obal, vybere vhodný displej a další komponenty a všechny tyto kousky pospojuje dohromady, aby vytvořil plně funkční produkt. Výrobce zařízení je zákazníkem výrobců čipů.
+
+V některých případech může být výrobce zařízení zároveň výrobce čipů některých komponentů. Typickým příkladem je společnost Sony, která používá fotoaparáty vyvinuté v jejich divizi. V takových případech poskytuje Sony ovladače a potřebný kód na to, aby tyto fotoaparáty fungovaly.
+
+Výrobce zařízení integruje všechny komponenty, dělá testování, úpravu AOSP a obvykle také přibalí do systému pár jeho aplikací. Ty mohou do systému přidat nové funkce, přidat alternativní obchody aplikací nebo prostě jen poskytnout alternativy pro některé aplikace od Googlu.
+
+Pokud chcete vědět víc, podívejte se na [tento článek od Sony][android-update-roll-out].
+
+## Android jádro
+Android jádro je založeno na čistém linuxovém jádře, do kterého vývojáři Androidu přidali změny, aby podporovalo jejich [specifickou funkčnost][embedded-android]:
+- Wake Lock
+- Low-memory killer
+- Ovladač Binder IPC
+- Polosoukromou sdílenou paměť (ashmem)
+- Ovladač alarmu
+- Logger
+
+Postupem času se většina těchto rozšíření stala více generická a byly začleněny do čistého Linuxu, ale potřebujete je zapnout v konfiguraci jádra. Také platí, že různé ovladače jsou stále pouze v [staging stromě Linuxu][linux-staging].
+
+Abyste mohli sestavit linuxové jádro s podporou pro [Android][androized-kernel], potřebujete jen přidat potřebné řádky do konfigurace sestavení linuxového jádra:
+
+```sh
+CONFIG_ASHMEM=y
+CONFIG_STAGING=y
+CONFIG_ANDROID=y
+CONFIG_ANDROID_BINDER_IPC=y
+CONFIG_ANDROID_LOGGER=y
+CONFIG_ANDROID_RAM_CONSOLE=y
+CONFIG_ANDROID_LOW_MEMORY_KILLER=y
+```
+
+Čisté jádro, dokonce se zapnutými rozšířeními pro Android, pravděpodobně na vašem zařízení nenaběhne. Proto obvykle výrobci SoC poskytují upravené zdrojové kódy jádra založené na čistém jádře. Později tyto zdrojové kódy používají výrobci zařízení, aby přizpůsobily jádro pro jejich zařízení. Jelikož je linuxové jádro pod [GPLv2][linux-license] licencí, změny provedeny výrobcem čipu nebo zařízení by měly být k dispozici komukoliv, kdo o ně požádá. Obvykle jsou upraveny zdrojové kódy jádra na GitHubu výrobce zařízení, podobě jako [v tomto repozitáři pro zařízení Xperia][xperia-kernel]. Někteří výrobci zařízení však ignorují licence a neposkytují pro svá zařízení zdrojové kódy upraveného jádra. Proto je vždy dobrým zvykem udělat si před koupí telefonu nějaký průzkum.
+
+Většinu času nepotřebujete kompilovat jádro ze zdrojového kódu a jednoduše použijete to, které bylo sestaveno pro originální ROMku. To by mělo pro vaši ROMku fungovat tehdy, pokud je hlavní verze Androidu ve vaší ROMce i té originální totožná. Nicméně, pokud chcete dostat do jádra další funkčnost, například povolit podporu pro IPv6, budete muset jádro sestavit ze zdrojového kódu.
+
+## Linaro
+Linaro je organizace, která mimo jiné pomáhá jejím členům s rozběháním platformy a udržuje upravené jádro pro Android. Takové, které úzce sleduje hlavní vývojový strom Linuxu. Výrobci čipů a následně zařízení odvádějí své jádra ze stromu organizace Linaro. Mezi [členy][linaro-members] jsou Google, Qualcomm, Samsung a mnoho dalších.
+
+## Baseband procesor a certifikace
+V éře hloupých telefonů byl baseband procesor jediným procesorem v telefonu. Řešil mobilní konektivitu, Bluetooth, displej telefonu, interakci s uživatelů a mnoho jiných věcí.
+
+Smartphony stále používají tento baseband procesor, ale jen jako modem, který se připojuje k mobilní síti. Hlavní SoC řeší všechny interaktivní funkce jako intreakci s uživatelem a displej, a baseband procesor řeší mobilní konektivitu. Baseband procesor má svůj operační systém, jehož zdrojové kódy jsou uzavřeny. Výrobci zařízení ho zřejmě používají jako černou skříňku. Způsob integrace tohoto procesoru do hlavního SoC se liší. Jeden způsob, jak mohou spolu komunikovat, je přes vnitřní sériovou linku, která je dostupná hlavnímu systému na rozhraní `/dev/ttySx`, kde`x` je nějaké číslo. Pokud vám něco říkají AT příkazy starých vytáčecích modemů, toto rozhraní vám bude velmi povědomé.
+
+Například, abyste vytočili telefonní číslo, zadáte takový příkaz:
+```sh
+atd<telefonní_číslo>
+```
+
+Podívejte se na [tenhle dokument][gsm-at-commands]. Je dobrým zdrojem informací ohledně AT příkazů.
+
+### Proč samostatný baseband procesor?
+Na tuhle otázku umí zodpovědět pouze výrobci čipů, já v tomto případě jen tipuji. Ale myslím si, že jedním z hlavních důvodů je certifikace na úřadu [FCC][fcc] v USA a u jiných podobných organizací jinde.
+
+Zařízení, které se připojuje do mobilní sítě, musí pracovat podle standardů, zejména těch, které definuje [3GPP][3gpp]. Představte si záškodnický telefon, který by operátor vpustil do své sítě. Tento telefon by generoval neplatné dotazy nebo odpovědi. Takovým situacím se chceme vyhnout, každé zařízení musí splňovat konkrétní standardy.
+
+V případě baseband procesoru se u něj certifikuje návrh hardwaru a softwarová implementace. Pokaždé, když se software změní, tento procesor je třeba znovu certifikovat. Tím, že ponecháme baseband procesor jako samostatnou jednotku, která se používá pouze jako modem, software pro hlavní SoC, t.j. Android, můžeme aktualizovat bez takové důkladné recertifikace. To neznamená, že nikdo aktualizaci netestuje. Znamená to jen to, že to není takový složitý a časově náročný proces. Pamatujte, výrobci zařízení chtějí poskytovat aktualizace s bezpečnostními opravami v horizontu měsíců, nikoli let. A toto řešení jim to umožňuje.
+
+Pokud vás toto téma zajímá více, vizte [tento vynikající článek][gsm-phone-anatomy].
+
+## Program kompatibility s Androidem
+Když jsem rozebíral různé typy ROMek, také jsem zmínil, že výrobci zařízení mohou přidat do AOSP různé nestandardní funkce, upravit vzhled, ale také změnit chování. Do určité míry je to žádoucí, protože to umožňuje výrobci zařízení vyniknout mezi ostatními, přičemž jejich systém odvozený od AOSP může být jedním z důvodů, proč si uživatelé vyberou telefony od něj.
+
+Nicméně z pohledu Googlu, ten musí dávat dobrý pozor na to, jak moc se produkt odklání od standardního chování. Proto pokud chce výrobce zařízení uvést produkt, který oficiálně obsahuje všechny standardní Google aplikace, takový produkt musí projít [programem kompatibility s Androidem][android-compatibility].
+
+<div className="Image__Medium">
+  <img src="./images/cts-overview.png" alt="Android CTS" />
+  <figcaption>Testovací sada pro zajištění kompatibility s Androidem</figcaption>
+</div>
+
+Zařízení kompatibilní s Androidem by mělo:
+- Splnit [Android Compatibility Definition Document (CDD)][android-CDD]. Tento dokument jmenuje softwarové a hardwarové požadavky kompatibilního Android zařízení.
+- Procházet testy v [Compatibility Test Suite (CTS)][android-cts]. CTS se používá jako průběžná pomůcka při vyhodnocování kompatibility během vývojového procesu.
+
+### Komunitní ROM
+Komunitních Android distribucí odvozených od AOSP se tento program kompatibility netýká a oficiálně nemohou Google aplikace distribuovat. Je na uživateli, aby si tyto aplikace někde na Internetu stáhl a nainstaloval.
+
+## Odklon od kompatibility s Androidem
+Někdy může být pro výrobce zařízení výhodné, aby se odklonil od kompatibility s Androidem. Google aplikace nepotřebuje, protože buduje produkt pro jiné účely.
+
+Představte si vzdálený terminál, který má dotykovou obrazovku, pár hardwarových tlačítek a vlastní aplikace na ovládání ústředního topení a jiných IoT zařízení v domácnosti. Takové zařízení si můžete postavit na kterékoli vývojové platformě jako Raspberry Pi. Díky otevřenosti AOSP však můžete plně rozvinout vaši představivost. Například můžete rozšířit Android Framework a SDK, aby přidávali novou funkčnost.
+
+## Google aplikace
+Google Mobile Services (GMS) jsou aplikace a služby od Googlu, které nejsou součástí AOSP. Google poskytuje tyto aplikace jeho partnerům, kteří splňují požadavky [programu pro kompatibilitu Androidu][android-compatibility] a mají licenci k použití takovýchto aplikací. Často se v komunitě nazývají [Google Apps][google-apps].
+
+Všichni důvěryhodní partneři Googlu mohou tyto aplikace přidat do svých ROMek. Tato suita obsahuje aplikace jako YouTube, Google Hudba a především obchod [Google Play][google-play], který umožňuje nainstalovat další aplikace z oficiálního obchodu.
+
+### Projekt Open GApps
+Komunitní ROMky nesplňují požadavky programu pro kompatibilitu od Googlu a proto neobsahují Google aplikace. Uživatelé, kteří chtějí používat aplikace a služby od Googlu, potřebují tyto aplikace někde získat a nainstalovat je samostatně.
+
+V minulosti jste mohli najít tyto aplikace roztroušeny po celém Internetu. Avšak obvykle uvidíte odkazy v popisu upravené ROMky.
+
+V současnosti je hlavním zdrojem těchto aplikací [projekt Open GAPPS][google-apps]. Ukládá APK soubory Google aplikací pro různé hlavní revize AOSP a také pro různé architektury procesoru. Uživatelé extrahovali binárky z oficiálních obrazů od různých výrobců zařízení. Pokud pro vaši platformu nějaká aplikace chybí, je to proto, že ji nikdo ještě neposkytl. Koukněte se na jejich [GitHub repozitář][opengapps-github] a zvažte, zda tam nepřispějete, pokud máte APK soubory, které se tam nenacházejí.
+
+Stažení správného balíku GAPPS je velmi jednoduché a umíte to docílit ve třech krocích.
+
+Nejprve vyberte platformu podporovanou vaším zařízením a ROMkou. V současnosti se téměř na všech novějších telefonech používá ARM64 (nebo ARMv8-A). Pokud si nejste jisti, dohledejte si specifikace k telefonu nebo se zeptejte na fórech.
+
+V dalším kroku si musíte vybrat hlavní verzi Androidu, pro kterou chcete balíček stáhnout. Android 8 používá jiné aplikace než Android 6.
+
+Nakonec si vyberte variantu GAPPS. Varianta „stock“ obsahuje všechny aplikace zahrnuté v zařízeních Google Nexus/Pixel, ovšem zabírá více místa než varianta „mini“ nebo „nano.“ Pokud má vaše zařízení menší vnitřní paměť, nainstalujte jednoduše „nano“ nebo „pico“ balík. Obsahuje jen ty nutné aplikace, abyste rozbehali Play Store. Pak si už můžete stáhnout jen ty aplikace, které potřebujete.
+
+Balík GAPPS obsahuje instalační skript, který nainstaluje aplikace na systémový oddíl zařízení určený pouze pro čtení.
+
+### Omezení Googlu pro necertifikované zařízení
+V roce 2018 začal Google aplikovat [omezení][GAPPS-restrictions] pro necertifikované zařízení. Znamená to, že už víc nemůžete přistupovat do obchodu Google Play, pokud model zařízení není na seznamu povolených zařízení. Nicméně Google uznává upravené ROMky a poskytuje způsob, jak přidat na seznam povolených zařízení i to vaše. No pokud používáte oficiální ROMku například na zařízení od Huawei, nuže, máte smůlu!
+
+<div className="Image__Small">
+  <img src="./images/gplay-uncertified.jpg" alt="Necertifikované pro GApps" />
+  <figcaption>Chybová zpráva „Zařízení není certifikováno“</figcaption>
+</div>
+
+### Alternativy pro Google Apps
+Někteří uživatelé nutně nepotřebují aplikace od Googlu nebo služby od Googlu nechtějí používat vůbec. Namísto toho upřednostňují svobodný software všude tam, kde je to možné. Obvykle to umíte docílit nainstalováním alternativního obchodu s názvem [F-Droid][f-droid].
+
+Kromě F-Droidu existují i další alternativní obchody jako [Amazon App Store][amazon-app-store], který si spravuje sám Amazon. Je možné jej nainstalovat jako jediný obchod nebo vedle obchodu od Googlu. Všechna zařízení Amazon FireTV tento obchod používají. Pod kapotou mají totiž všechny upravený Android.
+
+## Závěr
+Doufám, že tento článek objasnil některé věci ohledně celého Android ekosystému. Pokud se chcete dozvědět více, koukněte na web [XDA-Developers][xda-developers], který je mezi vývojáři platformy velmi populární a poskytuje základní informace, které častokrát jinde nenajdete.
+
+Pokud vám přišel tento článek užitečný nebo máte návrhy, jak ho vylepšit, dejte mi o tom vědět do komentářů. Děkuji!
+
+[//]: # (Used references)
+[what-is-android-rom]: http://droidlessons.com/what-are-roms-for-android/
+[xda-developers]: https://www.xda-developers.com/
+[android-oreo]: https://cs.wikipedia.org/wiki/Android_Oreo
+[aosp]: https://source.android.com/
+[aosp-build-numbers]: https://source.android.com/source/build-numbers
+[google-apps]: http://opengapps.org/
+[f-droid]: https://f-droid.org/
+[android-compatibility]: https://source.android.com/compatibility/
+[adb]: https://developer.android.com/studio/command-line/adb.html
+[mtp]: https://cs.wikipedia.org/wiki/Media_Transfer_Protocol
+[apk]: https://cs.wikipedia.org/wiki/Android_application_package
+[sailfish-os]: https://jolla.com/sailfishx/
+[emui]: https://en.wikipedia.org/wiki/Huawei#EMUI
+[touchwiz]: https://cs.wikipedia.org/wiki/Touchwiz
+[miui]: https://en.wikipedia.org/wiki/MIUI
+[miui-source]: https://github.com/MiCode/patchrom_miui
+[sense]: https://en.wikipedia.org/wiki/HTC_Sense
+[pixel]: https://www.gsmarena.com/google_pixel_2-8733.php
+[nexus5-aosp8]: https://forum.xda-developers.com/google-nexus-5/orig-development/aosp-oreo-8-0-0-nexus-5-t3664033
+[lineage-os]: https://lineageos.org/
+[cyanogenmod]: https://cs.wikipedia.org/wiki/CyanogenMod
+[aokp]: http://aokp.co/
+[google-play]: https://play.google.com/store
+[opengapps-github]:https://github.com/opengapps/opengapps
+[amazon-app-store]: https://www.amazon.com/mobile-apps
+[system-on-a-chip]: https://cs.wikipedia.org/wiki/Syst%C3%A9m_na_%C4%8Dipu
+[baseband-processor]: https://en.wikipedia.org/wiki/Baseband_processor
+[android-update-roll-out]: https://www.xda-developers.com/how-android-software-update-sony/
+[embedded-android]: https://www.amazon.com/Embedded-Android-Porting-Extending-Customizing/dp/1449308295
+[linux-staging]: https://lwn.net/Articles/324279/
+[androized-kernel]: https://www.linaro.org/blog/android-blog/androidization-of-linux-kernel/
+[linux-license]: https://github.com/torvalds/linux/blob/master/COPYING
+[xperia-kernel]: https://github.com/sonyxperiadev/kernel
+[linaro-members]: https://www.linaro.org/members/
+[gsm-at-commands]: http://www.zeeman.de/wp-content/uploads/2007/09/ubinetics-at-command-set.pdf
+[fcc]: https://sk.wikipedia.org/wiki/Feder%C3%A1lna_komisia_pre_komunik%C3%A1ciu
+[3gpp]: https://cs.wikipedia.org/wiki/3GPP
+[gsm-phone-anatomy]: ftp://ftp.freecalypso.org/pub/GSM/gsm_phone_anatomy.pdf
+[android-cdd]: https://source.android.com/compatibility/android-cdd.html
+[android-cts]: https://source.android.com/compatibility/cts/
+[gapps-restrictions]: https://www.xda-developers.com/how-to-fix-device-not-certified-by-google-error/

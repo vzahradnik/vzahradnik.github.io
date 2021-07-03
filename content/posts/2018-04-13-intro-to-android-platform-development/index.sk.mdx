@@ -14,7 +14,7 @@ Začať s vývojom Android platformy môže byť spočiatku zastrašujúce. Hoci
 Tento článok sa pokúsi vysvetliť terminológiu týkajúcu sa vývoja Android platformy. Nebude zďaleka úplný, ale dúfam, že vám poskytne dobrý počiatočný bod pre vaše snahy.
 
 # Android ekosystém a AOSP
-Začnime tým, že si zadefinujeme, čo je to AOSP a aký má vzťah k Android ekosystému. AOSP je skratka pre [Android Open Source Project][AOSP]. Tento projekt obsahuje zdrojový kód základného Android systému, ktorý Google zverejnil, aby umožnil ostatným používateľom a spoločnostiam vybudovať si ich vlastnú odnož Androidu. Zvyčajne to znamená preportovať AOSP kód, aby bežal na ich embedded platforme. V čase písania je najnovšia verzia AOSP 8.1.0 s kódovým označením [Oreo][android-oreo], pozrite si [čísla zostáv][aosp-build-numbers]. Vy si viete zostaviť flashovateľný obraz, ktorý sa zvyčajne nazýva [ROM][what-is-android-rom] a ktorý môžete spustiť na vašom zariadení. Avšak veľmi rýchlo zistíte, že mu chýbajú niektoré funkcie.
+Začnime tým, že si zadefinujeme, čo je to AOSP a aký má vzťah k Android ekosystému. AOSP je skratka pre [Android Open Source Project][AOSP]. Tento projekt obsahuje zdrojový kód základného Android systému, ktorý Google zverejnil, aby umožnil ostatným používateľom a spoločnostiam vybudovať si ich vlastnú odnož Androidu. Zvyčajne to znamená preportovať AOSP kód, aby bežal na ich embedded platforme. V čase písania je najnovšia verzia AOSP 8.1.0 s kódovým označením [Oreo][android-oreo], pozrite si [čísla zostáv][aosp-build-numbers]. Vy si viete zostaviť flashovateľný obraz, ktorý sa zvyčajne nazýva [ROM][what-is-android-rom] a ktorý môžete spustiť na vašom zariadení. Avšak veľmi rýchlo zistíte, že mu chýbajú niektoré funkcie. Android softvér vo vašom telefóne zvyčajne pozostáva z týchto stavebných blokov:
 
 - [Android Open Source Project (AOSP)][aosp]
 - [Google Apps][google-apps]
@@ -34,7 +34,7 @@ Skratka ROM znamená read-only memory (pamäť určená len na čítanie). V sku
 Je možné, že ste sa v minulosti čudovali, ako je možné, že niektoré predinštalované aplikácie nie je možné odinštalovať, ale len zakázať. Dôvod je ten, že sú uložené priamo v tejto ROMke, ktorú bežne Android neupravuje. Ak telefón obnovíte do továrenských nastavení, tieto aplikácie v ňom stále budú.
 
 ### Originálna (stock) vs. upravená  (custom) ROM
-Originálna ROMka je operačný systém predinštalovaný do zariadenia jeho výrobcom. Zvyčajne, keď sa bavíme o Androide, prichádza predinštalovaná s rôznymi OEM aplikáciami a upraveným Android UI prostredím. Tento balík vytvára nové operačné systémy postavené nad AOSP. Názory na takéto vylepšenia sa medzi používateľmi líšia, ale vo všeobecnosti väčšina používateľov telefónu tieto veci veľmi nerieši a používajú to, čo je predinštalované. Zvyčajne originálne ROMky dostávajú online aktualizácie. Medzi významné príklady takýchto systémov patria [Emotion UI od Huawei][emui], [TouchWiz od Samsungu][touchwiz], [Sense od HTC][sense], [MIUI od Xiaomi][miui] alebo Xperia UI od Sony. Tieto systémy odvodené od AOSP zvyčajne nemajú ich zmeny zverejnené a vy nemôžete zahrnúť vylepšenia z takýchto systémov do vašej vlastnej Android ROMky. [MIUI][miui] je výnimka, jej zdrojový kód nájdete na [GitHube][miui-source]. Originálna ROMka je často ten najstabilnejší softvér, aký môžete na vašom zariadení mať, pretože jeho výrobca je priamo zodpovedný na vývoj a testovanie.
+Originálna ROMka je operačný systém predinštalovaný do zariadenia jeho výrobcom. Zvyčajne, keď sa bavíme o Androide, prichádza predinštalovaná s rôznymi OEM aplikáciami a upraveným Android UI prostredím. Ide v podstate o systém odvodený od AOSP. Názory na takéto vylepšenia sa medzi používateľmi líšia, ale vo všeobecnosti väčšina používateľov telefónu tieto veci veľmi nerieši a používajú to, čo je predinštalované. Zvyčajne originálne ROMky dostávajú online aktualizácie. Medzi významné príklady takýchto systémov patria [Emotion UI od Huawei][emui], [TouchWiz od Samsungu][touchwiz], [Sense od HTC][sense], [MIUI od Xiaomi][miui] alebo Xperia UI od Sony. Tieto systémy odvodené od AOSP zvyčajne nemajú ich zmeny zverejnené a vy nemôžete zahrnúť vylepšenia z takýchto systémov do vašej vlastnej Android ROMky. [MIUI][miui] je výnimka, jej zdrojový kód nájdete na [GitHube][miui-source]. Originálna ROMka je často ten najstabilnejší softvér, aký môžete na vašom zariadení mať, pretože jeho výrobca je priamo zodpovedný za vývoj a testovanie.
 
 Na druhej strane, ktorákoľvek osoba alebo komunita môže spraviť upravenú ROMku. Môže ísť o upravenú originálnu ROMku (akýmkoľvek spôsobom) alebo môže byť zostavená od nuly. Napríklad, originálnu ROMku je možné upraviť vymazaním predinštalovaných aplikácií a pridaním ďalších. Vedľa súboru na stiahnutie by ste vždy mali nájsť popis zmien. Aktualizáciu upravenej ROMky na novšiu verziu, ak je vôbec vydaná, robí takmer vo všetkých prípadoch ručne sám používateľ, ale existuje zopár výnimiek.
 
@@ -63,7 +63,7 @@ Výrobca čipu produkuje čip alebo čipy použité vnútri zariadenia. Zvyčajn
 Výrobca SoC poskytuje referenčnú implementáciu Androidu založenú na AOSP, ktorú môže výrobca zariadenia prispôsobiť. Súčasťou tejto implementácie sú tiež binárne ovládače pre SoC komponenty. Binárne ovládače v tomto kontexte znamenajú to, že výrobca zariadenia nemá prístup k zdrojovým kódom ovládačov.
 
 ### Výrobca zariadenia (OEM)
-OEM (Original Equipment Manufacturer) je výrobca vášho telefónu alebo tabletu. Vyberie si SoC, na ktorom postaví svoj produkt — navrhne preňho obal, vyberie vhodný displej a ďalšie komponenty a všetky tieto kúsky pospája dokopy, aby vytvoril plne funkčný produkt. Výrobca zariadenia je zákazníkom výrobcov čipov.
+OEM (Original Equipment Manufacturer) je výrobca vášho telefónu alebo tabletu. Vyberie si SoC, na ktorom postaví svoj produkt — navrhne preňho obal, vyberie vhodný displej a ďalšie komponenty a všetky tieto kúsky pospája dokopy, aby vytvoril plnofunkčný produkt. Výrobca zariadenia je zákazníkom výrobcov čipov.
 
 V niektorých prípadoch môže byť výrobca zariadenia zároveň výrobca čipov niektorých komponentov. Typickým príkladom je spoločnosť Sony, ktorá používa fotoaparáty vyvinuté v ich divízii. V takýchto prípadoch poskytuje Sony ovládače a potrebný kód na to, aby tieto fotoaparáty fungovali.
 
@@ -94,7 +94,7 @@ CONFIG_ANDROID_RAM_CONSOLE=y
 CONFIG_ANDROID_LOW_MEMORY_KILLER=y
 ```
 
-Čisté jadro, dokonca so zapnutými rozšíreniami pre Android, pravdepodobne na vašom zariadení nenabehne. Preto zvyčajne výrobcovia SoC poskytujú upravené zdrojové kódy jadra založené na čistom jadre. Neskôr tieto zdrojové kódy používajú výrobcovia zariadení, aby prispôsobili jadro pre ich zariadenia. Pretože je linuxové jadro pod [GPLv2][linux-license] licenciou, zmeny urobené výrobcom čipu alebo zariadenia by mali byť k dispozícii komukoľvek, kto o ne požiada. Zvyčajne sú upravené zdrojové kódy jadra na GitHube výrobcu zariadenia, podobe ako [v tomto repozitáre pre zariadenia Xperia][xperia-kernel]. Niektorí výrobcovia zariadení však ignorujú licencie a neposkytujú pre svoje zariadenia zdrojové kódy upraveného jadra. Preto je vždy dobrým zvykom spraviť si pred kúpou telefónu nejaký prieskum.
+Čisté jadro, dokonca so zapnutými rozšíreniami pre Android, pravdepodobne na vašom zariadení nenabehne. Preto zvyčajne výrobcovia SoC poskytujú upravené zdrojové kódy jadra založené na čistom jadre. Neskôr tieto zdrojové kódy používajú výrobcovia zariadení, aby prispôsobili jadro pre ich zariadenia. Keďže je linuxové jadro pod [GPLv2][linux-license] licenciou, zmeny urobené výrobcom čipu alebo zariadenia by mali byť k dispozícii komukoľvek, kto o ne požiada. Zvyčajne sú upravené zdrojové kódy jadra na GitHube výrobcu zariadenia, podobe ako [v tomto repozitáre pre zariadenia Xperia][xperia-kernel]. Niektorí výrobcovia zariadení však ignorujú licencie a neposkytujú pre svoje zariadenia zdrojové kódy upraveného jadra. Preto je vždy dobrým zvykom spraviť si pred kúpou telefónu nejaký prieskum.
 
 Väčšinu času nepotrebujete kompilovať jadro zo zdrojového kódu a jednoducho použijete to, ktoré bolo zostavené pre originálnu ROMku. To by malo pre vašu ROMku fungovať vtedy, ak je hlavná verzia Androidu vo vašej ROMke aj tej originálnej totožná. Avšak, ak chcete dostať do jadra ďalšiu funkčnosť, napríklad povoliť podporu pre IPv6, budete musieť jadro zostaviť zo zdrojového kódu.
 
@@ -111,7 +111,7 @@ Napríklad, aby ste vytočili telefónne číslo, zadáte takýto príkaz:
 atd<telefónne_číslo>
 ```
 
-Pozrite sa na [tento dokument][gsm-at-commands] ako na dobrý zdroj pre AT príkazy.
+Pozrite sa na [tento dokument][gsm-at-commands]. Je dobrým zdrojom informácií ohľadom AT príkazov.
 
 ### Prečo samostatný baseband procesor?
 Túto otázku vedia zodpovedať len výrobcovia čipov, ja v tomto prípade len hádam. Ale myslím si, že jedným z hlavných dôvodov je certifikácia na úrade [FCC][fcc] v USA a u iných podobných organizácií inde.
@@ -123,7 +123,7 @@ V prípade baseband procesora sa uňho certifikuje návrh hardvéru a softvérov
 Pokiaľ vás táto téma zaujíma viac, pozrite si [tento vynikajúci článok][gsm-phone-anatomy].
 
 ## Program kompatibility s Androidom
-Keď som rozoberal rôzne typy ROMiek, tiež som spomenul, že výrobcovia zariadení môžu pridať do AOSP rôzne neštandardné funkcie, upraviť vzhľad a chovanie, ale tiež zmeniť správanie. Do určitej miery je to žiadúce, pretože to umožňuje výrobcovi zariadenia vyniknúť medzi ostatnými, pričom ich systém odvodený od AOSP môže byť jedným z dôvodov, prečo si používatelia vyberú telefóny od neho.
+Keď som rozoberal rôzne typy ROMiek, tiež som spomenul, že výrobcovia zariadení môžu pridať do AOSP rôzne neštandardné funkcie, upraviť vzhľad, ale tiež zmeniť správanie. Do určitej miery je to žiadúce, pretože to umožňuje výrobcovi zariadenia vyniknúť medzi ostatnými, pričom ich systém odvodený od AOSP môže byť jedným z dôvodov, prečo si používatelia vyberú telefóny od neho.
 
 Avšak z pohľadu Googlu, ten musí dávať dobrý pozor na to, ako veľmi sa produkt odkláňa od štandardného chovania. Preto ak chce výrobca zariadenia uviesť produkt, ktorý oficiálne obsahuje všetky štandardné Google aplikácie, takýto produkt musí prejsť [programom kompatibility s Androidom][android-compatibility].
 
@@ -147,7 +147,7 @@ Predstavte si vzdialený terminál, ktorý má dotykovú obrazovku, zopár hardv
 ## Google aplikácie
 Google Mobile Services (GMS) sú aplikácie a služby od Googlu, ktoré nie sú súčasťou AOSP. Google poskytuje tieto aplikácie jeho partnerom, ktorí spĺňajú požiadavky [programu pre kompatibilitu Androidu][android-compatibility] a majú licenciu na použitie takýchto aplikácií. Často sa v komunite nazývajú [Google Apps][google-apps].
 
-Všetci dôveryhodní partneri Googlu môžu tieto aplikácie pridať do svojich ROMiek. Táto suita obsahuje aplikácie YouTube, Google Hudba a predovšetkým obchod [Google Play][google-play], ktorý umožňuje nainštalovať iné aplikácie z oficiálneho obchodu.
+Všetci dôveryhodní partneri Googlu môžu tieto aplikácie pridať do svojich ROMiek. Táto suita obsahuje aplikácie ako YouTube, Google Hudba a predovšetkým obchod [Google Play][google-play], ktorý umožňuje nainštalovať iné aplikácie z oficiálneho obchodu.
 
 ### Projekt Open GApps
 Komunitné ROMky nespĺňajú požiadavky programu pre kompatibilitu od Googlu a preto neobsahujú Google aplikácie. Používatelia, ktorí chcú používať aplikácie a služby od Googlu, potrebujú tieto aplikácie niekde získať a nainštalovať ich samostatne.
@@ -162,12 +162,12 @@ Najprv vyberte platformu podporovanú vaším zariadením a ROMkou. V súčasnos
 
 V ďalšom kroku si musíte vybrať hlavnú verziu Androidu, pre ktorú chcete balík stiahnuť. Android 8 používa iné aplikácie ako Android 6.
 
-Nakoniec si vyberte variant GApps. Variant „stock“ obsahuje všetky aplikácie zahrnuté v zariadeniach Google Nexus/Pixel, avšak zaberá viac miesta ako variant „mini“ alebo „nano“. Pokiaľ má vaše zariadenie menšiu vnútornú pamäť, nainštalujte jednoducho „nano“ alebo „pico“ balík. Obsahuje len tie nutné aplikácie, aby ste rozbehali Play Store. Potom si už môžete stiahnuť len tie aplikácie, ktoré potrebujete.
+Nakoniec si vyberte variant GApps. Variant „stock“ obsahuje všetky aplikácie zahrnuté v zariadeniach Google Nexus/Pixel, avšak zaberá viac miesta ako variant „mini“ alebo „nano.“ Pokiaľ má vaše zariadenie menšiu vnútornú pamäť, nainštalujte jednoducho „nano“ alebo „pico“ balík. Obsahuje len tie nutné aplikácie, aby ste rozbehali Play Store. Potom si už môžete stiahnuť len tie aplikácie, ktoré potrebujete.
 
 Balík GApps obsahuje inštalačný skript, ktorý nainštaluje aplikácie na systémový oddiel zariadenia určený len na čítanie.
 
 ### Obmedzenia Googlu pre necertifikované zariadenia
-V roku 2018 Google začal aplikovať [obmedzenia][gapps-restrictions] pre necertifikované zariadenia. Znamená to, že už viac nemôžete pristupovať do obchodu Google Play, pokiaľ model vášho zariadenia nie je na zozname povolených zariadení. Avšak Google uznáva upravené ROMky a poskytuje spôsob, ako pridať na zoznam povolených zariadení aj to vaše. No pokiaľ používate oficiálnu ROMku napríklad na zariadení od Huawei, nuž, máte smolu!
+V roku 2018 začal Google aplikovať [obmedzenia][gapps-restrictions] pre necertifikované zariadenia. Znamená to, že už viac nemôžete pristupovať do obchodu Google Play, pokiaľ model vášho zariadenia nie je na zozname povolených zariadení. Avšak Google uznáva upravené ROMky a poskytuje spôsob, ako pridať na zoznam povolených zariadení aj to vaše. No pokiaľ používate oficiálnu ROMku napríklad na zariadení od Huawei, nuž, máte smolu!
 
 <div className="Image__Small">
   <img src="./images/gplay-uncertified.jpg" alt="Necertifikované pre GApps" />
