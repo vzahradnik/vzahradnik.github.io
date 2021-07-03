@@ -1,0 +1,172 @@
+---
+title: Průběžná integrace s Arduinem
+excerpt: Co je to průběžná integrace a jak vám pomůže automatizovat rutinní úkoly?
+author: Vladimír Záhradník
+date: 2019-12-08
+categories: arduino arduinoci automation ci travis embedded development jsc
+hero: ./images/hero.jpg
+lang: cs_CZ
+secret: true
+---
+
+V mém [posledním článku][good-library] jsem psal o strukturování kódu Arduino knihovny a také jsem zmínil, jak důležité je psát testy a dobrou, podrobnou dokumentaci. Dnes budu stavět na těchto základech a vysvětlím vám koncept průběžné integrace (continuous integration) se zaměřením na [Arduino][arduino]. Jako nástroj použijeme [Travis CI][travis].
+
+# Týmová spolupráce v gitu
+Představte si, že pracujete na projektu se dvěma vývojáři. V našem případě na Arduino knihovně. Na ukládání kódu používáte [git][git] a každý vývojář má svoji kopii.
+
+<div className="Image__Small">
+  <img src="./images/git-contrib.svg" alt="Týmová spolupráce v gitu" />
+  <figcaption>Týmová spolupráce v gitu</figcaption>
+</div>
+
+Vy přidáváte podporu pro ověřování uživatelů, váš kolega píše kód pro čtení dat z GSM modulu a další kolega pracuje na validaci vstupních dat. Tím, jak implementujete novou funkčnost, se váš lokální kód přirozeně odchyluje od souborů na serveru — což je jediný zdroj pravdy. Pro jednoduchost předpokládejme, že všichni pracujete na téže větvi. Pokud nevíte, co je to větev, přečtěte si o tom [zde][git-branch].
+
+V nějakém bodě vaše změny nahrajete do centrálního repozitáře. Vaši kolegové se pokusí udělat totéž. V ideálním případě jste všichni pracovali na různých částech knihovny a neupravovali jste stejnou část kódu jako vaši dva kolegové. Ve skutečnosti je to spíše vzácné a musíte řešit problémy s tím spojené.
+
+> Git je jenom nástroj. Pouze vy jste zodpovědní za vyřešení konfliktních změn v kódu.
+
+Git nám dává několik bezpečnostních mechanismů na správné sloučení kódu ze všech zdrojů:
+1. Pokud jste změnili soubory, které na serveru během vaší změny nebyly upraveny, vaše změna je přijata (toto chování je možné nastavit)
+2. Pokud jste změnili soubory, které mezitím někdo na serveru aktualizoval, váš kód bude odmítnut. Potřebujete si stáhnout nejnovější změny a vyřešit konflikty se sloučením (merge).
+3. Když si stáhnete změny ze serveru a git umí přijít na to, jak konfliktní soubory sloučit, udělá to automaticky. Jinak se zastaví a změny musíte sloučit ručně. Občas je to těžké. Nemusíte znát veškerý kód a vaše vyřešení konfliktů nemusí být správné. Git však vaše rozhodnutí ochotně přijme.
+
+Mohou se aplikovat i jiná pravidla, ale tyto jsou nejdůležitější. Zdůrazním vám jedno: git je jenom nástroj. Pouze vy jste zodpovědní za vyřešení konfliktních změn v kódu.
+
+## Více větví a pull requestů
+Pojďme nyní předchozí příklad rozšířit, aby byl realističtější. Obvykle má váš git repozitář jednu hlavní větev, která se jmenuje `main` (nebo ve starších repozitářích `master`). Vývojáři, kteří pracují na nové funkčnosti, si vytvoří novou feature větev z větve main, např. `feature/authentication`. Podobně pokud pracují na opravě chyby, vytvoří si větev bugfix. Existuje několik vývojových modelů pro git, které poskytují jisté postupy, například [GitFlow][gitflow]. Dnes nebudu zacházet do podrobností. Chci jen, abyste věděli, že reálně používaný git repozitář může mít mnoho větví, které se nakonec sloučí do jediné.
+
+Běžný způsob, jak sloučit změny z odvozených větví do hlavní větve, je přes pull requesty. Ty nejsou nedílnou součástí gitu. Namísto toho jejich podporu přidali různé nástroje postavené nad gitom. V GitHubu se jmenují pull requesty, GitLab je nazývá merge requesty atd. Jde o to, že vytvoříte pull request, vyberete zdrojovou větev, odkud se změny vemou, vyberete cílovou větev, kam se změny sloučí, a kliknete na tlačítko *Vytvořit pull request*.
+
+<div className="Image__Medium">
+  <img src="./images/github-pull-request.png" alt="Vytvoření pull requestu na GitHubu" />
+  <figcaption>Vytvoření pull requestu na GitHubu</figcaption>
+</div>
+
+Jiní vývojáři budou mít příležitost podívat se na vaše změny, komentovat je a nakonec je začlenit do hlavní větve. Pokud mezi zdrojovou a cílovou větví nejsou žádné konfliktní změny, git požadavek na sloučení kódu ochotně přijme.
+
+## Průběžná integrace. Proč ji potřebujeme?
+Pokud spoléháte při slučování kódu pouze na git, máte problém. Git vám dává záruku, že všechny konfliktní změny jsou vyřešeny, ale nezaručuje, že změny v kódu jsou správné a že kód stále funguje správně.
+
+Pokud je v kódu problém, dříve či později se to od vašich uživatelů dozvíte. Asi všichni se shodneme, že nejlepší je se takovým situacím vyhnout. Některý z hlavních vývojářů může občas kód manuálně testovat, ale stále mu něco může ujít. Manuální testování je zrádné a časově náročné. Namísto toho bychom se měli zaměřit na automatizaci. A přesně to nám poskytují nástroje průběžné integrace.
+
+Nástroje průběžné integrace (CI) nám pomohou v následujících věcech:
+- Automaticky sestaví kód po každé změně v kterékoliv větvi. Pokud počítač nedokáže váš kód sestavit, přijde vám o tom e-mail.
+- Volitelně spustí vaše testy, abyste měli záruku, že kód stále dělá to, co má.
+- Vygenerují dokumentaci ze zdrojového kódu a zveřejní ji na webu. Občas se to nazývá continuous deployment.
+
+Představte si virtuální počítač, který se zapne jen aby sestavil váš kód. To vy jste zodpovědní za specifikování prostředí, například který operační systém použít, které nástroje nainstalovat na spuštění kódu, v jakých verzích nainstalovat knihovny, na kterých váš kód závisí atd. Je na vás, co chcete automatizovat. Všechny příkazy, které umíte zadat do příkazového řádku, můžete také zadat do automatizačního skriptu.
+
+Také je velmi běžné sestavit (a otestovat) váš kód ve více prostředích. Jedno CI sestaví knihovnu ve Windows 10 s nástrojem PlatformIO, jiný použije Arduino toolchain pod Linuxem. V případě Arduina také umíte vytvářet binárky pro několik různých hardwarových platforem, abyste se ujistili, že se knihovna bez problémů sestaví pro Arduino Uno, Mega nebo Leonardo. Pokud během sestavování knihovny nastane na některé z platforem chyba, dostanete o tom e-mail a buď musíte váš kód opravit, aby byl kompatibilní, nebo zahodit podporu pro hardwarovou platformu. Tak či tak, bez CI byste se asi ani nedozvěděli, že vaše knihovna na Leonardu nefunguje, protože testujete ručně jen na Unu.
+
+Dnes vysvětlím základní principy na Travis CI. Tento nástroj kdysi byl pro všechny open-source projekty zdarma. Jsou i jiné CI řešení, například Bamboo od firmy Atlassian nebo Jenkins. Dokonce i GitLab poskytuje své vlastní CI, a nedávno i GitHub představil své GitHub Actions. Většina nástrojů funguje velmi podobně. Když už pochopíte Travis, pochopíte i ty ostatní.
+
+## Travis CI
+Travis CI funguje pouze s GitHubem. Pokud máte váš kód někde jinde, podívejte se na alternativní řešení. Přidání podpory pro Travis CI do našeho repozitáře je velmi jednoduché. Nejprve jděte na jeho [web][travis] a přihlašte se s vaším GitHub účtem. Travis vás také požádá o povolení k přístupu k vašim repozitářům, jen se řiďte pokyny.
+
+<div className="Image__Medium">
+  <img src="./images/travisci-signup.png" alt="Přihlášení do Travis CI" />
+  <figcaption>Přihlášení do Travis CI</figcaption>
+</div>
+
+## Konfigurační soubor
+I když jste Travisu dali povolení přistupovat k vašim veřejným repozitářům, ještě jste neskončili. Travis CI netuší, co dělat, když změníte kód. Proto potřebujete přidat do kořene vašeho repozitáře konfigurační soubor. Nazývá se `.travis.yml` a podporuje mnoho voleb. Když chcete vaši konfiguraci doladit, ideálně se podívejte na [dokumentaci Travis CI][travis-docs].
+
+V mém posledním příspěvku jsem vysvětlil, jak se používá knihovna [ArduinoCI][arduino-ci] na automatizaci sestavování a testování vaší Arduino knihovny. Pojďme na tom stavět a integrujme ArduinoCI do Travise, aby jej každý commit spustil. Celý konfigurační soubor naleznete [zde][travis-config].
+
+```yaml
+sudo: false
+language: ruby
+dist: bionic
+git:
+  depth: false
+  quiet: true
+# Blacklist
+branches:
+  except:
+    - gh-pages
+before_install:
+  - sudo apt-get install -y doxygen graphviz
+script:
+   - bundle install
+   - bundle exec arduino_ci_remote.rb
+   - doxygen doc/Doxyfile
+deploy:
+  provider: pages
+  skip-cleanup: true
+  github-token: $GITHUB_TOKEN
+  keep-history: false
+  local-dir: doc/html
+  verbose: true
+  on:
+    branch: master
+```
+
+Jak můžete vidět, jako cílovou platformu jsem určil Ubuntu 18.04 Bionic Beaver. Také vyžaduji přítomnost programovacího jazyka Ruby. Je to proto, že autor ArduinoCI ho napsal v Ruby.
+
+Všimněte si hook `before_install`. V něm žádám nainstalovat další závislosti. V mém případě se používají k vygenerování [doxygen][doxygen] dokumentace po úspěšném sestavení projektu.
+
+V sekci `script` uvádím posloupnost příkazů, kterou chci spustit. Můžete zde uvést téměř cokoli, dokonce i spouštět externí bash skripty. V mém případě Travis udělá následující:
+- Nainstaluje závislosti potřebné k běhu testovacího frameworku ArduinoCI
+- Spustí ArduinoCI — Pokusí se sestavit kód pro několik Arduino platforem a spustit unit testy, pokud nějaké najde
+- Pokud ArduinoCI úspěšně skončilo, Travis vygeneruje pro projekt dokumentaci
+
+Pro nás je zajímavý `deploy` hook. Na hostování mé dokumentace používám [GitHub Pages][gh-pages].
+
+<div className="Image__Medium">
+  <img src="./images/gh-pages.png" alt="GitHub Pages" />
+  <figcaption>GitHub Pages</figcaption>
+</div>
+
+GitHub od vás očekává, že vytvoříte speciální větev s názvem `gh-pages`. Když do kořene větve `gh-pages` přidáte HTML a CSS soubory, můžete si prohlížet vygenerovanou dokumentaci online na unikátní webové adrese. Například [zde][objectbuton-pages] najdete dokumentaci pro můj projekt. Podívejte se na dokumentaci ke GitHub Pages, pokud chcete vědět víc.
+
+Chci, abyste si všimli, že tento deploy hook automaticky nahraje vaši vygenerovanou dokumentaci do konkrétní větve pro GitHub Pages. Vaše dokumentace se aktualizuje po každém commitu, který nezpůsobil selhání v předchozích krocích.
+
+## Povolení pro zápis
+Když jste dali Travisu oprávnění k přístupu k vašim repozitářům, dali jste mu přístup pouze pro čtení. Pokud chcete, aby Travis nahrával kód do vašeho repozitáře, potřebujete to vysloveně schválit. Teoreticky byste mohli poskytnout vaše uživatelské jméno a heslo, ale to není moc bezpečné. Místo toho vám GitHub umožňuje vygenerovat si přístupové tokeny. Jsou provázané s vaším účtem a definujete v nich rozsah toho, co je povoleno. Vaše přihlašovací údaje nebyly vystaveny a token můžete odvolat kdykoliv ze [správcovské stránky GitHubu][github-tokens].
+
+<div className="Image__Medium">
+  <img src="./images/gh-tokens-page.png" alt="Přístupové tokeny pro GitHub" />
+  <figcaption>Přístupové tokeny pro GitHub</figcaption>
+</div>
+
+## Odznaky
+Když vám veškerá tato automatizace funguje, můžete použít ještě jednu velmi užitečnou funkci. Travis CI poskytuje pro každý repozitář jedinečný odkaz. Odkazuje na obrázek, který nám řekne, zda sestavení kódu proběhlo úspěšně. V případě, že sestavení selže, obrázek bude místo toho ukazovat chybu. Cesta k obrázku se vůbec nemění.
+
+<div className="Image__Medium">
+  <img src="./images/gh-badges.png" alt="Odznaky na GitHubu" />
+  <figcaption>Odznaky na GitHubu</figcaption>
+</div>
+
+Takový obrázek se jmenuje odznak (badge) a na GitHubu je velmi běžný. Můžete si jej přidat do vašeho Readme souboru. Cesta k obrázku odznaku se nemění, ale obsah odráží aktuální stav vašeho repozitáře. Na první pohled tak vidíte, že máte problém.
+
+Přidání odznaku do Readme souboru je otázkou jednoho řádku:
+
+```markdown
+[![Build Status](https://travis-ci.com/JSC-electronics/ObjectButton.svg?branch=master)](https://travis-ci.com/JSC-electronics/ObjectButton)
+```
+
+## Závěr
+Nástroje průběžné integrace jsou velmi pohodlné. I když nemáte ve vašem kódu testy, přinesou vám výhody.
+
+<div className="Image__Medium">
+  <img src="./images/travis-dashboard.png" alt="Hlavní rozhraní Travisu" />
+  <figcaption>Hlavní rozhraní Travisu</figcaption>
+</div>
+
+Minimálně bych vám doporučil používat nástroje CI k provádění automatizovaných sestavení pro několik cílových Arduino platforem. Budete mít alespoň nějakou záruku, že na nich vaše knihovna bude fungovat. Toto dokážete nastavit za pár minut a výhody jsou obrovské. U open-source projektů nad tím ani nemá cenu přemýšlet. Všechny ostatní projekty vyžadují placenou CI službu — v těchto případech by mělo být zapnutí CI alespoň předmětem diskuse. Vždy máte i takovou možnost, že si na běh CI rozběháte vlastní server, čímž snížíte náklady.
+
+[//]: # (Used references)
+[arduino]: https://www.arduino.cc/
+[ci]: https://cs.wikipedia.org/wiki/Pr%C5%AFb%C4%9B%C5%BEn%C3%A1_integrace
+[good-library]: https://www.zahradnik.io/co-to-obnasi-napsat-dobrou-arduino-knihovnu
+[travis]: https://travis-ci.com/
+[git]: https://git-scm.com/
+[git-branch]: https://git-scm.com/book/en/v2/Git-Branching-Branches-in-a-Nutshell
+[gitflow]: https://www.gitflow.com/
+[travis-docs]: https://docs.travis-ci.com/
+[arduino-ci]: https://github.com/ianfixes/arduino_ci
+[travis-config]: https://github.com/JSC-electronics/ObjectButton/blob/master/.travis.yml
+[doxygen]: http://doxygen.nl/
+[gh-pages]: https://pages.github.com/
+[objectbuton-pages]: https://jsc-electronics.github.io/ObjectButton/
+[github-tokens]: https://github.com/settings/tokens

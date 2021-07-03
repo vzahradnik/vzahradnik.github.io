@@ -8,7 +8,7 @@ hero: ./images/hero.jpg
 lang: en_US
 ---
 
-In my [last blog post][good-library], I wrote about structuring the code of an Arduino library, and I also mentioned how important it is to write tests and proper, detailed documentation for it. Today I will build on those foundations and explain the concept of continuous integration with [Arduino][arduino] in mind. As a tool, we'll use [Travis CI][travis], which is for open-source projects free of charge.
+In my [last blog post][good-library], I wrote about structuring the code of an Arduino library, and I also mentioned how important it is to write tests and proper, detailed documentation for it. Today I will build on those foundations and explain the concept of continuous integration with [Arduino][arduino] in mind. As a tool, we'll use [Travis CI][travis].
 
 # Team collaboration in git
 Imagine a situation where you work on a project with two other developers. In our case, an Arduino library. You're using [git][git] to store your code, and every developer has its copy.
@@ -57,7 +57,7 @@ Imagine a virtual machine, which will be run just to build your code. You are re
 
 Also, a very common thing to do is to build (and test) your code in multiple environments. One CI will make your library in Windows 10 with PlatformIO; another will use the Arduino toolchain under Linux. In the case of Arduino, you can also produce binaries for several different hardware platforms to make sure the library builds fine on Arduino Uno, Mega, or Leonardo. If the build process fails for any of the platforms, you'll get an e-mail on failure, and you'll need to fix your code to be compatible or drop support for the hardware platform. Either way, without the CI, you most likely wouldn't know that your library doesn't work on Leonardo, because you manually test only on Uno.
 
-Today I will explain basic principles on Travis CI. This tool is free for all open-source projects. There are other CI solutions, e.g., Bamboo from Atlassian, or Jenkins. Also, GitLab provides its own CI, and recently GitHub introduced GitHub Actions. Most of the tools work very similarly. Once you get the gist for Travis, you'll understand the rest.
+Today I will explain basic principles on Travis CI. This tool was in the past free for all open-source projects. There are other CI solutions, e.g., Bamboo from Atlassian, or Jenkins. Also, GitLab provides its own CI, and recently GitHub introduced GitHub Actions. Most of the tools work very similarly. Once you get the gist for Travis, you'll understand the rest.
 
 ## Travis CI
 Travis CI works with GitHub only. If you host your code someplace else, check the alternative solutions. Adding support for Travis CI into our repository is very easy. First, go to their [webpage][travis] and sign up with your GitHub account. Travis will also ask you for authorization to access your repositories, just follow the guide.
@@ -116,7 +116,7 @@ The `deploy` hook is intriguing. I use [GitHub Pages][gh-pages] to host my docum
   <figcaption>GitHub Pages</figcaption>
 </div>
 
-GitHub expects you to create a special repository branch called `gh-pages.` When you put HTML and CSS files inside the root of the `gh-pages` branch, you can browse the generated documentation online on a unique web address. For example, [here][objectbuton-pages] is the documentation for my project. Check the GitHub Pages documentation for the details.
+GitHub expects you to create a special repository branch called `gh-pages`. When you put HTML and CSS files inside the root of the `gh-pages` branch, you can browse the generated documentation online on a unique web address. For example, [here][objectbuton-pages] is the documentation for my project. Check the GitHub Pages documentation for the details.
 
 What I would like you to notice is that this deploy hook will automatically push your generated documentation into this particular GitHub Pages branch. Your documentation gets updated after each commit, which didn't cause a failure in previous steps.
 
@@ -139,6 +139,7 @@ When you have all this automation in place, there's one very convenient feature 
 Such an image is called a badge and is very common on GitHub. You can put it into your Readme file. Path to the badge picture doesn't change, but the content reflects the current status of your repository. You know at a glance that there's an issue.
 
 Adding a badge into your Readme is a matter of just one line:
+
 ```markdown
 [![Build Status](https://travis-ci.com/JSC-electronics/ObjectButton.svg?branch=master)](https://travis-ci.com/JSC-electronics/ObjectButton)
 ```

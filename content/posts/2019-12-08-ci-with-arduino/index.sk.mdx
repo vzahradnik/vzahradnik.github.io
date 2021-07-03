@@ -9,7 +9,7 @@ lang: sk_SK
 secret: true
 ---
 
-V mojom [poslednom článku][good-library] som písal o štrukturovaní kódu Arduino knižnice a tiež som spomenul, aké dôležité je písať testy a dobrú, podrobnú dokumentáciu. Dnes budem stavať na týchto základoch a vysvetlím vám koncept priebežnej integrácie (continuous integration) so zameraním na [Arduino][arduino]. Ako nástroj použijeme [Travis CI][travis], ktorý je pre open-source projekty bezplatný.
+V mojom [poslednom článku][good-library] som písal o štrukturovaní kódu Arduino knižnice a tiež som spomenul, aké dôležité je písať testy a dobrú, podrobnú dokumentáciu. Dnes budem stavať na týchto základoch a vysvetlím vám koncept priebežnej integrácie (continuous integration) so zameraním na [Arduino][arduino]. Ako nástroj použijeme [Travis CI][travis].
 
 # Tímová spolupráca v gite
 Predstavte si, že pracujete na projekte s dvomi vývojármi. V našom prípade na Arduino knižnici. Na ukladanie kódu používate [git][git] a každý vývojár má svoju kópiu.
@@ -19,11 +19,11 @@ Predstavte si, že pracujete na projekte s dvomi vývojármi. V našom prípade 
   <figcaption>Tímová spolupráca v gite</figcaption>
 </div>
 
-Vy pridávate podporu pre overovanie používateľov, váš kolega píše kód na čítanie údajov z GSM modulu a ďalší kolega pracuje na validácii vstupných dát. Tým, ako implementujete novú funkčnosť, váš lokálny kód sa prirodzene odchyľuje od súborov na serveri — čo je jediný zdroj pravdy. Pre jednoduchosť predpokladajme, že všetci pracujete na tej istej vetve. Pokiaľ neviete, čo je to vetva, prečítajte si o tom [tu][git-branch].
+Vy pridávate podporu pre overovanie používateľov, váš kolega píše kód na čítanie údajov z GSM modulu a ďalší kolega pracuje na validácii vstupných dát. Tým, ako implementujete novú funkčnosť, sa váš lokálny kód prirodzene odchyľuje od súborov na serveri — čo je jediný zdroj pravdy. Pre jednoduchosť predpokladajme, že všetci pracujete na tej istej vetve. Pokiaľ neviete, čo je to vetva, prečítajte si o tom [tu][git-branch].
 
 V nejakom bode vaše zmeny nahráte do centrálneho repozitára. Vaši kolegovia sa pokúsia spraviť to isté. V ideálnom prípade ste všetci pracovali na rôznych častiach knižnice a neupravovali ste rovnakú časť kódu ako vaši dvaja kolegovia. V skutočnosti je to skôr zriedkavé a musíte riešiť problémy s tým spojené.
 
-> Git je len nástroj. To vy ste zodpovední za riešenie konfliktných zmien kódu.
+> Git je len nástroj. Iba vy ste zodpovední za vyriešenie konfliktných zmien v kóde.
 
 Git nám dáva niekoľko bezpečnostných mechanizmov na správne zlúčenie kódu zo všetkých zdrojov:
 1. Ak ste zmenili súbory, ktoré na serveri počas vašej zmeny neboli upravené, vaša zmena je prijatá (toto správanie je možné nastaviť)
@@ -35,7 +35,7 @@ Môžu sa aplikovať aj iné pravidlá, ale tieto sú najdôležitejšie. Zdôra
 ## Viacero vetiev a pull requestov
 Poďme teraz predchádzajúci príklad rozšíriť, aby bol realistickejší. Zvyčajne má váš git repozitár jednu hlavnú vetvu, ktorá sa volá `main` (alebo v starších repozitároch `master`). Vývojári, ktorí pracujú na novej funkčnosti, si vytvoria novú feature vetvu z vetvy main, napr. `feature/authentication`. Podobne ak pracujú na oprave chyby, vytvoria si vetvu bugfix. Existuje viacero vývojových modelov pre git, ktoré poskytujú isté postupy, napríklad [GitFlow][gitflow]. Dnes nebudem zachádzať do podrobností. Chcem len, aby ste vedeli, že reálne používaný git repozitár môže mať veľa vetiev, ktoré sa nakoniec zlúčia do jedinej.
 
-Bežný spôsob, ako zlúčiť zmeny z odvodených vetiev do hlavnej vetvy, je cez pull requesty. Tie nie sú neoddeliteľnou súčasťou gitu. Namiesto toho ich podporu pridali rôzne nástroje postavené nad gitom. V GitHube sa volajú pull requesty, GitLab ich volá merge requesty, atď. Ide o to, že vytvoríte pull request, vyberiete zdrojovú vetvu, odkiaľ sa zmeny preberú, vyberiete cieľovú vetvu, kde sa zmeny zlúčia, a kliknete na tlačidlo *Vytvoriť pull request*.
+Bežný spôsob, ako zlúčiť zmeny z odvodených vetiev do hlavnej vetvy, je cez pull requesty. Tie nie sú neoddeliteľnou súčasťou gitu. Namiesto toho ich podporu pridali rôzne nástroje postavené nad gitom. V GitHube sa volajú pull requesty, GitLab ich volá merge requesty, atď. Ide o to, že vytvoríte pull request, vyberiete zdrojovú vetvu, odkiaľ sa zmeny preberú, vyberiete cieľovú vetvu, kam sa zmeny zlúčia, a kliknete na tlačidlo *Vytvoriť pull request*.
 
 <div className="Image__Medium">
   <img src="./images/github-pull-request.png" alt="Vytvorenie pull requestu na GitHube" />
@@ -47,31 +47,31 @@ Iní vývojári budú mať príležitosť pozrieť sa na vaše zmeny, komentova�
 ## Priebežná integrácia. Prečo ju potrebujeme?
 Ak sa spoliehate pri zlučovaní kódu iba na git, máte problém. Git vám dáva záruku, že všetky konfliktné zmeny sú vyriešené, ale nezaručuje, že zmeny v kóde sú správne a že kód stále funguje správne.
 
-Ak je v kóde problém, skôr či neskôr sa to od vašich používateľov dozviete. Asi všetci sa zhodneme, že najlepšie je sa takýmto situáciám vyhnúť. Niektorý z hlavných vývojárov môže občas manuálne testovať, ale stále mu niečo môže ujsť. Manuálne testovanie je zradné a časovo náročné. Namiesto toho by sme sa mali zamerať na automatizáciu. A presne to nám poskytujú nástroje priebežnej integrácie.
+Ak je v kóde problém, skôr či neskôr sa to od vašich používateľov dozviete. Asi všetci sa zhodneme, že najlepšie je sa takýmto situáciám vyhnúť. Niektorý z hlavných vývojárov môže občas kód manuálne testovať, ale stále mu niečo môže ujsť. Manuálne testovanie je zradné a časovo náročné. Namiesto toho by sme sa mali zamerať na automatizáciu. A presne to nám poskytujú nástroje priebežnej integrácie.
 
 Nástroje priebežnej integrácie (CI) nám pomôžu v nasledujúcich veciach:
 - Automaticky zostavia kód po každej zmene v ktorejkoľvek vetve. Pokiaľ počítač nedokáže váš kód zostaviť, príde vám o tom e-mail.
 - Voliteľne spustia vaše testy, aby ste mali záruku, že kód stále robí to, čo má.
-- Vygenerujú dokumentáciu do zdrojového kódu a zverejnia ju na webstránke. Občas sa to nazýva continuous deployment.
+- Vygenerujú dokumentáciu zo zdrojového kódu a zverejnia ju na webstránke. Občas sa to nazýva continuous deployment.
 
 Predstavte si virtuálny počítač, ktorý sa zapne len aby zostavil váš kód. To vy ste zodpovední za špecifikovanie prostredia, napríklad ktorý operačný systém použiť, ktoré nástroje nainštalovať na spustenie kódu, v akých verziách nainštalovať knižnice, na ktorých váš kód závisí, atď. Je na vás, čo chcete automatizovať. Všetky príkazy, ktoré viete zadať do príkazového riadku, môžete tiež zadať do automatizačného skriptu.
 
 Tiež je veľmi bežné zostaviť (a otestovať) váš kód vo viacerých prostrediach. Jedno CI zostaví vašu knižnicu vo Windowse 10 s nástrojom PlatformIO, iný použije Arduino toolchain pod Linuxom. V prípade Arduina tiež viete vytvárať binárky pre niekoľko rôznych hardvérových platforiem, aby ste sa uistili, že sa knižnica bez problémov zostaví pre Arduino Uno, Mega alebo Leonardo. Ak počas zostavovania knižnice nastane na niektorej z platforiem chyba, dostanete o tom e-mail a buď musíte váš kód opraviť, aby bol kompatibilný, alebo zahodiť podporu pre hardvérovú platformu. Tak či tak, bez CI by ste sa asi ani nedozvedeli, že vaša knižnica na Leonarde nefunguje, pretože testujete ručne len na Une.
 
-Dnes vysvetlím základné princípy na Travis CI. Tento nástroj je pre všetky open-source projekty zadarmo. Sú aj iné CI riešenia, napríklad Bamboo od firmy Atlassian alebo Jenkins. Dokonca aj GitLab poskytuje svoje vlastné CI, a nedávno aj GitHub predstavil svoje GitHub Actions. Väčšina nástrojov funguje veľmi podobne. Keď už pochopíte Travis, pochopíte aj tie ostatné.
+Dnes vysvetlím základné princípy na Travis CI. Tento nástroj kedysi bol pre všetky open-source projekty zadarmo. Sú aj iné CI riešenia, napríklad Bamboo od firmy Atlassian alebo Jenkins. Dokonca aj GitLab poskytuje svoje vlastné CI, a nedávno aj GitHub predstavil svoje GitHub Actions. Väčšina nástrojov funguje veľmi podobne. Keď už pochopíte Travis, pochopíte aj tie ostatné.
 
 ## Travis CI
 Travis CI funguje len s GitHubom. Pokiaľ máte váš kód niekde inde, pozrite si alternatívne riešenia. Pridanie podpory pre Travis CI do nášho repozitára je veľmi jednoduché. Najprv choďte na jeho [webstránku][travis] a prihláste sa s vaším GitHub účtom. Travis vás tiež požiada o povolenia k prístupu k vašim repozitárom, len sa riaďte pokynmi.
 
 <div className="Image__Medium">
-  <img src="./images/travisci-signup.png" alt="Prihlásenie na Travis CI" />
-  <figcaption>Prihlásenie na Travis CI</figcaption>
+  <img src="./images/travisci-signup.png" alt="Prihlásenie do Travis CI" />
+  <figcaption>Prihlásenie do Travis CI</figcaption>
 </div>
 
 ## Konfiguračný súbor
 Aj keď ste Travisu dali povolenia pristupovať k vašim verejným repozitárom, ešte ste neskončili. Travis CI netuší, čo robiť, keď zmeníte kód. Preto potrebujete pridať do koreňa vášho repozitára konfiguračný súbor. Nazýva sa `.travis.yml` a podporuje mnoho volieb. Ak chcete vašu konfiguráciu doladiť, ideálne si pozrite [dokumentáciu pre Travis CI][travis-docs].
 
-V mojom poslednom príspevku som vysvetlil, ako sa používa knižnica [ArduinoCI][arduino-ci] na automatizáciu zostavovania a testovania vašej Arduino knižnice. Poďme na tom stavať a integrujme ArduinoCI do Travisa, aby ich každý commit spustil. Celý konfiguračný súbor nájdete [tu][travis-config].
+V mojom poslednom príspevku som vysvetlil, ako sa používa knižnica [ArduinoCI][arduino-ci] na automatizáciu zostavovania a testovania vašej Arduino knižnice. Poďme na tom stavať a integrujme ArduinoCI do Travisa, aby ho každý commit spustil. Celý konfiguračný súbor nájdete [tu][travis-config].
 
 ```yaml
 sudo: false
@@ -110,14 +110,14 @@ V sekcii `script` uvádzam postupnosť príkazov, ktorú chcem spustiť. Môžet
 - Spustí ArduinoCI — Pokúsi sa zostaviť kód pre niekoľko Arduino platforiem a spustiť unit testy, ak nejaké nájde
 - Ak ArduinoCI úspešne skončilo, Travis vygeneruje pre projekt dokumentáciu
 
-`deploy` hook je zaujímavý. Na hostovanie mojej dokumentácie používam [GitHub Pages][gh-pages].
+Pre nás je zaujímavý `deploy` hook. Na hostovanie mojej dokumentácie používam [GitHub Pages][gh-pages].
 
 <div className="Image__Medium">
   <img src="./images/gh-pages.png" alt="GitHub Pages" />
   <figcaption>GitHub Pages</figcaption>
 </div>
 
-GitHub od vás očakáva, že vytvoríte špeciálnu vetvu s názvom `gh-pages.` Keď do koreňa vetvy `gh-pages` pridáte HTML a CSS súbory, môžete si prezerať vygenerovanú dokumentáciu online na unikátnej webovej adrese. Napríklad [tu][objectbuton-pages] nájdete dokumentáciu pre môj projekt. Pozrite si dokumentáciu ku GitHub Pages, ak chcete vedieť viac.
+GitHub od vás očakáva, že vytvoríte špeciálnu vetvu s názvom `gh-pages`. Keď do koreňa vetvy `gh-pages` pridáte HTML a CSS súbory, môžete si prezerať vygenerovanú dokumentáciu online na unikátnej webovej adrese. Napríklad [tu][objectbuton-pages] nájdete dokumentáciu pre môj projekt. Pozrite si dokumentáciu ku GitHub Pages, ak chcete vedieť viac.
 
 Chcem, aby ste si všimli, že tento deploy hook automaticky nahrá vašu vygenerovanú dokumentáciu do konkrétnej vetvy pre GitHub Pages. Vaša dokumentácia sa aktualizuje po každom commite, ktorý nespôsobil zlyhanie v predchádzajúcich krokoch.
 
@@ -140,6 +140,7 @@ Keď už vám všetka táto automatizácia funguje, môžete použiť ešte jedn
 Takýto obrázok sa volá odznak (badge) a na GitHube je veľmi bežný. Môžete si ho pridať do vášho Readme súboru. Cesta k obrázku odznaku sa nemení, ale obsah odráža aktuálny stav vášho repozitára. Na prvý pohľad tak vidíte, že máte problém.
 
 Pridanie odznaku do Readme súboru je otázkou jedného riadku:
+
 ```markdown
 [![Build Status](https://travis-ci.com/JSC-electronics/ObjectButton.svg?branch=master)](https://travis-ci.com/JSC-electronics/ObjectButton)
 ```
