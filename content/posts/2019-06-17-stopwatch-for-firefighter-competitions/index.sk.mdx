@@ -1,6 +1,6 @@
 ---
 title: Stopky pre hasičské súťaže
-excerpt: Ako dobre zvláda Raspberry Pi časovo náročné snímanie dát cez GPIO? Poďme to zistiť.
+excerpt: Ako dobre zvláda Raspberry Pi časovo náročný zber dát cez GPIO? Poďme to zistiť.
 author: Vladimír Záhradník
 date: 2019-06-17
 categories: arduino raspberry gpiozero embedded realtime development jsc
@@ -9,11 +9,11 @@ lang: sk_SK
 secret: true
 ---
 
-Raspberry Pi je cenovo veľmi dostupné malé zariadenie, ktoré viete použiť v rôznych projektoch. Má vynikajúcu podporu Linuxu a jeho oficiálna linuxová distribúcia, Raspbian, beží na všetkých podporovaných Raspberry Pi.
+Raspberry Pi je cenovo veľmi dostupné malé zariadenie, ktoré viete použiť v rôznych projektoch. Má vynikajúcu podporu Linuxu a jeho oficiálna linuxová distribúcia, Raspbery Pi OS, beží na všetkých podporovaných Raspberry Pi.
 
-Pokiaľ vyvíjate projekt na Raspberry Pi 3 B+ a následne vložíte vašu microSD kartu do Raspberry Pi Zero, je možné, že váš kód bude stále fungovať. Jednou z veľkých výhod je [40-pinový GPIO konektor][rpi-gpio].
+Pokiaľ vyvíjate projekt na Raspberry Pi 3B+ a následne vložíte vašu microSD kartu do Raspberry Pi Zero, je možné, že váš kód bude stále fungovať. Jednou z veľkých výhod je [40-pinový GPIO konektor][rpi-gpio].
 
-Vďaka knižniciam ako [gpiozero][gpiozero] dokážu aj začiatočníci používať GPIO bez komplikácií. Avšak Raspberry Pi nie je mikrokontrolér a Raspbian nie je [systém optimalizovaný na použitie v reálnom čase][rpi-realtime-processing]. Pokiaľ potrebujete vykonávať úlohy kritické na čas, môžete naraziť na problémy, podobne ako sme aj narazili my.
+Vďaka knižniciam ako [gpiozero][gpiozero] dokážu aj začiatočníci používať GPIO bez komplikácií. Avšak Raspberry Pi nie je mikrokontrolér a Raspbery Pi OS nie je [systém optimalizovaný na použitie v reálnom čase][rpi-realtime-processing]. Pokiaľ potrebujete vykonávať úlohy kritické na čas, môžete naraziť na problémy, podobne ako sme narazili aj my.
 
 V tomto blogu sa pozrieme na vývoj stopiek pre hasičské súťaže a rozoberieme si niektoré problémy, ktorým sme čelili. Celý zdrojový kód nájdete [tu][stopwatch-repo].
 
@@ -83,12 +83,13 @@ Všimnite si, že keď chceme nastaviť widget ako viditeľný, nepotrebujeme zn
 
 ## Architektúra
 Naša aplikácia pozostáva z niekoľkých tried, ako môžete vidieť na diagrame nižšie.
+
 <div className="Image__Medium">
   <img src="./images/architecture-diagram.svg" alt="Architektúra" />
   <figcaption>Celková architektúra</figcaption>
 </div>
 
-Trieda `Stopwatch` (stopky) slúži na ovládanie hodín pri vstupe od používateľa a na spustenie merania. Trieda `FlowMeter` (merač prietoku) nepretržite meria prietok vody. Trieda `PressureTransducer` (snímač tlaku) meria tlak z dvoch pripojených senzorov, a trieda `RpmMeter` (merač otáčok) meria otáčky motora. Všetky tieto triedy posielajú správy do komponentu MainApp, ktorý obsluhuje slučku s udalosťami (event loop) a všetko spracovanie rieši na hlavnom UI vlákne. Pokiaľ skúsite aktualizovať UI widget z vlákna na pozadí, vaša aplikácia pravdepodobne spadne. V Androide to funguje veľmi podobne.
+Trieda `Stopwatch` (stopky) slúži na ovládanie hodín pri vstupe od používateľa a na spustenie merania. Trieda `FlowMeter` (merač prietoku) nepretržite meria prietok vody. Trieda `PressureTransducer` (snímač tlaku) meria tlak z dvoch pripojených senzorov, a trieda `RpmMeter` (merač otáčok) meria otáčky motora. Všetky tieto triedy posielajú správy do komponentu `MainApp`, ktorý obsluhuje slučku s udalosťami (event loop) a všetko spracovanie rieši na hlavnom UI vlákne. Pokiaľ skúsite aktualizovať UI widget z vlákna na pozadí, vaša aplikácia pravdepodobne spadne. V Androide to funguje veľmi podobne.
 
 ## Spracovanie GPIO vstupov s knižnicou gpiozero
 [Gpiozero][gpiozero] je malá knižnica, ktorá abstrahuje operácie nad GPIO. Pôvodne bola postavená nad knižnicou [RPi.GPIO][rpi-gpio], ale časom vývojári pridali podporu aj pre iné knižnice. Umožňuje, okrem iného, použiť GPIO na diaľku vo vašom PC, ako keby mal GPIO konektor priamo na jeho doske.
@@ -96,10 +97,11 @@ Trieda `Stopwatch` (stopky) slúži na ovládanie hodín pri vstupe od používa
 Aby sme spracovali GPIO vstupy, použili sme komponent Button (tlačidlo). Tento komponent vytvára svoje vlastné vlákno na pozadí len aby mohlo spracovávať GPIO vstupy. Neustále zisťuje zmeny vstupu a keď dôjde k zmene, zavolá vašu funkciu. Komponent [Button][gpiozero-button] nepoužívame len na spracovanie stlačení tlačidla, ale pre akýkoľvek vstup signálu. Pamätajte, že tlačidlo je len abstrakcia a knižnica umožňuje nakonfigurovať vstupný pin tak, ako potrebujeme.
 
 Nasledujúci kód ukazuje, ako viete tlačidlu priradiť vstupný pin a registrovať v ňom vašu funkciu ako callback:
+
 ```python
 _STOPWATCH_TRIGGER_PIN = 26
 
-start_button = Button(self._STOPWATCH_TRIGGER_PiN, pull_up=True, bounce_time=0.1)
+start_button = Button(self._STOPWATCH_TRIGGER_PIN, pull_up=True, bounce_time=0.1)
 start_button.when_pressed = lambda: self._start_watch()
 
 def _start_watch(self):
@@ -107,11 +109,11 @@ def _start_watch(self):
     pass
 ```
 
-Váš callback potrebujete pripojiť do vlastnosti `when_pressed`. Tento komponent pre tlačidlo očakáva funkciu so špecifickými parametrami. Ideálne by ste mu mali dať odkaz na funkciu bez vstupného parametra alebo môžete posunúť funkciu, ktorá očakáva jeden vstupný parameter. Keď bude zavolaná, bude mať správny odkaz na objekt Button.
+Váš callback potrebujete pripojiť do vlastnosti `when_pressed`. Tento komponent pre tlačidlo očakáva funkciu so špecifickými parametrami. Ideálne by ste mu mali dať odkaz na funkciu bez vstupného parametra alebo môžete odovzdať funkciu, ktorá očakáva jeden vstupný parameter. Keď bude zavolaná, bude mať správny odkaz na objekt Button.
 
 Tlačidlá používame vnútri tried. Ich funkcie majú `self` ako vstupný parameter. Aby to mohlo fungovať, používame anonymnú lambda funkciu, ktorá zavolá potrebný kód.
 
-S týmto prístupom sme mohli vybudovať naše komponenty od základu. Komponent pre stopky priamo obsluhuje vstupné signály na ovládanie hodín, RpmMeter sa spustí zakaždým, keď príjme impulz zo senzora v motore, atď.
+S týmto prístupom sme mohli vybudovať naše komponenty od základu. Komponent pre stopky priamo obsluhuje vstupné signály na ovládanie hodín, `RpmMeter` sa spustí zakaždým, keď príjme impulz zo senzora v motore, atď.
 
 ## Vzdialené GPIO
 Gpiozero podporuje [vzdialené GPIO][gpiozero-remote-gpio]. Nebudeme zachádzať do podrobností. Len vám povieme, že je to veľmi pohodlné a funguje to s Python kódom vo vašom počítači namiesto priamo v Raspberry Pi. Keď to raz skúsite, už o túto funkciu nechcete prísť. Svojím spôsobom to pripomína prácu s Arduino doskami na počítači. Hoci je Raspberry Pi dostatočne výkonné na mnoho úloh, vývoj kódu na oveľa výkonnejšom počítači šetrí čas.
@@ -126,7 +128,7 @@ Tento prístup nám umožnil odladiť a vyriešiť väčšinu problémov na poč
 [CircuitPython][circuit-python] je odnož [MicroPythonu][micropython] od firmy Adafruit. Ide o verziu Pythonu pre mikrokontroléry. Predtým, keď ste si kúpili senzor od Adafruitu, poskytli vám knižnice a návody pre plnohodnotnú verziu Pythonu, ako aj pre MicroPython. Od tohto prístupu upustili, pretože kód sa horšie udržiava. Čo namiesto toho Adafruit odporúča, je použiť ich vrstvu pre kompatibilitu, ktorá sa nazýva [Blinka][adafruit-blinka]. Pomocou tejto knižnice môžete použiť ich kód napísaný pre CircuitPython, a toto je prístup, ktorý sme si vybrali aj my.
 
 ## Slučka s udalosťami (Event Loop)
-Keď sa vyskytne nejaká udalosť, napr. je stlačená spúšť hodín, komponent, v tomto prípade, StopWatch, spracuje túto udalosť a oznámi to komponentu MainApp zavolaním funkcie `MainApp#post_on_ui_thread(event)`. MainApp obsluhuje slučku s udalosťami, ktorá spracováva všetky udalosti a obnovuje UI podľa potreby. Len pripomíname, že UI je potrebné obsluhovať len cez UI vlákno. Vnútorne používame triedu pre synchronizovaný front ([Queue][python-queue]).
+Keď sa vyskytne nejaká udalosť, napr. je stlačená spúšť hodín, komponent, v tomto prípade, `StopWatch`, spracuje túto udalosť a oznámi to komponentu `MainApp` zavolaním funkcie `MainApp#post_on_ui_thread(event)`. `MainApp` obsluhuje slučku s udalosťami, ktorá spracováva všetky udalosti a obnovuje UI podľa potreby. Len pripomíname, že UI je potrebné obsluhovať len cez UI vlákno. Vnútorne používame triedu pre synchronizovaný front ([Queue][python-queue]).
 
 ```python
 # Front pre UI vlákno na aktualizáciu komponentov
@@ -166,7 +168,7 @@ def _update_ui(self):
     except queue.Empty:
         pass
 
-    # Tento riadok sa postará o to, že funkcia pre aktualizácie sa bude volať pravidelne,
+    # Tento riadok sa postará o to, že funkcia pre aktualizáciu sa bude volať pravidelne,
     # aby spracovávala udalosti z frontu. SCREEN_REFRESH_MS nám umožňuje presne kontrolovať,
     # ako často sa táto funkcia bude volať.
     self._parent.after(self._SCREEN_REFRESH_MS, self._update_ui)
@@ -175,12 +177,14 @@ def _update_ui(self):
 ## Spracovanie dát zo senzorov
 Senzory pripojené k Raspberry Pi nám neposkytujú hodnoty, ktoré by sme mohli priamo použiť. Namiesto toho si musíme vypočítať, čo potrebujeme. Postupne ako prichádzajú vzorky, ich ukladáme do [cyklického frontu][circular-buffer]. Na tento účel používame triedu [deque][python-deque] z modulu `collections`.
 
-Napríklad, ak chcete uložiť posledných desať vzoriek podľa toho, ako prišli, inicializujte triedu deque následovne:
+Napríklad, ak chcete uložiť posledných desať vzoriek podľa toho, ako prišli, inicializujte triedu `deque` následovne:
+
 ```python
 self._samples = deque(maxlen=10)
 ```
 
 Keď príde nová vzorka, pridá sa na koniec frontu, čím sa zahodí najstaršia vzorka.
+
 ```python
 self._samples.append(time.time())
 ```
@@ -198,7 +202,7 @@ Náš senzor sa nachádza priamo v motore. Generuje impulz zakaždým, keď svie
 V tejto chvíli počítame časový rozdiel medzi desiatimi vzorkami. Dokonalá vzorkovacia presnosť na Raspberry Pi nie je zaručená a tento prístup nám pomôže aspoň čiastočne tento problém vyriešiť.
 
 ### Výpočet prietoku vody z impulzov
-Svojím spôsobom je to podobné k predchádzajúcemu prípadu, pretože taktiež na vstupe dostávame impulzy. Aby sme vypočítali prietok v litroch za sekundu, potrebujeme len inú rovnicu.
+Svojím spôsobom je to podobné s predchádzajúcim prípadom, pretože taktiež na vstupe dostávame impulzy. Aby sme vypočítali prietok v litroch za sekundu, potrebujeme len inú rovnicu.
 
 ```python
     freq = 1 / ((self._samples[-1] - self._samples[0]) / self._MAX_QUEUE_LENGTH)
@@ -208,7 +212,7 @@ Svojím spôsobom je to podobné k predchádzajúcemu prípadu, pretože taktie�
 ### Výpočet tlaku
 Získanie údajov o tlaku je zložitejšie. Tlak môže veľmi rýchlo narásť aj klesnúť. Preto potrebujeme vypočítať jeho [kĺzavý priemer][moving-average].
 
-Implementácia pre tento modul sa líši. Senzor, ktorý používame, komunikuje po zbernici I<sup>2</sup>C. V jeho vlákne nepoužívame komponent Button. Namiesto toho potrebujeme vytvoriť naše vlastné vlákno na pozadí, ktoré bude periodicky zbierať zo senzora nové vzorky. V tomto vlákne beží nasledujúci kód.
+Implementácia pre tento modul sa líši. Senzor, ktorý používame, komunikuje po zbernici I<sup>2</sup>C. V jeho vlákne nepoužívame komponent `Button`. Namiesto toho potrebujeme vytvoriť naše vlastné vlákno na pozadí, ktoré bude periodicky zbierať zo senzora nové vzorky. V tomto vlákne beží nasledujúci kód.
 
 ```python
 def _update_sliding_avg_pressure_thread(self):
@@ -220,6 +224,7 @@ def _update_sliding_avg_pressure_thread(self):
 ```
 
 Keď neskôr budeme chcieť vedieť tlak, vypočítame jeho hodnotu následovne:
+
 ```python
 def get_sliding_avg_pressure(self):
     # Kĺzavý priemer sa vypočíta z _MAX_QUEUE_LENGTH vzoriek
@@ -241,9 +246,9 @@ Keď generujeme impulzy so špecifickou frekvenciou, vypočítané otáčky za m
 Problém veľmi podobný tomu vyššie. Akurát, že prietok vody kolíše v menšom rozsahu.
 
 ### Zmena tlaku sa neprejaví okamžite
-Zmena napätia sa neprejavila okamžitou zmenou tlaku. Asi by sme mohli viac odladiť výpočet tlaku. Zmena veľkosti cyklického frontu by mohla byť efektívnym riešením. Avšak v našom prípade je to prijateľné.
+Zmena napätia sa neprejavila okamžitou zmenou tlaku. Asi by sme mohli viac odladiť výpočet tlaku. Zmena veľkosti cyklického frontu by mohla byť efektívnym riešením. Avšak v našom prípade je to takto prijateľné.
 
-### Protokolovanie (logovanie) značne spomaľuje snímanie dát
+### Protokolovanie (logovanie) značne spomaľuje zber dát
 V našom kóde vo veľkom používame modul [logging][logging]. Na začiatku sme nastavili, aby zobrazoval všetky správy s prioritou DEBUG a vyššou. Ukázalo sa, že je to problém, ak sa logovanie vyskytuje vo vláknach, ktoré vzorkujú dáta. Nakoniec sme veci urýchlili tým, že sme nastavili náš logger, aby vypisoval iba upozornenia a chybové správy.
 
 ## Riešenie

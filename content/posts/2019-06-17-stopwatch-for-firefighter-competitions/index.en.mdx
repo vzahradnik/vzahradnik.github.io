@@ -8,11 +8,11 @@ hero: ./images/hero.jpg
 lang: en_US
 ---
 
-Raspberry Pi is a very affordable little device, which you can use for various projects. It has outstanding Linux support, and it's official Linux distribution, Raspbian, runs on all supported Raspberry Pis.
+Raspberry Pi is a very affordable little device, which you can use for various projects. It has outstanding Linux support, and it's official Linux distribution, Raspbery Pi OS, runs on all supported Raspberry Pis.
 
-If you develop a project on Raspberry Pi 3 B+ and then you insert your microSD card into Raspberry Pi Zero, your code may still just work. One of the great benefits is a [40-pin GPIO header][rpi-gpio].
+If you develop a project on Raspberry Pi 3B+ and then you insert your microSD card into Raspberry Pi Zero, your code may still just work. One of the great benefits is a [40-pin GPIO header][rpi-gpio].
 
-Along with libraries like [gpiozero][gpiozero], even beginners can use GPIO without hassle. But Raspberry Pi is not a microcontroller, and Raspbian is not a [real-time OS][rpi-realtime-processing]. If you need to perform time-critical tasks, you may get into trouble as we did.
+Along with libraries like [gpiozero][gpiozero], even beginners can use GPIO without hassle. But Raspberry Pi is not a microcontroller, and Raspbery Pi OS is not a [real-time OS][rpi-realtime-processing]. If you need to perform time-critical tasks, you may get into trouble as we did.
 
 In this blog post, we'll dive into the development of a stopwatch for firefighter competitions and discuss some of the issues we were facing. You can find the full source code [here][stopwatch-repo].
 
@@ -82,12 +82,13 @@ Note that when we want to make the widget visible again, we don't need to give a
 
 ## Architecture
 Our application consists of several classes, as you can see in a diagram below.
+
 <div className="Image__Medium">
   <img src="./images/architecture-diagram.svg" alt="Architecture" />
   <figcaption>Overall architecture</figcaption>
 </div>
 
-`Stopwatch` serves to control the clock on user input and to trigger the measurement. The `FlowMeter` continuously measures water flow. `PressureTransducer` measures pressure from two connected sensors and the `RpmMeter` measures the engine's RPM. All these classes post messages into the MainApp component, which handles an event loop and does all the processing on its UI thread. If you'd try to update the UI widget from a background thread, your application would most likely crash. Android works very similarly.
+`Stopwatch` serves to control the clock on user input and to trigger the measurement. The `FlowMeter` continuously measures water flow. `PressureTransducer` measures pressure from two connected sensors and the `RpmMeter` measures the engine's RPM. All these classes post messages into the `MainApp` component, which handles an event loop and does all the processing on its UI thread. If you'd try to update the UI widget from a background thread, your application would most likely crash. Android works very similarly.
 
 ## Handling GPIO inputs with gpiozero
 [Gpiozero][gpiozero] is a small library, which abstracts operations over GPIO. People built it originally on top of [RPi.GPIO][rpi-gpio], but over time they added support for other libraries. It allows, among other things, to use GPIO remotely from your PC as if it had its GPIO on board.
@@ -95,10 +96,11 @@ Our application consists of several classes, as you can see in a diagram below.
 To process GPIO inputs, we used the Button component. This component creates its background thread just to process GPIO input. It is continuously polling for input changes, and it will call your function when such change occurs. We use the [Button][gpiozero-button] component not just for handling button presses, but for any signal input. Remember, the button is just an abstraction. And the library configures the input pin as needed.
 
 The following code shows how to attach an input pin to the button and register your function as a callback:
+
 ```python
 _STOPWATCH_TRIGGER_PIN = 26
 
-start_button = Button(self._STOPWATCH_TRIGGER_PiN, pull_up=True, bounce_time=0.1)
+start_button = Button(self._STOPWATCH_TRIGGER_PIN, pull_up=True, bounce_time=0.1)
 start_button.when_pressed = lambda: self._start_watch()
 
 def _start_watch(self):
@@ -110,7 +112,7 @@ You need to connect your callback into `when_pressed` property. The button compo
 
 We use buttons inside classes. Their functions have `self` as their input parameter. To make it work, we use an anonymous lambda function, which calls the code we need.
 
-With this approach, we could build our components from the ground up. The stopwatch component directly handles input signals for controlling the clock; RpmMeter gets triggered each time it receives a pulse from the engine sensor, etc.
+With this approach, we could build our components from the ground up. The stopwatch component directly handles input signals for controlling the clock; `RpmMeter` gets triggered each time it receives a pulse from the engine sensor, etc.
 
 ## Remote GPIO
 Gpiozero supports [remote GPIO][gpiozero-remote-gpio]. We won't go into details. Let us assure you that it is very convenient, and working with your Python code on your PC instead of your Raspberry Pi is a feature you don't want to lose once you try it. In some sense, it resembles working with Arduino boards on a PC. Albeit Raspberry Pi is powerful enough for many tasks, developing your code on a much powerful PC saves time.
@@ -125,7 +127,7 @@ This approach allowed us to debug and resolve most of the issues on a PC and spe
 [CircuitPython][circuit-python] is Adafruit's flavor of [MicroPython][micropython]. It's a version of Python for microcontrollers. Previously when you bought a sensor from Adafruit, they provided libraries and guide for the full-featured Python version as well as for MicroPython. This approach is deprecated as it's worse for maintaining the code. What Adafruit recommends instead is to use its compatibility layer, called [Blinka][adafruit-blinka]. Through this library, you can use their code written for CircuitPython, and this is an approach we chose as well.
 
 ## Event Loop
-When an event occurs, i.e., clock trigger is pressed, a component, in this case, StopWatch, processes this event and notifies the MainApp by calling `MainApp#post_on_ui_thread(event)`. MainApp runs an event loop, which processes all events and refreshes the UI when needed. Just a reminder, UI update needs to be handled solely by UI thread. Internally we use synchronized [Queue][python-queue] class.
+When an event occurs, i.e., clock trigger is pressed, a component, in this case, `StopWatch`, processes this event and notifies the `MainApp` by calling `MainApp#post_on_ui_thread(event)`. `MainApp` runs an event loop, which processes all events and refreshes the UI when needed. Just a reminder, UI update needs to be handled solely by UI thread. Internally we use synchronized [Queue][python-queue] class.
 
 ```python
 # Queue for UI thread to update components
@@ -174,12 +176,14 @@ def _update_ui(self):
 ## Processing data from sensors
 Sensors attached to Raspberry Pi don't provide values that could be used directly as-is. Instead, we need to compute what we need. As samples arrive, we store them inside of a [circular buffer][circular-buffer]. For that purpose, we use the [deque][python-deque] class from the `collections` module.
 
-For instance, if you want to store the last ten samples as they arrive, initialize deque as follows:
+For instance, if you want to store the last ten samples as they arrive, initialize `deque` as follows:
+
 ```python
 self._samples = deque(maxlen=10)
 ```
 
 When a new sample comes, it is appended to the end of the buffer, effectively dropping the oldest sample.
+
 ```python
 self._samples.append(time.time())
 ```
@@ -207,7 +211,7 @@ It is somewhat similar to the previous case in that we also get pulses on input.
 ### Computing pressure
 Getting pressure data is trickier. Pressure can rise and decline very rapidly. Therefore, we need to compute its [moving average][moving-average].
 
-Implementation for this module differs. The sensor we use communicates through the I<sup>2</sup>C bus. We don't use the Button component with its thread. Instead, we need to create our background thread, which will be polling the sensor for new samples periodically. This thread runs the following runnable code.
+Implementation for this module differs. The sensor we use communicates through the I<sup>2</sup>C bus. We don't use the `Button` component with its thread. Instead, we need to create our background thread, which will be polling the sensor for new samples periodically. This thread runs the following runnable code.
 
 ```python
 def _update_sliding_avg_pressure_thread(self):
@@ -219,6 +223,7 @@ def _update_sliding_avg_pressure_thread(self):
 ```
 
 When we later query for pressure, we compute its value as follows:
+
 ```python
 def get_sliding_avg_pressure(self):
     # Sliding average is computed from _MAX_QUEUE_LENGTH samples
