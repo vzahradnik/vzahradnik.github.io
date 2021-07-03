@@ -82,6 +82,7 @@ void onClick() {
 Instead of passing a reference to the callback function, ObjectButton introduces `Listeners`. Such an approach is used heavily in [Android][android-listener]. We define a listener as an abstract class. The listener defines a contract between our library and the code written by a user.
 
 For example, the [listener][onclicklistener] to receive `onClick` events is defined like this:
+
 ```cpp
 class IOnClickListener {
 public:
@@ -113,6 +114,7 @@ void OnClickListener::onClick(ObjectButton &button) {
 ```
 
 You will register a listener with the library like this:
+
 ```cpp
 // Create an ObjectButton instance
 ObjectButton button = ObjectButton(...);
@@ -161,6 +163,7 @@ In my case, I wanted to provide a way to register callbacks, a way to customize 
 Another thing you need to think of is how to structure the code with regards to testing. When you write the code, try to reason how to test it. Typically, you should avoid one large class. Instead, break your code into several smaller classes. Later, you can test them in isolation from the rest of your system. Their functions should be doing only one thing, and their name should give you a hint, what they supposed to do without reading the documentation. Under normal circumstances, these functions are short — less than ten lines of code. The code which implements state machine is usually huge. However, you can move a lot of the functionality into helper functions. When you do that, your state machine will provide a high-level picture of what it does. Here's an example from my code to notify listeners about the occurrence of the click event.
 
 Instead of having this code:
+
 ```cpp
 if (timeDelta > m_clickTicks) {
     m_state = State::BUTTON_NOT_PRESSED;
@@ -170,6 +173,7 @@ if (timeDelta > m_clickTicks) {
 ```
 
 You move the logic into another function, like this:
+
 ```cpp
 if (timeDelta > m_clickTicks) {
     m_state = State::BUTTON_NOT_PRESSED;
@@ -209,6 +213,7 @@ If you want to generate Doxygen documentation, you'll need to create a [Doxyfile
 If you want to know the details about how to add comments in the code, it's best to check the [Doxygen webpage][doxygen].
 
 Here is an example of comment inside the code:
+
 ```cpp
 /**
   * Pointer to object listening to click events. If event listener is not set,
@@ -230,9 +235,10 @@ IOnDoubleClickListener *m_onDoubleClickListener = nullptr;
 Javadoc comment starts with `/**`, which is still a valid C++ comment. The alternative syntax looks like this: `///`. Also, notice flags like `@see`. These will help you to generate hyperlinks to other classes and functions.
 
 After you've documented your code, generating the documentation is simple. Your Doxyfile has all the information.
+
 ```bash
 doxygen <path to doxyfile>
-``` 
+```
 
 You can put generated documentation anywhere you like. It's a static HTML page with no external dependencies. I host the documentation on GitHub Pages for free. For inspiration, generated documentation for one of my projects is [here][objectbutton-doxygen].
 
@@ -284,6 +290,7 @@ You have several options, how to accomplish this:
 
 ### PlatformIO approach
 PlatformIO projects always have a [platformio.ini][platformio-ini] file. There you define whole project configuration, including platforms for which you build the binaries. Each platform represents a different Arduino board or even a different CPU architecture.
+
 ```ini
 ; Arduino Uno: First target board
 [env:uno]
@@ -299,6 +306,7 @@ framework = arduino
 ```
 
 When you want to build a code for multiple target platforms, just enter the following commands:
+
 ```bash
 # pio run -e <target environment>
 pio run -e uno
@@ -359,6 +367,7 @@ Now when we've defined what a click is, we can simulate a click in our test:
 - Button press and release happened within defined `click` timeout
 
 Below is a real example from my test suite:
+
 ```cpp
 unittest(receive_on_click_event_after_default_click_ticks) {
     ListenerMock testMock = ListenerMock(INPUT_PIN, true);
@@ -391,14 +400,16 @@ unittest(receive_on_click_event_after_default_click_ticks) {
 ```
 
 **State: A user pressed the button**
-In this case, we consider a button as pressed when the voltage level on the input pin is 0 Volts. Thanks to ArduinoCI, we can simulate that very easily:
+In this case, we consider a button as pressed when the voltage level on the input pin is 0 volts. Thanks to ArduinoCI, we can simulate that very easily:
+
 ```cpp
 state->digitalPin[INPUT_PIN] = LOW;
 ```
 
 `state` is a pointer to ArduinoCI structure, which controls "virtual" Arduino running our test.
 
-Now, we've pressed a button, and we need to release it after a particular time. If we just changed the input pin voltage, the internal timer would still return the same value — 0. Virtually no time has passed. To simulate time, we need to set `micros,` i.e.:
+Now, we've pressed a button, and we need to release it after a particular time. If we just changed the input pin voltage, the internal timer would still return the same value — 0. Virtually no time has passed. To simulate time, we need to set `micros`, i.e.:
+
 ```cpp
 state->micros = (DEFAULT_DEBOUNCE_TICKS_MS + 1) * 1000;
 ```
@@ -407,15 +418,17 @@ state->micros = (DEFAULT_DEBOUNCE_TICKS_MS + 1) * 1000;
 
 **State: A user released the button**
 A user holds the button for some time; it's time to release it.
+
 ```cpp
 state->digitalPin[INPUT_PIN] = HIGH;
 state->micros = (DEFAULT_CLICK_TICKS_MS + 1) * 1000;
 ```
 
-We've just set an input pin to 3.3 Volts, which simulates releasing the button. If needed, you can also shift internal timer to simulate a real scenario.
+We've just set an input pin to 3.3 volts, which simulates releasing the button. If needed, you can also shift internal timer to simulate a real scenario.
 
 **Did the library detect the click action?**
 Our unit test simulates precisely a click action. If our library works correctly, it will notify our `OnClickListener` about this action. We usually verify the results at the end of the test:
+
 ```cpp
 assertEqual(1, testMock.getClickEventsReceivedCount());
 ```

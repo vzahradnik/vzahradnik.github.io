@@ -1,0 +1,495 @@
+---
+title: Co to obnáší napsat dobrou Arduino knihovnu?
+excerpt: Arduino knihovny by se měly dát jednoduše používat, měly by být dobré zdokumentovány a pokryté unit testy. Jak se to dělá?
+author: Vladimír Záhradník
+date: 2019-11-27
+categories: arduino arduinoci library embedded testing documentation development jsc
+hero: ./images/hero.jpg
+lang: cs_CZ
+secret: true
+---
+
+Napsat slušnou knihovnu není jednoduché. Názory, jak by měla taková knihovna vypadat, se mezi vývojáři různí. Myslím, že robustní knihovna by měla mít podrobnou dokumentaci a vývojáři by ji měli pokrýt unit testy. Také by slušná knihovna měla skrýt všechno složité a nabídnout rozhraní, které je intuitivní a jednoduché na použití.
+
+Většinu svých let jsem strávil při softwarovém vývoji, přičemž jsem pracoval na velkých projektech. Stavěli jsme je na robustních frameworcích a ve většině případů jsme také napsali správně unit testy a integrační testy. Věřím, že dobře napsané testy vám mohou ušetřit čas, který byste jinak strávili laděním a jinými aktivitami.
+
+Svou Arduino soupravu jsem dostal asi před rokem a půl, přičemž jsem framework pochopil velmi rychle. Když se navrhovalo Arduino, tvůrci mysleli na programátory, pro které je to hobby a kteří se programovat naučili sami. Na jedné straně to láká velkou komunitu lidí k elektronice, na druhé straně se kvalita zveřejněného kódu dramaticky mění. Když jsem potřeboval nějakou knihovnu pro mé [Arduino][arduino] projekty, často jsem se podíval na kód na [GitHubu][github], který byl mnohokrát neudržovaný. Knihovny, které byly udržované, často neměli správnou dokumentaci. Většina z nich neměla unit testy.
+
+*Proč byste měli testovat váš kód?* Podívejte se na následující video.
+
+<div class="Image__Medium">
+  <YouTube videoId="PK_yguLapgA" />
+</div>
+
+V roce 1996 skončil premiérový let rakety Ariane 5 masivní katastrofou, kterou způsobila programátorská chyba. Přečtěte si celý příběh [zde][ariane-5].
+
+Arduino není takto kritické a drahé, ale stále si myslím, že má smysl psát pro něj testy. Nevýhodou je to, že na to potřebujete další vývojářský čas. Řekl bych, že každý projekt je jiný a vy se potřebujete rozhodnout, zda čas na psaní testů za to stojí. Podle mého názoru budete výrazně těžit z testů, pokud implementujete nějaký druh [stavového automatu][state-machine]. V Arduinu je všudypřítomný a testy umožňují měnit kód s důvěrou. Také platí, že Arduino knihovny jsou obvykle malé, mají pouze stovky řádků kódu, ve srovnání s tisíci řádků v Android aplikacích nebo jinde. Abyste vaši knihovnu důkladně otestovali, často stačí napsat méně než 10 testů. Například já jsem dokázal napsat unit testy pro [relé knihovnu][simple-relay] za méně než tři hodiny a to jsem se stále učil, jak se používá testovací framework.
+
+V této době pracuji na dlouhodobém [Arduino][arduino] projektu, který implementuje poloautomatickou převodovku. Představte si volant se dvěma páčkami vedle něj.
+
+<div className="Image__Small">
+  <img src="./images/raceduino-wheel.jpg" alt="Závodní volant" />
+  <figcaption>Závodní volant, s laskavým svolením JSC electronics</figcaption>
+</div>
+
+Když řidič stiskne páčku napravo, Arduino přeřadí na vyšší převodový stupeň, a když stiskne páčku nalevo, Arduino podřadí. Také Arduino [ovládá spojku][clutch-by-wire]. Při závodech na rychlé odezvě záleží, projeví se to v lepších časech a potenciálně celkových výsledcích.
+
+Abych zjistil stisknutí páčky, na začátku jsem použil Arduino knihovnu [OneButton][onebutton]. Ovšem ta se dobře nedala integrovat s mým stávajícím kódem. Také nevysílala události jako například, že bylo stisknuto nějaké tlačítko. Tyto typy událostí jsou pro mě zásadní, protože potřebuji okamžitě vědět, že nastala nějaká akce. Zpoždění 50 až 100 milisekund má obrovský dopad na latenci. Nakonec jsem se rozhodl napsat vlastní knihovnu.
+
+## ObjectButton
+[ObjectButton][objectbutton] je Arduino knihovna pro detekci běžných akcií tlačítek podle změn na vstupních pinech [GPIO][gpio]. Tuto knihovnu by mělo být snadné integrovat s C++ objekty, podle toho ten název.
+
+### Omezení callback funkce
+Většina Arduino knihoven vám umožní připojit callback funkci, která se zavolá, jakmile nastane nějaká akce. Callback se obvykle implementuje jako ukazatel na funkci bez vstupních parametrů.
+
+```cpp
+extern "C" {
+    typedef void (*callbackFunction)(void);
+}
+```
+
+V praxi zaregistrujete callback takto:
+
+```cpp
+...
+// Vytvoření callback funkce pro kliknutí
+void onClick() {
+    Serial.println("Bylo kliknuto na tlačítko");
+};
+
+// Registrování této funkce v knihovně
+OneButton button = OneButton(INPUT_PIN, /* activeLow */ true);
+button.attachClick(onClick);
+```
+
+Následující přístup funguje dokonale pro registrování klasických funkcí jako v C-čku, ale už ne pro [členské funkce C++ objektů][so-object-member]. Je to proto, že všechny členské funkce mají implicitní (první) parametr — `this`.
+
+Abyste toto omezení obešli, mohli byste:
+- Předat adresu statické členské funkce, která zavolá členskou funkci běžící na konkrétním objektu
+- Vytvořit nějakou C-čkovskou funkci mimo objektu, která zavolá členskou funkci na objektu
+
+```cpp
+...
+LedController controller = LedController();
+
+void onClick() {
+    controller.turnLedOn();
+};
+```
+
+*Poznámka: Lambda/anonymní funkce jsou, pokud vím, v Arduinu nedostupné. Arduino nepodporuje kompletní C++ standard.*
+
+### Listenery
+Namísto předávání odkazu na callback funkci, ObjectButton zavádí `Listenery`. Takový přístup ve velkém využívá [Android][android-listener]. Listener definujeme jako abstraktní třídu. Listener definuje kontrakt mezi naší knihovnou a kódem, který napsal uživatel.
+
+Například [listener][onclicklistener] na přijetí `onClick` událostí je definován takto:
+
+```cpp
+class IOnClickListener {
+public:
+    virtual ~IOnClickListener() = default;
+
+    virtual void onClick(ObjectButton &button) = 0;
+};
+```
+
+Uživatel napíše C++ třídu, která dědí z této abstraktní třídy. Musíte implementovat všechny virtuální funkce. Když takovou třídu zaregistrujete v knihovně, interní kód v knihovně může bezpečně zavolat funkci `onClick (...)`.
+
+```cpp
+#include <ObjectButton.h>
+#include <interfaces/IOnClickListener.h>
+
+class OnClickListener : private virtual IOnClickListener {
+public:
+    OnClickListener() = default;
+    ....
+
+private:
+    void onClick(ObjectButton &button) override;
+    ...
+};
+
+void OnClickListener::onClick(ObjectButton &button) {
+  // Reakce na kliknutí na tlačítko
+}
+```
+
+Listener zaregistrujete v knihovně takto:
+
+```cpp
+// Vytvoření instance ObjectButton
+ObjectButton button = ObjectButton(...);
+
+OnClickListener onClickListener = OnClickListener();
+button.setOnClickListener(onClickListener);
+```
+
+## Jak strukturovat kód
+Když píšete vaši vlastní Arduino knihovnu, je to oproti psaní obyčejného Arduino projektu zcela nová zkušenost. Tentokrát *píšete* kód, který v projektu používá někdo jiný. V knihovně nemáte žádné funkce jako `setup()` a `loop()`. Arduino vám dává pravidla, jak strukturovat kód. Některé z nich jsou povinné, jiné jsou volitelné, ale doporučené. Vaším cílem by mělo být vytvoření takové knihovny, která se každému snadno používá, dokonce i začátečníkům. Například se ujistěte, že v ní máte nějakou `begin()` funkci, která inicializuje váš kód. V Arduinu tento vzor vídáte často.
+
+Předpokládejme o vašich uživatelích následující:
+- Nemusí mít žádné předchozí programátorské zkušenosti
+- Nerozumí ukazatelům
+- Nevědí, co je to konstruktor a destruktor
+- Znají z jiných knihoven funkce `begin()` a `end()`
+- Očekávají názvy funkcí jako [camelCase] ​​[camel-case], t.j. `getPressure()`
+
+Jedním z vašich hlavních cílů by mělo být skrytí všeho složitého a poskytnutí mnoha příkladů k použití vaší knihovny. Arduino poskytuje několik referenčních příruček, vy byste se měli podívat alespoň na tyto:
+- [Příručku stylů pro Arduino][arduino-style-guide], která vám pomůže napsat příklady pro vaši knihovnu, které budou moci číst začátečníci i profesionální vývojáři
+- [Příručku stylů pro Arduino API][arduino-api-style-guide], která definuje pravidla pro psaní API knihoven
+- [Specifikaci Arduino knihoven][arduino-library-specification], podle níž byste se měli řídit, aby byla vaše knihovna kompatibilní s Arduino IDE
+
+Poté co už znáte vaše uživatele a doporučené pravidla Arduino komunity, je čas definovat si některé cíle, které chcete splnit.
+
+### Cíle k dosažení
+- **Snadné použití pro každého**
+- Dobrá vysokoúrovňová abstrakce
+- Konzistentní s [příručkami pro programování Arduino projektů][arduino-api-style-guide]
+- Dodržuje [specifikaci knihoven pro Arduino IDE 1.5][arduino-library-specification]
+- Dobrá čitelnost
+- Kompatibilita
+- Žádné externí závislosti
+- Implementuje „multitasking“
+- **Vynikající pokrytí unit testy**
+- Mnohé příklady použití
+- **Dobře zdokumentované**
+
+Jak můžete vidět, pokrytí unit testy a dokumentace jsou jen některé z cílů, které potřebujeme splnit.
+
+### Vysokoúrovňová abstrakce
+Když se snažíte přijít se slušným návrhem knihovny, začněte perem a papírem. Pro inspiraci se podívejte na oficiální Arduino knihovny. Všechny jsou dobře napsané. Stručně vzpomenu knihovnu [Servo][arduino-servo]. Představte si, že chcete ovládat servomotor. Které funkce byste chtěli mít? Asi budete potřebovat nějakou funkci na zadání výstupního pinu, na kterém bude servomotor připojen. Rovněž budete potřebovat funkci, která servomotoru řekne, o kolik se má pootočit a funkci, která hlásí aktuální pozici servomotoru. A to je asi tak vše co potřebujete jako uživatel. Uživatele neobtěžujete implementačními detaily, všechny jsou skryté.
+
+V mém případě jsem chtěl poskytnout způsob na registrování callbacků, způsob, jak upravit debounce interval a způsob, jak přizpůsobit hodnoty časových limitů použitých k detekci kliknutí, dvojkliků a dlouhých stisknutí tlačítka. Většinu času uživatelé pouze zaregistrují callback a výchozí hodnoty je nebudou zajímat, ale je dobrou praxí dát uživatelům možnost chování přizpůsobit. Ovšem nesnažte se zpřístupnit všechny hodnoty. Namísto toho přemýšlejte nad scénáři použití a rozhodněte se, co má smysl zpřístupnit. Poté, co jsem udělal své návrhové rozhodnutí, se moje knihovna inicializuje jedním nebo dvěma řádky kódu. Paráda! Klidně se podívejte na [příklady][objectbutton-examples] toho, jak se knihovna používá.
+
+Další věcí, nad kterou musíte přemýšlet, je to, jak strukturovat kód s ohledem na testování. Když píšete kód, zkuste přemýšlet, jak ho testovat. Typicky byste se měli vyhýbat jedné velké třídě. Namísto toho rozbijte kód do několika menších tříd. Později je můžete testovat izolovaně od zbytku systému. Jejich funkce by měly dělat pouze jednu věc a jejich názvy by vám měly napovídat, co asi dělají, aniž jste četli dokumentaci. Za běžných okolností jsou tyto funkce krátké — mají méně než deset řádků kódu. Kód, který implementuje stavový automat je obvykle velký. Avšak mnoho funkčnosti můžete přesunout do pomocných funkcí. Když tak učiníte, váš stavový automat poskytne pohled z výšky na to, co dělá. Zde je příklad z mého kódu, kde se oznámí listenerem výskyt události kliknutí.
+
+Místo tohoto kódu:
+
+```cpp
+if (timeDelta > m_clickTicks) {
+    m_state = State::BUTTON_NOT_PRESSED;
+    if (m_onClickListener != nullptr)
+        m_onClickListener->onClick(*this);
+}
+```
+
+Přesunete logiku do jiné funkce, takto:
+
+```cpp
+if (timeDelta > m_clickTicks) {
+    m_state = State::BUTTON_NOT_PRESSED;
+    notifyOnClick();
+}
+
+// přesunuta interní logika
+void ObjectButton::notifyOnClick() {
+    if (m_onClickListener != nullptr)
+        m_onClickListener->onClick(*this);
+}
+```
+
+Pokud se podíváte na zrefaktorovaný kód, na první pohled uvidíte, co dělá. Stavový automat může mít mnoho klauzulí `if ... else`, takže vše, co to zpřehlední, je dobré. Také můžete nyní psát testy pro `ObjectButton::notifyOnClick()`, což je mnohem jednodušší než psaní testů, které ověřují stejný kód přímo ve stavovém automatu.
+
+Pokud byste chtěli vidět příklad složitější knihovny, která zvládá přístupová práva, rozbor zpráv a mnoho dalších věcí, podívejte se na naši nedávno zveřejněnou [automatizační knihovnu Adeon][adeon-library]. Velmi jsme se snažili, abychom skryli všechnu tu složitost, a také jsme napsali podrobnou dokumentaci.
+
+# Dokumentace
+Takže máte knihovnu, která dělá to, co jste chtěli. V dalším kroku váš kód zdokumentujte.
+
+Existují dva přístupy:
+- Dokumentaci k vašemu kódu napíšete zvlášť. Podívejte se na knihovnu [Sphinx][sphinx], abyste viděli příklady. Sphinx používá jako značkovací jazyk [reStructuredText][reStructuredText].
+- Dokumentaci k vašemu kódu píšete uvnitř kódu. Takový přístup se používá ve velkém ve světě Javy a její generátoru dokumentace [Javadoc][javadoc].
+
+Navrhuji vám zkombinovat oba přístupy. Začněte tím, že napíšete, co vaše knihovna dělá. Přidejte vývojové diagramy, případně cokoli, co může být užitečné. [Markdown][markdown] pro tento účel slouží dokonale. Navíc můžete přidat dokumenty do stejného repozitáře, kde je váš hlavní kód. Například můžete pro uložení takových dokumentů vytvořit složku `docs`. Pokud používáte [GitHub][github] nebo [GitLab][gitlab], dokumenty můžete uložit do Wiki. Technicky jde o samostatný git repozitář, ale je propojen s vaším projektem a snadno dostupný.
+
+<div className="Image__Medium">
+  <img src="./images/gh-wiki.png" alt="GitHub Wiki" />
+  <figcaption>GitHub Wiki pro ObjectButton</figcaption>
+</div>
+
+Poté, co jste napsali vysokoúrovňový přehled vaší knihovny, je čas napsat komentáře přímo do kódu. Rozhodl jsem se použít [doxygen][doxygen]: jde o de facto standard a je snadné jej nastavit. Rovněž podporuje několik stylů komentářů, včetně stylu Javadoc.
+
+### Doxygen
+Chcete-li vygenerovat doxygen dokumentaci, potřebujete vytvořit [Doxyfile][doxyfile]. Je to šablona pro doxygen s různými nastaveními, například název projektu, umístění zdrojového kódu, atd. Měl jsem štěstí, že jsem našel Doxyfile, který už někdo upravil pro Arduino. Jedním z nezbytných nastavení bylo zahrnutí `*.ino` souborů. Doxygen obvykle neví, že tyto soubory obsahují platný C/C++ kód. Pokud byste někdy takovou šablonu potřebovali, stáhněte si [mou][doxyfile] a změňte název projektu a cestu.
+
+Pokud chcete vědět podrobnosti o tom, jak přidat komentáře do kódu, nejlépe bude, když si prohlédnete [web doxygen][doxygen].
+
+Zde je příklad komentáře uvnitř kódu:
+
+```cpp
+/**
+  * Ukazatel na objekt, který poslouchá na kliknutí. Pokud není listener pro události nastaven,
+  * taková událost nebude oznámena.
+  *
+  * @see setOnClickListener(IOnClickListener *listener)
+  */
+IOnClickListener *m_onClickListener = nullptr;
+
+/**
+ * Ukazatel na objekt, který poslouchá na dvojitá kliknutí. Pokud není listener pro události nastaven,
+ * taková událost nebude oznámena.
+ *
+ * @see setOnDoubleClickListener(IOnDoubleClickListener *listener)
+ */
+IOnDoubleClickListener *m_onDoubleClickListener = nullptr;
+```
+
+Javadoc komentář začíná s `/**`, což je stále platný C++ komentář. Alternativní syntaxe vypadá nějak takto: `///`. Také si všimněte značky jako `@see`. Tyto vám pomohou vygenerovat hypertextové odkazy na jiné třídy a funkce.
+
+Poté, co jste váš kód zdokumentovali, vygenerování dokumentace je jednoduché. Váš Doxyfile má všechny informace.
+
+```bash
+doxygen <cesta k súboru doxyfile>
+```
+
+Vygenerovanou dokumentaci můžete umístit, kam jen chcete. Jde o statickou HTML stránku bez externích závislostí. Já mám dokumentaci zdarma na GitHub Pages. Pro inspiraci, [zde][objectbutton-doxygen] je vygenerována dokumentace pro jeden z mých projektů.
+
+### keywords.txt
+Super, teď máte slušnou dokumentaci. Vaše knihovna je v lepším stavu než možná 80-procent knihoven. V dalším kroku vytvořte soubor `keywords.txt`. Arduino IDE má minimálně schopnosti zvýrazňování syntaxe. Proto potřebujeme do tohoto souboru sepsat všechny funkce, třídy a proměnné, a přiřadit jim správný typ. Kód se zvýrazní pouze pokud Arduino IDE najde shodu mezi klíčovým slovem a vaší definicí. Pokud chcete vaši knihovnu zahrnout do oficiálního registru Arduino knihoven, vytvoření souboru `keywords.txt` je povinné.
+
+```
+#######################################
+# Datové typy (KEYWORD1)
+#######################################
+
+IOnClickListener    KEYWORD1
+IOnDoubleClickListener  KEYWORD1
+IOnPressListener    KEYWORD1
+
+#######################################
+# Metody a funkce (KEYWORD2)
+#######################################
+
+getId   KEYWORD2
+setOnClickListener  KEYWORD2
+setOnDoubleClickListener    KEYWORD2
+```
+
+Jak můžete vidět, nejprve vypíšete všechny vaše veřejné datové typy, funkce, dokonce třídy, a potom jim přiřadíte jedno z definovaných klíčových slov, například `KEYWORD1`. Každé klíčové slovo odpovídá jiné barvě uvnitř Arduino IDE. Když budete potřebovat tento soubor vytvořit, podívejte se na dokumentaci nebo jiné knihovny.
+
+## Příklady
+Nakonec potřebujete napsat nějaké příklady, jak používat vaši knihovnu. Příklady jsou volitelné, ale pro uživatele jsou velmi hodnotné. Je to častokrát první věc, kterou lidé hledají, když si vybírají knihovnu. Můžete se k nim dostat přímo z Arduino IDE. Popřemýšlejte o nějakých základních úkolech, jak budou lidé vaši knihovnu používat, a také zkuste napsat alespoň jeden pokročilý příklad. Čím více příkladů napíšete, tím lépe pro vaše uživatele.
+
+Všechny příklady jsou projektové soubory pro Arduino (`*.ino`), které umíte zkompilovat přímo z Arduino IDE. Pokud jste pracovali s Arduinem, jsem si jist, že přesně víte, co je potřeba.
+
+Pro inspiraci se podívejte na [příklady][objectbutton-examples] z mé knihovny.
+
+## Automatizované testování
+Nyní máte knihovnu, která je dobře zdokumentována a zdá se být jednoduchá k použití. V dalším kroku napište nějaké unit testy, abyste ověřili, že váš kód dělá to, co by měl dělat. Automatizované testování stále není u Arduino knihovnách běžné a ani mě to nepřekvapuje. Pokud se podíváme na další programovací prostředí, často přijdou s oficiálním testovacím frameworkem nebo mají alespoň dobře známý framework třetí strany. V Javě a Androidu je to [JUnit][junit] Python má vestavěný modul [unittest][unittest] a také se dost používá [pytest][pytest], C++ svět používá [Googletest][googletest]. Arduino neposkytuje žádný oficiální testovací framework a k tomuto tématu nenajdete mnoho článků.
+
+### Všude ruční testování
+Většina Arduino vývojářů testuje svůj kód ručně. Když jejich kód nějak funguje, považují práci za hotovou. Pokud při budoucích aktualizacích kód rozbijí, dlouho si toho nemusí vůbec všimnout. To není dobré!
+
+Další případ je ověření toho, že váš kód funguje na více hardwarových deskách. Pokud ho ručně otestujete na Arduinu Uno, jak víte, že vaše knihovna funguje i na Leonardu? Pokud ručně ověřujete váš kód na několika platformách, ztrácíte čas. A pokud všechny podporované platformy nekontrolujete, nemáte žádnou záruku, že bude kód fungovat na všech deskách.
+
+### Kompilace knihovny pro různé desky
+Snad se shodneme na tom, že automatizovaná kompilace pro několik desek dává smysl. Je jednoduché ji nastavit a proto si myslím, že by to měla využívat každá Arduino knihovna!
+
+Máte několik možností, jak toho docílit:
+- [PlatformIO][platformio]
+- [Arduino inicializační skripty pro Travis CI od firmy Adafruit][adafruit-travis]
+- [ArduinoCI][arduino-ci]
+
+### Přístup pomocí PlatformIO
+PlatformIO projekty mají pokaždé soubor [platformio.ini][platformio-ini]. V něm definujete celou konfiguraci projektu, včetně platforem, pro které je třeba sestavit binárky. Každá platforma představuje jinou Arduino desku nebo dokonce jinou architekturu procesoru.
+
+```ini
+; Arduino Uno: První cílová deska
+[env:uno]
+platform = atmelavr
+board = uno
+framework = arduino
+
+; Arduino Mega: Druhá cílová deska
+[env:megaatmega2560]
+platform = atmelavr
+board = megaatmega2560
+framework = arduino
+```
+
+Když chcete sestavit kód pro několik cílových platforem, jednoduše zadejte následující příkazy:
+
+```bash
+# pio run -e <cieľové prostredie>
+pio run -e uno
+pio run -e megaatmega2560
+```
+
+Tyto příkazy můžete přidat do shellovského skriptu, který můžete pouštět opakovaně. Do několika sekund se dozvíte, zda se váš kód zkompiluje nebo zda v něm máte nějakou chybu.
+
+### Přístup se sestavováním příkladů
+Zbývající dvě zmíněné volby od vás vyžadují, abyste vytvořili ukázkové projekty, které demonstrují použití vaší knihovny. Tyto příklady byste měli umístit do složky `examples`, jak je definováno v [specifikaci Arduino knihoven][arduino-library-specification]. Když spustíte skript, projde všechny vaše příklady a zkompiluje je pro všechny uvedené platformy. Když Arduino IDE sestaví vaše příklady, sestaví i vaši knihovnu, protože příklady na ní závisí.
+
+Ačkoli psaní příkladů je volitelné, každá dobře podporována knihovna by měla mít alespoň jeden. A když už takový příklad máte, úprava kódu, aby fungoval se skripty pro sestavení je otázka pár minut. Nevidím důvod nepoužít to!
+
+## Psaní unit testů
+Unit testy zkoumají kód vaší knihovny v izolaci. Občas je náročnější je napsat, ale klady převyšují nad zápory.
+
+Našel jsem několik testovacích frameworků třetích stran, které se dají s Arduinem použít:
+- [Googletest][googletest] je obecný C++ framework, u kterého se na Arduino nemyslelo. Ovšem umíte jej použít. Podívejte se na praktický příklad v [arduino_midi_library][arduino-midi].
+- [Framework pro unit testy v PlatformIO][platformio-test] je také obecný framework, ale je více zaměřen na testování embedded kódu. Nedávno ho autoři zveřejnili jako open-source.
+- [ArduinoUnit][arduino-unit]. Jeho autoři ho vytvořili vysloveně pro Arduino. Nováčci ho zvládnou jednodušeji rozběhat.
+- [ArduinoCI][arduino-ci]. Jeho tvůrce se inspiroval v projektu [ArduinoUnit][arduino-unit] a [Arduino inicializačních skriptech pro Travis CI od firmy Adafruit][adafruit-travis].
+
+Každý z těchto frameworků podporuje spouštění testů na nativních strojích, což znamená, že můžete spouštět testy na obyčejném počítači bez připojené Arduino desky. Je to výhodné, obzvláště když chcete nastavit průběžnou integraci (continuous integration) na vzdáleném serveru.
+
+Pro ObjectButton jsem si jako testovací framework vybral ArduinoCI. Ale nedá se říct, že si můžete vybrat špatně. Podívejte se na všechny možnosti a rozhodněte se, co je pro vás nejlepší.
+
+### Proč ArduinoCI?
+ArduinoCI má dobrý [přehled][arduino-ci] testovacích frameworků. Mou pozornost si získalo tím, že podporuje mockování Arduino hardwaru. Představte si, že chcete nasimulovat kliknutí na tlačítko. Jak to uděláte bez kliknutí na fyzické tlačítko? Pokud máte kontrolu nad vstupními piny a vnitřním časovačem, gesto dokážete nasimulovat programově. A právě to nám dává ArduinoCI k dispozici.
+
+Také platí, že tento framework kompiluje všechny testy do nativního kódu a podporuje průběžnou integraci. Jediné, co mi chybí, jsou zprávy o procentech pokrytí kódu testy.
+
+<div className="Image__Medium">
+  <img src="./images/travisci-unittest.png" alt="ArduinoCI Unittest" />
+  <figcaption>ArduinoCI unit testy spouštěné na Travis CI</figcaption>
+</div>
+
+### Testování funkcí
+Všechny vaše testy jdou do složky `test`. Obvykle je nazvete stejně jako testované funkce. ObjectButton by měl umět rozpoznat tři typy odlišných akcí.
+
+Na to, abych je reprezentoval, jsem vytvořil tři testovací soubory a jeden pro ověření základní funkčnosti:
+- `action_click.cpp` pro spuštění všech unit testů týkajících se kliknutí na tlačítko
+- `action_double_click.cpp` pro spuštění unit testů týkajících se dvojitých kliknutí
+- `action_press_release.cpp` pro spuštění unit testů týkajících se stisknutí tlačítka, dlouhého stisknutí atd.
+- `sanity_checks.cpp` na ověření funkčnosti jako že `getId` vrátí správné id tlačítka
+
+Každý testovací soubor obsahuje jeden nebo více unit testů týkajících se funkce. Všechny testy umíte zapsat do jednoho velkého souboru a poběží v pohodě. Ovšem když je rozdělíte do několika souborů podle funkce, máte jemnější kontrolu nad spouštěním podmnožiny testů. Také pokud jeden z testů selže, měli byste ho umět rychleji najít.
+
+### Psaní unit testů
+Přejděme si test, který ověří, zda knihovna správně rozpozná kliknutí na tlačítko.
+
+Abyste napsali test na kliknutí na tlačítko, nejprve potřebujete pochopit, co je to vlastně kliknutí. Už jste nad tím přemýšleli? Obvykle když něco používáme, nepřemýšlíme, jak přesně to funguje, ale když chceme otestovat kliknutí na tlačítko, musíme si zadefinovat, co je to kliknutí a jak jej rozpoznáme. Pak můžeme napsat test, který toto chování zachytí.
+
+**Definice:** Kliknutí je akce, která nastane, když uživatel stiskne tlačítko a potom jej pustí. Stisknutí a puštění by měly nastat dříve než uplyne časový limit pro kliknutí, a také by se během této doby tlačítka uživatel neměl dotknout (pravděpodobně by šlo o poklepání).
+
+Nyní, když jsme si definovali, co je to kliknutí, můžeme ho nasimulovat v našem testu:
+- Uživatel stiskne tlačítko
+- Uživatel pustí tlačítko
+- Stisknutí a puštění tlačítka se událo v rámci časového limitu definovaného pro `kliknutí`
+
+Níže je skutečný příklad z mé testovací suity:
+
+```cpp
+unittest(receive_on_click_event_after_default_click_ticks) {
+    ListenerMock testMock = ListenerMock(INPUT_PIN, true);
+    GodmodeState* state = GODMODE();
+
+    // stisknutí tlačítka
+    state->digitalPin[INPUT_PIN] = LOW;
+    testMock.getButton().tick();
+
+    // odeslání události o stisknutí tlačítka po uplynutí debounce doby
+    state->micros = (DEFAULT_DEBOUNCE_TICKS_MS + 1) * 1000;
+    testMock.getButton().tick();
+
+    // puštění tlačítka
+    state->digitalPin[INPUT_PIN] = HIGH;
+    state->micros = (DEFAULT_CLICK_TICKS_MS + 1) * 1000;
+    testMock.getButton().tick();
+
+    // obnova stavového automatu pro získání události kliknutí
+    testMock.getButton().tick();
+
+    // validace, že nastalo kliknutí
+    assertEqual(1, testMock.getPressEventsReceivedCount());
+    assertEqual(1, testMock.getReleaseEventsReceivedCount());
+    assertEqual(1, testMock.getClickEventsReceivedCount());
+    assertEqual(0, testMock.getDoubleClickEventsReceivedCount());
+    assertEqual(0, testMock.getLongPressStartEventsReceivedCount());
+    assertEqual(0, testMock.getLongPressEndEventsReceivedCount());
+}
+```
+
+**Stav: uživatel stiskl tlačítko**
+V tomto případě považujeme tlačítko za stisknuté tehdy, když je úroveň napětí na vstupním pinu 0 voltů. Díky ArduinoCI to umíme nasimulovat velmi jednoduše:
+
+```cpp
+state->digitalPin[INPUT_PIN] = LOW;
+```
+
+`state` je ukazatel na strukturu ArduinoCI, která ovládá „virtuální“ Arduino, na kterém běží náš test.
+
+Nyní jsme stiskli tlačítko a potřebujeme ho po určitém čase pustit. Kdybychom jen změnili napětí na vstupním pinu, vnitřní časovač by stále vrátil stejnou hodnotu — 0. Doslova neuplynul žádný čas. Abychom nasimulovali plynutí času, potřebujeme nastavit pole `micros`, t.j.:
+
+```cpp
+state->micros = (DEFAULT_DEBOUNCE_TICKS_MS + 1) * 1000;
+```
+
+*Všimněte si, že časovač ovládáte určením času v mikrosekundách, ne milisekundách (jak to používá funkce `millis()`).*
+
+**Stav: uživatel pustil tlačítko**
+Uživatel již nějaký čas drží tlačítko, je čas ho pustit.
+
+```cpp
+state->digitalPin[INPUT_PIN] = HIGH;
+state->micros = (DEFAULT_CLICK_TICKS_MS + 1) * 1000;
+```
+
+Vstupní pin jsme nastavili na hodnotu 3,3 voltu, což simuluje puštění tlačítka. Pokud byste to potřebovali, můžete také posunout interní časovač, abyste nasimulovali reálné podmínky.
+
+**Rozpoznala knihovna kliknutí na tlačítko?**
+Náš unit test přesně simuluje kliknutí na tlačítko. Pokud naše knihovna pracuje správně, o této události dá vědět `OnClickListeneru`. Obvykle výsledky ověřujeme na konci testu:
+
+```cpp
+assertEqual(1, testMock.getClickEventsReceivedCount());
+```
+
+Kód výše kontroluje, zda knihovna `ObjectButton` odeslala přesně jedno oznámení o kliknutí na tlačítko. Abych zachytil všechny události hlášeny z knihovny, vytvořil jsem si pomocný listener registrovaný na všechny události podporované knihovnou. Tento listener inkrementuje interní čítač pokaždé, když obdrží událost. Ukazuje to, že nejste omezeni pouze na schopnosti frameworku, ale že si ho umíte rozšířit pro vaše konkrétní potřeby.
+
+## Důvěra
+Proč je užitečné mít unit testy? Jde o důvěru, že můj kód dělá to, co by měl. Podobně jako předešlý test napíšete i další. Měly by zachycovat očekávané chování — co by měla vaše knihovna dělat — a ověřit, zda tomu tak skutečně je.
+
+Psaní testů je časově náročné, ale jejich spouštění už ne. Testovací suitu můžete opakovaně spustit během několika sekund. Je to zvláště užitečné, když pracujete na nové funkcionalitě a chcete se ujistit, že jste do stávajících funkcí nezavedli chybu. V případě `ObjectButton` se veškerá interní logika děje ve stavovém automatu. Ti z vás, kteří již implementovali stavový automat, víte, jaké zrádné to je. Občas není na první pohled jasné, co kód dělá. Pokud změníte implementaci stavového automatu, je velká pravděpodobnost, že jste tam zavedli chybu. Ale pokud máte fungující testovací suitu, můžete si ověřit, že vše stále funguje a stále budete mít vůči vašemu kódu důvěru.
+
+### Nová funkce == nové testy
+Pokud implementujete novou funkci, která mění stávající chování knihovny nebo přidává nové vlastnosti, měli byste také napsat nové unit testy nebo upravit ty stávající. Udržování testovací suity by mělo být pravidelnou součástí vašich vývojářských praktik. Jinak časem vaše důvěra poklesne, protože novou funkčnost nemáte otestovanou.
+
+## Závěr
+V tomto příspěvku jsem psal o potřebných akcích na vytvoření kvalitních Arduino knihoven. Tyto principy platí i ve vašich projektech. Stále byste měli dokumentovat, co váš kód dělá, a měli byste alespoň zvážit, že napíšete pár unit testů. Testovací suitu můžete spustit z příkazového řádku. Weboví vývojáři již tento postup dobře znají.
+
+I když jste váš kód zdokumentovali a otestovali, stále ještě máte práci. Příště vám vysvětlím, jak automatizovat vývojový proces a nastavit ve vašem repozitáři průběžnou integraci, aby se po každém commitu automaticky spustily testy a sestavila se dokumentace.
+
+Pokud máte nějaké dotazy nebo máte pocit, že jsem na něco zapomněl, dejte mi o tom vědět v komentářích. Díky!
+
+[//]: # (Used references)
+[arduino]: https://www.arduino.cc/
+[arduino-servo]: https://www.arduino.cc/en/Reference/Servo
+[adeon-library]: https://github.com/JSC-electronics/Adeon
+[objectbutton-examples]: https://github.com/JSC-electronics/ObjectButton/tree/master/examples
+[github]: https://github.com/
+[state-machine]: https://cs.wikipedia.org/wiki/Kone%C4%8Dn%C3%BD_automat
+[continuous-integration]: https://cs.wikipedia.org/wiki/Pr%C5%AFb%C4%9B%C5%BEn%C3%A1_integrace
+[simple-relay]: https://github.com/JSC-electronics/SimpleRelay
+[gpio]: https://en.wikipedia.org/wiki/General-purpose_input/output
+[camel-case]: https://cs.wikipedia.org/wiki/CamelCase
+[clutch-by-wire]: https://www.quora.com/How-does-a-Clutch-by-wire-work
+[onebutton]: https://github.com/mathertel/OneButton/
+[objectbutton]: https://github.com/JSC-electronics/ObjectButton
+[so-object-member]: https://stackoverflow.com/questions/8865766/get-a-pointer-to-objects-member-function
+[android-listener]: https://developer.android.com/reference/android/view/View.OnClickListener
+[onclicklistener]: https://github.com/JSC-electronics/ObjectButton/blob/master/src/interfaces/IOnClickListener.h
+[arduino-style-guide]: https://www.arduino.cc/en/Reference/StyleGuide
+[arduino-api-style-guide]: https://www.arduino.cc/en/Reference/APIStyleGuide
+[arduino-library-specification]: https://github.com/arduino/Arduino/wiki/Arduino-IDE-1.5:-Library-specification
+[junit]: https://junit.org/junit5/
+[unittest]: https://docs.python.org/3/library/unittest.html
+[pytest]: https://docs.pytest.org/en/latest/
+[googletest]: https://github.com/google/googletest
+[arduino-midi]: https://github.com/FortySevenEffects/arduino_midi_library
+[arduino-unit]: https://github.com/mmurdoch/arduinounit
+[platformio]: https://platformio.org/
+[platformio-ini]: https://docs.platformio.org/en/latest/projectconf.html
+[platformio-test]: https://docs.platformio.org/en/latest/plus/unit-testing.html
+[arduino-ci]: https://github.com/ianfixes/arduino_ci
+[adafruit-travis]: https://github.com/adafruit/travis-ci-arduino
+[doxygen]: http://doxygen.nl/
+[sphinx]: https://www.sphinx-doc.org/en/master/
+[reStructuredText]: http://docutils.sourceforge.net/rst.html
+[markdown]: https://cs.wikipedia.org/wiki/Markdown
+[javadoc]: https://cs.wikipedia.org/wiki/Javadoc
+[gitlab]: https://about.gitlab.com/
+[doxyfile]: https://github.com/JSC-electronics/ObjectButton/blob/master/doc/Doxyfile
+[gh-pages]: https://pages.github.com/
+[ariane-5]: https://itsfoss.com/a-floating-point-error-that-caused-a-damage-worth-half-a-billion/
+[objectbutton-doxygen]: https://jsc-electronics.github.io/ObjectButton/
+[objectbutton-examples]: https://github.com/JSC-electronics/ObjectButton/tree/master/examples
