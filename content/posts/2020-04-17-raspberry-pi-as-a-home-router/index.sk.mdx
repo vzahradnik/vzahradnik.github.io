@@ -85,14 +85,14 @@ sync
 
 Zdrojový súbor určíte v parametre `if` a cieľovú pamäťovú kartu v parametre `of`. Veľkosť bloku, `bs`, je voliteľná, aby sme veci urýchlili a príkaz `sync` nás uistí, že všetko bolo na kartu zapísané.
 
-Na rozdiel od distribúcií ako Raspbian, OpenWrt nezväčší váš systémový diskový oddiel, aby zabral všetko dostupné miesto. Typicky tak dostanete iba asi 100 MB miesta pre vaše aplikácie, aj keď má vaša karta 64 GB miesta. Ja som si zmenil veľkosť diskového oddielu ručne na mojom počítači. Najprv som upravil tabuľku diskových oddielov nástrojom `fdisk` a potom som použil príkaz `resize2fs`. Animácia nižšie ilustruje všetky tieto kroky:
+Na rozdiel od distribúcií ako Raspberry Pi OS, OpenWrt nezväčší váš systémový diskový oddiel, aby zabral všetko dostupné miesto. Typicky tak dostanete iba asi 100 MB miesta pre vaše aplikácie, aj keď má vaša karta 64 GB miesta. Ja som si zmenil veľkosť diskového oddielu ručne na mojom počítači. Najprv som upravil tabuľku diskových oddielov nástrojom `fdisk` a potom som použil príkaz `resize2fs`. Animácia nižšie ilustruje všetky tieto kroky:
 
 <div className="Image__Medium">
   <img src="./images/rpi-resize.gif" alt="Zmena veľkosti rootfs" />
   <figcaption>Zmena veľkosti systémového diskového oddielu</figcaption>
 </div>
 
-Najprv potrebujete zmeniť tabuľku diskových oddielov, aby zaberal druhý oddiel, `rootfs`, všetko dostupné miesto. Diskový oddiel musí najskôr zmazať a potom vytvoriť nový. Kľúčové je uistiť sa, že nový, väčší oddiel začína na rovnakom ofsete. Možno vám táto operácia príde nebezpečná, ale v skutočnosti nie je. Samozrejme, musíte sa uistiť, že ste si vybrali správne zariadenie. Keď zmeníte tabuľku diskových oddielov, vyberte a znovu zasuňte pamätovú kartu, aby Linux použil aktualizovanú tabuľku. V ďalšom kroku skontrolujte chyby v súborovom systéme a nakoniec spustite príkaz `resize2fs`.
+Najprv potrebujete zmeniť tabuľku diskových oddielov, aby zaberal druhý oddiel, `rootfs`, všetko dostupné miesto. Diskový oddiel musíte najskôr zmazať a potom vytvoriť nový. Kľúčové je uistiť sa, že nový, väčší oddiel začína na rovnakom offsete. Možno vám táto operácia príde nebezpečná, ale v skutočnosti nie je. Samozrejme, musíte sa uistiť, že ste si vybrali správne zariadenie. Keď zmeníte tabuľku diskových oddielov, vyberte a znovu zasuňte pamätovú kartu, aby Linux použil aktualizovanú tabuľku. V ďalšom kroku skontrolujte chyby v súborovom systéme a nakoniec spustite príkaz `resize2fs`.
 
 ### Prvé spustenie
 Raspberry Pi má pridelenú IP adresu `192.168.1.1`. Aby ste sa naňho pripojili, pripojte váš počítač na ethernetový port RPi a nastavte jeho adresu na `192.168.1.2`. Potom by ste mali byť schopní pristupovať k OpenWrt cez SSH:
@@ -122,7 +122,7 @@ passwd <vaše-nové-heslo>
 
 Aby sme mohli pokračovať, potrebujeme v OpenWrt mať internetovú konektivitu. V mojom prípade som zmenil IP adresu Raspberry Pi v súbore `/etc/config/network`. Ak staticky priradíte IP adresu z rozsahu zodpovedajúcemu vašej LAN, môžete pripojiť vaše Raspberry ako obyčajného klienta za váš existujúci router. Ďalšie kroky si tým zjednodušíte.
 
-Aby ste mohli upraviť súbor `network`, môžete použiť predinštalovaný textový editor `vi`. Pokiaľ ste `vi` alebo `vim` nikdy predtým nepoužívali, tu je stručný prehľad. Keď otvoríte súbor, nachádzate sa v príkazovom režime. Použite šípky na klávesnici na presunutie kurzoru na miesto, ktoré chcete zmeniť. Potom stlačte "i" na prepnutie do režimu úprav, v ktorom môžete písať text a mazať existujúci text pomocou klávesu `Delete`. Keď vaše zmeny dokončíte, stlačte `Escape` pre návrat späť do príkazového režimu, a uložte súbor napísaním `:wq <Enter>` (t.j. príkaz: zapísať a skončiť).
+Aby ste mohli upraviť súbor `network`, môžete použiť predinštalovaný textový editor `vi`. Pokiaľ ste `vi` alebo `vim` nikdy predtým nepoužívali, tu je stručný prehľad. Keď otvoríte súbor, nachádzate sa v príkazovom režime. Použite šípky na klávesnici na presunutie kurzoru na miesto, ktoré chcete zmeniť. Potom stlačte „i“ na prepnutie do režimu úprav, v ktorom môžete písať text a mazať existujúci text pomocou klávesu `Delete`. Keď vaše zmeny dokončíte, stlačte `Escape` pre návrat späť do príkazového režimu, a uložte súbor napísaním `:wq <Enter>` (t.j. príkaz: zapísať a skončiť).
 
 Začnite upravovať súbor `network`:
 
@@ -241,7 +241,7 @@ config interface 'lan'
     option ip6assign '60'
 
 # Konfigurácia WAN siete, napr. na pripojenie
-# k routru poskytovateľa a Internetu.
+# k routru poskytovateľa Internetu.
 # Používa adaptér z USB na Ethernet.
 config interface 'wan'
     option ifname 'eth1'
@@ -262,6 +262,7 @@ config interface 'wan'
 OpenWrt poskytuje pre webové UI balíček [LuCI][luci]. Umožňuje vám spravovať všetky tieto nastavenia cez jednoduchú webstránku. Na lacných a nevýkonných OpenWrt routroch zvyčajne používa ako webserver `uhttpd`. Avšak Raspberry Pi je dostatočne výkonné, aby zvládlo plnohodnotný [Nginx][nginx] server.
 
 UI si môžete nainštalovať týmito príkazmi:
+
 ```bash
 opkg update
 opkg install luci-ssl-nginx
@@ -270,6 +271,7 @@ opkg install luci-ssl-nginx
 Voliteľne si môžete nainštalovať jazykové balíčky, aby sa UI preplo do vami požadovaného jazyka. Inštrukcie nájdete v oficiálnej dokumentácii.
 
 Aby ste zapli UI, musíte spraviť následovné:
+
 ```bash
 root@OpenWrt:~# /etc/init.d/nginx enable
 ```
@@ -287,7 +289,7 @@ Po reštarte môžete pristupovať k webovému rozhraniu vo vašom prehliadači 
 ## Záver
 V mojom prípade bol experiment s použitím Raspberry Pi ako môjho nového routra úspešný a rozhodol som sa spraviť z toho moje trvalé riešenie. Po dlhom čase mám OpenWrt s najnovšími opravami. Výkon mojej VPN je značne vyšší a to ešte nespomínam, že mi toto riešenie dáva 4 GB RAM a takmer 60 GB úložisko, čím získavam nové možnosti, ako prevádzkovanie vlastného proxy servera alebo nastavenie pravidiel vo firewalle, ktoré sú náročnejšie na výkon. Teší ma, že máme konečne vývojové dosky, ktoré sú schopné nahradiť sieťový hardvér. Takéto dosky možno výrazne ovplyvnia segment sieťových produktov pre domácnosti v nasledujúcich rokoch. Ak máte zvyšné Raspberry Pi, povzbudzujem vás k tomu, aby ste ho tiež skúsili použiť ako router. Je to zaujímavý zážitok.
 
-*Aktualizácia 1.11.2020: Nedávno Nadácia Raspberry Pi uviedla [nový výpočtový modul][rpi4-compute] postavený na Raspberry Pi 4. Ma rovnaký procesor a väčšinu funkcií RPi4, ale tiež ponúka veci navyše, hlavne port PCIe x1. Pred pár dňami som na Hacker News čítal [príspevok podobný tomu môjmu][rpi4-intel-nic]. Avšak namiesto použitia externého adaptéra z USB na Ethernet použil autor sieťovú kartu od Intelu. Dokázal dosiahnuť priepustnosť 3 Gbit/s, čo je maximum zbernice PCIe x1. Rozbehanie sieťovej karty nebolo vôbec zložité. Použil lacný adaptér na PCIe x16 a zo zdrojových kódov si zostavil ovládač. Myslím si, že stojí za to si to prečítač a je to slušná alternatíva k môjmu prístupu, ak chcete z vášho RPi vyžmýkať ešte viac výkonu.*
+*Aktualizácia 1.11.2020: Nedávno Nadácia Raspberry Pi uviedla [nový výpočtový modul][rpi4-compute] postavený na Raspberry Pi 4. Má rovnaký procesor a väčšinu funkcií RPi4, ale tiež ponúka veci navyše, hlavne port PCIe x1. Pred pár dňami som na Hacker News čítal [príspevok podobný tomu môjmu][rpi4-intel-nic]. Avšak namiesto použitia externého adaptéra z USB na Ethernet použil autor sieťovú kartu od Intelu. Dokázal dosiahnuť priepustnosť 3 Gbit/s, čo je maximum zbernice PCIe x1. Rozbehanie sieťovej karty nebolo vôbec zložité. Použil lacný adaptér na PCIe x16 a zo zdrojových kódov si zostavil ovládač. Myslím si, že stojí za to si to prečítať a je to slušná alternatíva k môjmu prístupu, ak chcete z vášho RPi vyžmýkať ešte viac výkonu.*
 
 [//]: # (Used references)
 [rpi4-specs]: https://www.raspberrypi.org/products/raspberry-pi-4-model-b/
@@ -299,7 +301,7 @@ V mojom prípade bol experiment s použitím Raspberry Pi ako môjho nového rou
 [mikrotik-rb450g]: https://mikrotik.com/product/RB450G
 [routeros]: https://mikrotik.com/software
 [openwrt]: https://openwrt.org/
-[turris]: https://www.turris.cz/en/omnia/
+[turris]: https://www.turris.cz/cs/omnia/predstaveni/
 [macchiatobin]: http://macchiatobin.net/product/macchiatobin-double-shot/
 [pfsense]: https://www.pfsense.org/
 [opnsense]: https://opnsense.org/

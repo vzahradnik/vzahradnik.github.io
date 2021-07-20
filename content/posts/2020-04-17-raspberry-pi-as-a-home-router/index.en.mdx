@@ -84,7 +84,7 @@ sync
 
 You specify source file as the `if` parameter, and target memory card as the `of` parameter. Block size, `bs`, is optional to speed things up, and `sync` command makes sure everything is written into the card.
 
-Unlike distributions like Raspbian, OpenWrt doesn't expand your system partition to fit the whole space. Typically, you'll get only 100 MB of space for your apps, even if your memory card has 64 GB of storage. I resized the partition manually on my PC. First, I edited the partition table with `fdisk`, and then used the `resize2fs` command. The animation below illustrates all these steps:
+Unlike distributions like Raspberry Pi OS, OpenWrt doesn't expand your system partition to fit the whole space. Typically, you'll get only 100 MB of space for your apps, even if your memory card has 64 GB of storage. I resized the partition manually on my PC. First, I edited the partition table with `fdisk`, and then used the `resize2fs` command. The animation below illustrates all these steps:
 
 <div className="Image__Medium">
   <img src="./images/rpi-resize.gif" alt="Rootfs resize" />
@@ -260,6 +260,7 @@ config interface 'wan'
 OpenWrt provides [LuCI][luci] as a web UI. It allows you to manage all these settings through a simple webpage. On low-end OpenWrt routers, it usually uses `uhttpd` as a webserver. However, Raspberry Pi is powerful enough to handle a full-fledged [Nginx][nginx] server.
 
 You can install UI with these commands:
+
 ```bash
 opkg update
 opkg install luci-ssl-nginx
@@ -268,6 +269,7 @@ opkg install luci-ssl-nginx
 Optionally, you can install language packs to switch UI into your preferred language. See the official documentation for the instructions.
 
 To enable the UI, you need to do the following:
+
 ```bash
 root@OpenWrt:~# /etc/init.d/nginx enable
 ```
