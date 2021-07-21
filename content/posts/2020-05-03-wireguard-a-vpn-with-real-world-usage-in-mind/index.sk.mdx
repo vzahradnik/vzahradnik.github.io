@@ -1,5 +1,5 @@
 ---
-title: WireGuard — VPN, u ktorej mysleli na využitie v reálnych podmienkach
+title: WireGuard — VPN, u ktorej mysleli na použitie v reálnych podmienkach
 excerpt: Nedávno som prešiel z OpenVPN na WireGuard. Tento projekt na mňa urobil obrovský dojem a v tomto príspevku vám poviem prečo.
 author: Vladimír Záhradník
 date: 2020-05-03
@@ -25,7 +25,7 @@ IPsec je de-facto priemyselný štandard. Keď už rozbeháte tunel, výkon je, 
 
 *Poznámka (18.10.2020): V [diskusii pod anglickou verziou článku][post-english] niektorí čítatelia spomenuli, že protokol IKE prípadne IPsec som úplne nepochopil. Myslím si, že základné fungovanie protokolu chápem dostatočne dobre, avšak profesionálne sa sieťovým technológiám už pár rokov nevenujem. Pripúšťam, že niektoré veci, ktoré tu uvádzam, môžu byť neaktuálne alebo uvedené nesprávne. Na tom, že je IPsec zbytočne zložitý protokol však trvám aj naďalej. Ďakujem čitateľom za upozornenie.*
 
-Na IPsec sa mi páči, že ESP obsah je možné priamo zabaliť za IP časťou paketu. Je to preto, že ESP je registrovaný ako jeden z [povolených protokolov][ip-protocols], ktoré môžete nastaviť vo vnútri poľa „Next Header“ v IP hlavičke. Ak vašu VPN nastavíte takto, znížite prevádzkovú réžiu. Avšak v dnešnom zaNATovanom svete, IPsec dáta sú väčšinou zapuzdrené vnútri UDP.
+Na IPsec sa mi páči, že ESP obsah je možné priamo zabaliť za IP časťou paketu. Je to preto, že ESP je registrovaný ako jeden z [povolených protokolov][ip-protocols], ktoré môžete nastaviť vo vnútri poľa „Next Header“ v IP hlavičke. Ak vašu VPN nastavíte takto, znížite prevádzkovú réžiu. Avšak v dnešnom zaNATovanom svete sú IPsec dáta väčšinou zapuzdrené vnútri UDP.
 
 IPsec môže fungovať v dvoch režimoch — site-to-site, kde prepájate dve LAN siete alebo v režime RoadWarrior, ktorý sa používa, keď chcete pripojiť vaše zariadenie do firemnej siete. RoadWarrior neumožňuje (pokiaľ viem) prepojenie celých LAN sietí. Osobne si myslím, že nikto takýto scenár nepredpokladal. Takže musíte použiť čistý site-to-site režim a ten má mnoho nevýhod.
 
@@ -65,7 +65,7 @@ Hoci beží OpenVPN lepšie cez UDP, jeho výkon je stále slabý. Jedným z dô
 Konfigurácia OpenVPN je oveľa priamočiarejšia ako nastavenie IPsec. Avšak stále to nie je jednoduché. Ľudia musia vedieť, ako vygenerovať OpenSSL kľúče, ideálne pomocou [easy-rsa][easy-rsa] skriptov, ktoré sa dodávajú spolu s OpenVPN. Bezpečnosť v OpenVPN je taktiež problém. V minulosti našli výskumníci viacero zraniteľností v knižnici OpenSSL a aj v jadre [knižnice OpenVPN][openvpn-vulnerabilities]. Kód je obrovský, čím sa audit a hľadanie chýb dosť komplikuje.
 
 ## WireGuard
-Na tomto mieste by som rád spomenul, že IPsec aj OpenVPN sú dosť staré protokoly. Časom našli ľudia v ich návrhoch nedostatky, ale nie je jednoduché, občas dokonca nemožné, opraviť podstatné chyby v návrhu. Autori WireGuardu si boli dobre vedomí problémov s IPsec a OpenVPN, ktoré sa vyskytovali v reálnych podmienkach, a napísali protokol, aby tieto problémy vyriešil.
+Na tomto mieste by som rád spomenul, že IPsec aj OpenVPN sú dosť staré protokoly. Časom našli ľudia v ich návrhoch nedostatky, ale nie je jednoduché, občas dokonca nemožné, opraviť podstatné chyby v návrhu. Autori WireGuardu si boli dobre vedomí problémov s IPsec a OpenVPN, ktoré sa vyskytovali v reálnych podmienkach, a napísali protokol, aby tieto problémy vyriešili.
 
 > WireGuard® je extrémne jednoduchá a pritom rýchla a moderná VPN, ktorá využíva najnovšie poznatky v kryptografii. Cieli na to, aby bol rýchlejší, jednoduchší, štíhlejší a užitočnejší ako IPsec, pričom sa snaží vyhýbať jeho masívnym bolestiam. Jeho cieľom je byť oveľa výkonnejší ako OpenVPN.
 > — <cite>[webová stránka WireGuardu][wireguard]</cite>
@@ -80,7 +80,7 @@ Keď som si prečítal ich technický dokument a mal som v hlave všetky tieto i
 - ✔️ Používa najmodernejšiu kryptografiu
 - ✔️ Beží dobre na výkonných serveroch ako aj vstavaných routroch
 - ✔️ Veľmi vysoký výkon, porovnateľný s IPsec
-- ✔️ Podporuje linuxové kontajnery a umožňuje im získať prístup iba k VPN a to prostredníctvom menného priestoru Wireguardu
+- ✔️ Podporuje linuxové kontajnery a umožňuje im získať prístup iba k VPN a to prostredníctvom menného priestoru WireGuardu
 - ✔️ Je k dispozícii na mnohých platformách, vrátane Androidu a iOS. Podpora pre WireGuard je aktívne pridávaná aj do starších linuxových jadier, čím sa rozširuje podpora ešte viac
 - ❌ Ovládač jadra je zatiaľ k dispozícii iba pre Linux. Ostatné platformy používajú klienta v používateľskom priestore, ktorý je napísaný v Go. Avšak podľa autorov je stále dosť výkonný
 
@@ -88,7 +88,7 @@ Pre tých technickejších čitateľov pridám ešte niekoľko plusov:
 - ✔️ Ovládač v linuxovom jadre nepoužíva Crypto API. Namiesto toho WireGuard reimplementuje niektoré funkcie napriamo, aby sa vyhol dynamickej alokácii pamäte
 - ✔️ WireGuard podporuje konfigurácie čisto iba so staticky alokovanou pamäťou 
 - ✔️ Kryptografické kľúče sa jednoducho generujú dodaným nástrojom `wg`
-- ✔️ Implicitný utajený (stealth) režim. Štandardne posielajú rovesníci (peeri) vo WireGuarde iba, keď potrebujú a služba WireGuard neodpovedá na náhodné požiadavky bez správne vyplnených hlavičiek. Takže keď náhodný sieťový skener pošle požiadavku na port, na ktorom počúva WireGuard, nedostane naspäť žiadnu odpoveď a vôbec netuší, že tam beží nejaká VPN. Klienti za NATom môžu udržiavať VPNku v prevádzke pomocou voliteľného keepalive parametra. Štandardne je *keepalive vypnutý*
+- ✔️ Implicitný utajený (stealth) režim. Štandardne posielajú rovesníci (peeri) vo WireGuarde dáta iba keď potrebujú a služba WireGuard neodpovedá na náhodné požiadavky bez správne vyplnených hlavičiek. Takže keď náhodný sieťový skener pošle požiadavku na port, na ktorom počúva WireGuard, nedostane naspäť žiadnu odpoveď a vôbec netuší, že tam beží nejaká VPN. Klienti za NATom môžu udržiavať VPNku v prevádzke pomocou voliteľného keepalive parametra. Štandardne je *keepalive vypnutý*
 - ✔️ Pretože WireGuard na Linux beží priamo v jadre a nie v používateľskom priestore, vnútorné pakety sa nekopírujú niekoľkokrát, kým opustia sieťovú kartu
 - ✔️ Na rozdiel od OpenVPN využíva WireGuard všetky jadra procesora efektívne
 - ✔️ Vrstva na výmenu kľúčov a transportná vrstva nie sú oddelené (na rozdiel od IPsec), aby bola implementácia a údržba pre sieťových inžiniérov jednoduchšia
@@ -148,74 +148,74 @@ Najprv na každom rovesníkovi vytvorte WireGuard rozhranie:
 
 Rovesník A:
 ```bash
-rovesnik A# ip link add dev wg0 type wireguard
+rovesník A# ip link add dev wg0 type wireguard
 ```
 
 Rovesník B:
 ```bash
-rovesnik B# ip link add dev wg0 type wireguard
+rovesník B# ip link add dev wg0 type wireguard
 ```
 
 Ďalej priraďte rozhraniu IP adresu. Slúži ako IP adresa rovesníka vnútri vašej VPN a nikdy sa nemení (samozrejme, pokiaľ to nespravíte vy).
 
 Rovesník A:
 ```bash
-rovesnik A# ip address add dev wg0 192.168.1.1/32
+rovesník A# ip address add dev wg0 192.168.1.1/32
 ```
 
 Rovesník B:
 ```bash
-rovesnik B# ip address add dev wg0 192.168.1.2/32
+rovesník B# ip address add dev wg0 192.168.1.2/32
 ```
 
 Ďalej vygenerujte kľúče podľa postupu vyššie a priraďte ich rovesníkom.
 
 Rovesník A:
 ```bash
-rovesnik A# wg genkey > private
-rovesnik A# cat private
+rovesník A# wg genkey > private
+rovesník A# cat private
 iFtTfEwI/+Bc0M2olXuytEVPU4TXhCDVGezFt7H8ylg=
-rovesnik A# wg pubkey < private
+rovesník A# wg pubkey < private
 AqyBazhsen/jzTJ0MzyyU16wOYovBPZ+DIu6x4rSH3Y=
 
 # Priradenie privátneho kľúča rozhraniu wg0
-rovesnik A# wg set wg0 private-key ./private
+rovesník A# wg set wg0 private-key ./private
 ```
 
 Rovesník B:
 ```bash
-rovesnik B# wg genkey > private
-rovesnik B# cat private
+rovesník B# wg genkey > private
+rovesník B# cat private
 uPBLlBHptZahFKaX9mSFmIgSNjAEd1kwB+MSAE+QVE0=
-rovesnik B# wg pubkey < private
+rovesník B# wg pubkey < private
 i8nniZCkTISUfaLMQ+FV0Sewvq0f68UrkLkeV0a4BnA=
 
 # Priradenie privátneho kľúča rozhraniu wg0
-rovesnik B# wg set wg0 private-key ./private
+rovesník B# wg set wg0 private-key ./private
 ```
 
 A u oboch rovesníkov povoľte rozhranie `wg0`:
 
 Rovesník A:
 ```bash
-rovesnik A# ip link set wg0 up
+rovesník A# ip link set wg0 up
 ```
 
 Rovesník B:
 ```bash
-rovesnik B# ip link set wg0 up
+rovesník B# ip link set wg0 up
 ```
 
 V tejto fáze je WireGuard rozhranie nakonfigurované, ale rovesníci navzájom o sebe nevedia. Poďme to napraviť.
 
 Rovesník A:
 ```bash
-rovesnik A# wg set wg0 peer i8nniZCkTISUfaLMQ+FV0Sewvq0f68UrkLkeV0a4BnA= allowed-ips 192.168.1.2/32,10.0.1.0/24 endpoint 12.35.181.48:1194
+rovesník A# wg set wg0 peer i8nniZCkTISUfaLMQ+FV0Sewvq0f68UrkLkeV0a4BnA= allowed-ips 192.168.1.2/32,10.0.1.0/24 endpoint 12.35.181.48:1194
 ```
 
 Rovesník B:
 ```bash
-rovesnik B# wg set wg0 peer AqyBazhsen/jzTJ0MzyyU16wOYovBPZ+DIu6x4rSH3Y= allowed-ips 192.168.1.1/32,10.0.0.0/24 endpoint 46.43.215.66:1194
+rovesník B# wg set wg0 peer AqyBazhsen/jzTJ0MzyyU16wOYovBPZ+DIu6x4rSH3Y= allowed-ips 192.168.1.1/32,10.0.0.0/24 endpoint 46.43.215.66:1194
 ```
 
 Teraz je VPN nakonfigurovaná a rovesníci by mali vedieť spolu komunikovať.
@@ -232,7 +232,7 @@ WireGuard udržiava virtuálnu smerovaciu tabuľku, v ktorej priradzuje verejný
 |----------------------------------------------|-----------------------------|
 | i8nniZCkTISUfaLMQ+FV0Sewvq0f68UrkLkeV0a4BnA= | 192.168.1.2/32,10.0.1.0/24  |
 
-Táto tabuľka priradzuje verejný kľúč rovesníka k priradeným IP adresám. Predstavte si, že rovesník A chce poslať paket na zariadenie v LAN sieti za rovesníkom B (IP: 10.0.1.10). WireGuard sa pozrie do tejto tabuľky a nájde príslušný verejný kľúč (to znamená, že trasa existuje). Potom WireGuard paket zašifruje verejným kľúčom priradeným s cieľovou IP adresou a odošle paket na koncový bod rovesníka B. Na druhom konci VPN príjme rovesník B paket na WireGuard porte 1194. Potom sa ho pokúsi paket dešifrovať jeho privátnym kľúčom. Ak rovesník B uspeje, paket spracuje. V opačnom prípade ho WireGuard zahodí.
+Táto tabuľka priradzuje verejný kľúč rovesníka k priradeným IP adresám. Predstavte si, že rovesník A chce poslať paket na zariadenie v LAN sieti za rovesníkom B (IP: 10.0.1.10). WireGuard sa pozrie do tejto tabuľky a nájde príslušný verejný kľúč (to znamená, že trasa existuje). Potom WireGuard paket zašifruje verejným kľúčom priradeným s cieľovou IP adresou a odošle paket na koncový bod rovesníka B. Na druhom konci VPN príjme rovesník B paket na WireGuard porte 1194. Potom sa pokúsi paket dešifrovať jeho privátnym kľúčom. Ak rovesník B uspeje, paket spracuje. V opačnom prípade ho WireGuard zahodí.
 
 | Verejný kľúč rovesníka                       | Povolené zdrojové IP adresy |
 |----------------------------------------------|-----------------------------|
@@ -264,37 +264,38 @@ Rovesník C:
   <figcaption>Scenár 2: Site-to-site VPN s rovesníkmi za NATom</figcaption>
 </div>
 
-V tomto príklade sú rovesníci A a B za NATom. Nie je žiadny spôsob, ako by mohli spolu napriamo komunikovať. Avšak môžu si posielať dáta cez rovesníka C, s ktorým sa vedia spojiť obaja. Stále tu máme rovesníkov, ktorí sú si vo WireGuard terminológii „rovní.“ Avšak tým, že nastavíme konfiguráciu tak, aby sa posielali dáta z rovesníka A na rovesníka B cez rovesníka C (a opačne), v podstate sme vytvorili architektúru klient-server. Rovesníci A a B sú klienti a všetky ich dáta idú cez rovesníka C. Obaja klienti, A aj B, majú definovaný koncový bod na rovesníka C. Nebudem sem dávať celú konfiguráciu, keďže som ju podrobne vysvetlil v predchádzajúcom scenári. Ale ukážem vám aspoň konfiguráciu pre rovesníka A.
+V tomto príklade sú rovesníci A a B za NATom. Nie je žiadny spôsob, ako by mohli spolu napriamo komunikovať. Avšak môžu si posielať dáta cez rovesníka C, s ktorým sa vedia spojiť obaja. Stále tu máme rovesníkov, ktorí sú si vo WireGuard terminológii „rovní.“ Avšak tým, že nastavíme konfiguráciu tak, aby sa posielali dáta z rovesníka A na rovesníka B cez rovesníka C (a opačne), sme v podstate vytvorili architektúru klient-server. Rovesníci A a B sú klienti a všetky ich dáta idú cez rovesníka C. Obaja klienti, A aj B, majú definovaný koncový bod na rovesníka C. Nebudem sem dávať celú konfiguráciu, keďže som ju podrobne vysvetlil v predchádzajúcom scenári. Ale ukážem vám aspoň konfiguráciu pre rovesníka A.
 
 ```bash
 # Vytvorenie rozhrania
-rovesnik A# ip link add dev wg0 type wireguard
-rovesnik A# ip address add dev wg0 192.168.1.1/32
+rovesník A# ip link add dev wg0 type wireguard
+rovesník A# ip address add dev wg0 192.168.1.1/32
 
 # Vygenerovanie kľúča
-rovesnik A# wg genkey > private
-rovesnik A# cat private
+rovesník A# wg genkey > private
+rovesník A# cat private
 iFtTfEwI/+Bc0M2olXuytEVPU4TXhCDVGezFt7H8ylg=
-rovesnik A# wg pubkey < private
+rovesník A# wg pubkey < private
 AqyBazhsen/jzTJ0MzyyU16wOYovBPZ+DIu6x4rSH3Y=
 
 # Priradenie privátneho kľúča rozhraniu wg0
-rovesnik A# wg set wg0 private-key ./private
+rovesník A# wg set wg0 private-key ./private
 
 # Povolenie rozhrania
-rovesnik A# ip link set wg0 up
+rovesník A# ip link set wg0 up
 
 # Sem pridáme iba rovesníka C (rovesník B je dostupný cez rovesníka C)
 # Pridajte siete od rovesníka B aj C, ktoré chcete oznamovať ako
 # dostupné cez rovesníka C
-rovesnik A# wg set wg0 peer <verejný-kľúč-rovesníka-c> allowed-ips 192.168.1.2/32,192.168.1.3/32,10.0.1.0/24,10.0.2.0/24 endpoint 12.35.181.48:1194
+rovesník A# wg set wg0 peer <verejný-kľúč-rovesníka-c> allowed-ips 192.168.1.2/32,192.168.1.3/32,10.0.1.0/24,10.0.2.0/24 endpoint 12.35.181.48:1194
 ```
 
-Ak chce v tejto chvíli rovesník A poslať paket do LAN siete LAN 10.0.1.0/24 na rovesníkovi B, pozrie sa do tabuľky, vyhľadá pre cieľovú trasu príslušný verejný kľúč rovesníka C a pošle paket. Rovesník C má spojenie s rovesníkom B a paket mu prepošle. Aby sme sa uistili, že sú všetci rovesníci kedykoľvek dostupní, musíme nastaviť voliteľný parameter `persistent-keepalive`. NAT relácia sa zvyčajne uzavrie dosť rýchlo a keďže štandardne WireGuard posiela dáta iba vtedy, keď má čo poslať, spojenie medzi rovesníkom A a rovesníkom C, ako aj medzi rovesníkom B a rovesníkom B, sa uzavrie. Znovu sa zostaví vtedy, keď pošle rovesník dáta rovesníkovi C a rovesník B musí spraviť to isté. Aby sme ponechali NAT reláciu aktívnu pre oboch rovesníkov, môžeme nastaviť *keepalive* na rovesníkoch A a B, ktorí raz za 25 sekúnd pošlu rovesníkovi C paket (je to odporučená hodnota, dostatočne bezpečná, aby sme zabránili uzavretiu relácie). A teda, rovesník C môže komunikovať s oboma rovesníkmi kedykoľvek a preposielať ich dáta podľa potreby.
+Ak chce v tejto chvíli rovesník A poslať paket do LAN siete LAN 10.0.1.0/24 na rovesníkovi B, pozrie sa do tabuľky, vyhľadá pre cieľovú trasu príslušný verejný kľúč rovesníka C a pošle paket. Rovesník C má spojenie s rovesníkom B a paket mu prepošle. Aby sme sa uistili, že sú všetci rovesníci kedykoľvek dostupní, musíme nastaviť voliteľný parameter `persistent-keepalive`. NAT relácia sa zvyčajne uzavrie dosť rýchlo a keďže štandardne WireGuard posiela dáta iba vtedy, keď má čo poslať, spojenie medzi rovesníkom A a rovesníkom C, ako aj medzi rovesníkom B a rovesníkom C, sa uzavrie. Znovu sa zostaví vtedy, keď pošle rovesník A dáta rovesníkovi C a rovesník B musí spraviť to isté. Aby sme ponechali NAT reláciu aktívnu pre oboch rovesníkov, môžeme nastaviť *keepalive* na rovesníkoch A a B, ktorí raz za 25 sekúnd pošlu rovesníkovi C paket (je to odporučená hodnota, dostatočne bezpečná, aby sme zabránili uzavretiu relácie). A teda, rovesník C môže komunikovať s oboma rovesníkmi kedykoľvek a preposielať ich dáta podľa potreby.
 
 Zmeňme posledný riadok, kde pridávame informáciu o rovesníkovi C na rovesníkovi A. Všimnite si, že *keepalive* nastavujeme na 25 sekúnd:
+
 ```bash
-rovesnik A# wg set wg0 peer <verejný_kľúč> allowed-ips <siete> endpoint <koncový-bod-rovesníka-c> persistent-keepalive 25
+rovesník A# wg set wg0 peer <verejný-kľúč> allowed-ips <siete> endpoint <koncový-bod-rovesníka-c> persistent-keepalive 25
 ```
 
 ### Scenár č.3: RoadWarrior klienti pristupujúci k firemnej VPN
@@ -302,7 +303,7 @@ Nasledujúci scenár je dosť typický. Zamestnanec chce pristupovať k firemnej
 
 <div className="Image__Medium">
   <img src="./images/sk/scenario_03.png" alt="Scenár 3" />
-  <figcaption>Scenario 3: RoadWarrior klienti pristupujúci k firemnej VPN</figcaption>
+  <figcaption>Scenár 3: RoadWarrior klienti pristupujúci k firemnej VPN</figcaption>
 </div>
 
 V tomto prípade sú notebook aj telefón za NATom. Ich lokalita sa môže kedykoľvek zmeniť, ako aj ich IP adresy. „Klientskí“ rovesníci nezdieľajú žiadne siete a chcú komunikovať iba so „serverovým“ rovesníkom. Parameter `persistent-keepalive` nepotrebujeme, pretože firemný server nikdy nepotrebuje pripojenie k zariadeniu zamestnanca. Zvyčajne sa zamestnanec pripojí s WireGuard VPN iba vtedy, keď chce preniesť nejaké dáta a hneď potom sa odpojí. Aj keď je klientská aplikácia stále pripojená a NAT relácia sa preruší, počas najbližšieho dátového prenosu sa vytvorí nová NAT relácia a firemný server si poznačí aktualizovanú IP adresu a port. Všetko funguje tak ako má.
@@ -310,7 +311,7 @@ V tomto prípade sú notebook aj telefón za NATom. Ich lokalita sa môže kedyk
 Toto nastavenie má jeden nedostatok. Pokiaľ viem, neexistuje spôsob ako dynamicky priradiť IP adresu klientovi vnútri VPN. Ako sa postupne nástroje vylepšujú, očakávam, že sa tento problém vyrieši.
 
 ## Podpora v aplikáciách
-WireGuard je podporovaný na mnohých platformách. Mimo Linuxu môžete použiť jeho aplikáciu napísanú v Go. Mnoho nástrojov ako `systemd-networkd` alebo `NetworkManager` pridalo natívnu podporu, vďaka čomu sa WireGuard používa ešte jednoduchšie. V mojom prípade som nastavoval WireGuard na [OpenWrt][openwrt] routri. Ich grafické prostredie s názvom [LuCI][luci] má pre WireGuard balík. Cez webové rozhranie routra môžete vytvárať rozhrania, ako aj pridávať rovesníkov. A pokiaľ rozumiete terminológii, nastaviť to je hračka.
+WireGuard je podporovaný na mnohých platformách. Mimo Linuxu môžete použiť jeho aplikáciu napísanú v Go. Mnoho nástrojov ako `systemd-networkd` alebo `NetworkManager` pridalo natívnu podporu, vďaka čomu sa WireGuard používa ešte jednoduchšie. V mojom prípade som nastavoval WireGuard na [OpenWrt][openwrt] routri. Jeho grafické prostredie s názvom [LuCI][luci] má pre WireGuard balík. Cez webové rozhranie routra môžete vytvárať rozhrania, ako aj pridávať rovesníkov. A pokiaľ rozumiete terminológii, nastaviť to je hračka.
 
 <div className="Image__Medium">
   <img src="./images/wg-luci.png" alt="WireGuard na LuCI" />

@@ -1,0 +1,352 @@
+---
+title: WireGuard — VPN, u které mysleli na použití v reálných podmínkách
+excerpt: Nedávno jsem přešel z OpenVPN na WireGuard. Tento projekt na mě udělal obrovský dojem a v tomto příspěvku vám řeknu proč.
+author: Vladimír Záhradník
+date: 2020-05-03
+categories: wireguard vpn raspberrypi openwrt freedom jsc
+hero: ./images/hero.jpg
+lang: cs_CZ
+secret: true
+---
+
+V mém [posledním příspěvku][rpi-as-a-home-router] jsem psal o tom, jak jsem nahradil můj domácí router za [Raspberry Pi 4][rpi4-specs]. Jedním z důvodů bylo zvýšení propustnosti mé VPN. O [WireGuardu][wireguard] jsem uvažoval, odkdy jsem se doslechl, že samotnému Linusu Torvaldsovi [se velmi líbí][linus-likes-wireguard].
+
+> Mohu ještě jednou zdůraznit mou lásku pro něj a doufat, že bude brzy začleněn? Možná, že kód není dokonalý, ale rychle jsem ho proběhl a porovnal s hrůzami, jakými jsou OpenVPN a IPSec a je to prostě umělecké dílo.
+> — <cite>[Linus Torvalds][linus-quote]</cite>
+
+Ovšem nevěděl jsem jak WireGuard funguje, jak složité je ho nastavit a zda je pro mě vhodný. Tento projekt jsem měl ve svém seznamu aktivit alespoň půl roku. Původně jsem plánoval použít jiný hardware, protože RPi 4 ještě ani nebylo oznámeno. Pozitivem na celé dnešní koronakríze je to, že se mi zmenšilo pracovní vytížení a mohu věnovat určitý čas projektům a experimentům. Protože WireGuard vypadal slibně pro použití v jiných projektech, rozhodl jsem se pochopit jak funguje přečtením jeho [technického dokumentu][wg-whitepaper].
+
+Linus hovoří o řešeních [OpenVPN][openvpn] a [IPSec][ipsec] jako o hrůzách a musím souhlasit. V minulosti jsem používal obě VPN. U IPsec jsem dokonce četl [některé][esp] RFC dokumenty. Ve firmě Alcatel-Lucent jsem pracoval na funkčnosti s názvem [ePDG][ePDG], která umožňuje mobilním operátorům přenášet data z vašeho mobilního telefonu na mobilní bránu v datacentru prostřednictvím Internetu. Možná jste slyšeli o Voice-over-WiFi. V této technologii zajišťuje IPsec tunel mezi vaším telefonem a operátorem.
+
+Předtím, než vysvětlím, jak WireGuard funguje, a řeknu vám, co se mi na něm líbí, podívejme se nejprve na stávající řešení.
+
+## IPsec
+IPsec je de-facto průmyslový standard. Když už rozjedete tunel, výkon je, dá se říci, slušný. Návrh IPsec a jeho stavební prvky jsou zcela otevřené a můžete si je bezplatně přečíst v kolekci RFC dokumentů. Napsaný převážně akademiky, má dokonalé oddělení vrstev — například, výměna klíčů ([IKEv2][ike]) je oddělena od zabezpečeného datového přenosu ([ESP][esp]). Nevýhodou je však to, že nastavit tyto prvky je dost složité. V Linuxu to řešení jako [strongSwan][strongswan] trochu usnadňují, ale neřekl bych, že nastavit IPsec je jednoduché.
+
+*Poznámka (18.10.2020): V [diskusi pod anglickou verzí článku][post-english] někteří čtenáři zmínili, že protokol IKE případně IPsec jsem úplně nepochopil. Myslím si, že základní fungování protokolu chápu dostatečně dobře, avšak profesionálně se síťovým technologiím už pár let nevěnuji. Připouštím, že některé věci, které zde uvádím, mohou být zastaralé nebo uvedeny nesprávně. Na tom, že je IPsec zbytečně složitý protokol však trvám i nadále. Děkuji čtenářům za upozornění.*
+
+Na IPsec se mi líbí, že ESP obsah lze přímo zabalit za IP částí paketu. Je to proto, že ESP je registrován jako jeden z [povolených protokolů][ip-protocols], které můžete nastavit uvnitř pole „Next Header“ v IP hlavičce. Pokud vaši VPN nastavíte takto, snížíte provozní režii. Ovšem v dnešním zaNATovaném světě jsou IPsec data většinou zapouzdřené uvnitř UDP.
+
+IPsec může fungovat ve dvou režimech — site-to-site, kdy propojujete dvě LAN sítě nebo v režimu RoadWarrior, který se používá, když chcete připojit vaše zařízení do firemní sítě. RoadWarrior neumožňuje (pokud vím) propojení celých LAN sítí. Osobně si myslím, že nikdo takový scénář nepředpokládal. Takže musíte použít čistý site-to-site režim a ten má mnoho nevýhod.
+
+### Plusy a mínusy site-to-site IPsec
+- ✔️ Slušný výkon VPN
+- ✔️ Menší provozní režie v čistém ESP režimu
+- ❌ Je těžké ho nastavit
+- ❌ Konfigurace je na obou koncích statická, s napevno zadanými IP adresami, pravidly firewallu, trasami (routami) a dalšími nastaveními
+- ❌ Oba konce tunelu vyžadují veřejnou statickou IP adresu
+- ❌ Oba konce vyžadují výjimky ve firewallu pro konkrétní protokoly a čísla portů
+- ❌ IPsec neumožňuje jisté porty změnit. Jsou napevno „nadrátované“ v RFC standardu
+- ❌ Je těžké ho debugovat
+
+V mém případě jsem neměl statické IP adresy, ale aspoň byly veřejné. Jeden konec tunelu byl v Bratislavě a ten druhý na druhém konci země, v Chmiňanech. Na obou koncích jsem používal routery od Mikrotiku. Změna dynamické IP adresy byla problém. Pokud používáte VPN jako OpenVPN, můžete místo IP adresy vašeho vrstevníka (peer) zadat název domény. Proto můžete použít dynamické DNS služby, které jsou integrovány v mnoha spotřebních routerech od výroby. Ovšem IPsec takový scénář neočekává a musíte nastavit vše. Skončil jsem tak, že jsem si napsal trochu komplikovaný skript, který aktualizoval konfiguraci na rozhraních, pravidla firewallu a mnoho dalších záludností. Stále ho můžete najít v mém [repozitáři na GitHubu][mikrotik-ipsec-script]. Takto mi IPsec fungoval a výkon byl v pohodě. No jednoho dne jsem změnil poskytovatele Internetu, už jsem neměl veřejnou IP adresu a musel jsem si najít jiné řešení, jak opět propojit dva konce. Skončil jsem u OpenVPN, kterou Mikrotik [RouterOS][routeros] také podporoval.
+
+*Aktualizace 23.8.2020: Mikrotik [vydal novou betaverzi][winbox-beta-wireguard] Router OS a mezi novými funkcemi přibyla podpora pro WireGuard. Nepotrvá dlouho a budete moci WireGuard používat i v stabilních verzích systému. Konfigurace VPN přes nástroj Winbox by tak měla být ještě o něco jednodušší.*
+
+## OpenVPN
+Toto řešení má klasickou architekturu typu klient-server. OpenVPN server musíte spustit na routru (nebo jakémkoliv zařízení), které má dostupnou veřejnou IP adresu. Druhý konec může být za NATem s privátní IP. Za předpokladu, že se klient dokáže připojit k serveru, OpenVPN funguje bez problémů. Jakmile klient iniciuje relaci, po cestě se dynamicky aplikují NAT pravidla, aby relace zůstala otevřená. Abychom se ujistili, že NAT pravidla zůstanou aplikovány, jednou za čas klient pošle tunelem tzv. keepalive paket. Když se dynamická IP adresa změní, VPN spojení se na krátkou dobu přeruší. Ovšem klient se obvykle připojuje prostřednictvím názvu domény, který je aktualizován na novou IP adresu serveru, a proto se spojení znovu vytvoří.
+
+### Plusy a mínusy
+- ✔️ Dokáže přemostit dvě LAN sítě, i když má jeden z klientů privátní IP adresu
+- ✔️ Podporuje přenos přes TCP a UDP
+- ✔️ Klient může přistupovat k serveru prostřednictvím doménového záznamu v DNS
+- ✔️ Server může volitelně sdělovat jiné trasy, například jeho LAN síť
+- ✔️ Klient může mít uvnitř OpenVPN statickou IP adresu. To se hodí, když chcete vytvořit statickou trasu na LAN klienta
+- ❌ Je těžké ho nastavit, ale je to jednodušší než u IPsec
+- ❌ Klient nemůže sdělovat své trasy. Server si musí vytvořit statickou trasu mimo konfigurace OpenVPN
+- ❌ Je těžké ho debugovat
+- ❌ Slabý výkon. Propustnost je mnohem nižší než u IPsec
+- ❌ Bezpečnostní zranitelnosti a kód, který je těžko auditovatelný výzkumníky
+
+Mikrotik používá vlastní implementaci OpenVPN, která funguje pouze prostřednictvím TCP. Lidé neúspěšně žádají o podporu UDP už léta. OpenVPN přes TCP je méně efektivní, protože TCP vždy žádá o potvrzení, že paket byl doručen. A nad tímto protokolem udržuje OpenVPN jeho vlastní relaci. Časem, když jsem přešel z RouterOS na [OpenWrt][openwrt], byla změna této VPN, aby používala UDP, mezi prvními věcmi v mém seznamu.
+
+Ačkoli běží OpenVPN lépe přes UDP, jeho výkon je stále slabý. Jedním z důvodů je ten, že v Linuxu je OpenVPN implementován jako klient v uživatelském prostoru. Když OpenVPN vygeneruje paket, ten se zkopíruje několikrát, dokud opustí rozhraní síťové karty. Také OpenVPN nefunguje efektivně s vícejádrovými procesory.
+
+Konfigurace OpenVPN je mnohem přímočařejší než nastavení IPsec. Nicméně stále to není jednoduché. Lidé musí vědět, jak vygenerovat OpenSSL klíče, ideálně pomocí [easy-rsa][easy-rsa] skriptů, které se dodávají spolu s OpenVPN. Bezpečnost v OpenVPN je také problém. V minulosti našli výzkumníci několik zranitelností v knihovně OpenSSL a i v jádru [knihovny OpenVPN][openvpn-vulnerabilities]. Kód je obrovský, čímž se audit a hledání chyb dost komplikuje.
+
+## WireGuard
+Na tomto místě bych rád zmínil, že IPsec i OpenVPN jsou dost staré protokoly. Časem našli lidé v jejich návrzích nedostatky, ale není jednoduché, občas dokonce nemožné, opravit podstatné chyby v návrhu. Autoři WireGuardu si byli dobře vědomi problémů s IPsec a OpenVPN, které se vyskytovaly v reálných podmínkách, a napsali protokol, aby tyto problémy vyřešili.
+
+> WireGuard® je extrémně jednoduchá a přitom rychlá a moderní VPN, která využívá nejnovější poznatky v kryptografii. Cíli na to, aby byl rychlejší, jednodušší, štíhlejší a užitečnější než IPsec, přičemž se snaží vyhýbat jeho masivním bolestem. Jeho cílem je být mnohem výkonnější než OpenVPN.
+> — <cite>[webová stránka WireGuardu][wireguard]</cite>
+
+Když jsem si přečetl jejich technický dokument a měl jsem v hlavě všechny tyto informace, napsal jsem si hlavní body do odrážkového seznamu. Přidám ho sem jako referenci.
+
+### Plusy a mínusy
+- ✔️ Kód je jednoduchý. Ovladač v jádru má podle jeho autorů méně než [4 000 řádků kódu][wg-whitepaper]
+- ✔️ Proto, že je jednoduchý, je jednoduše auditovatelný ohledně bezpečnostních zranitelností
+- ✔️ Jednoduše se konfiguruje a používá
+- ✔️ Podporuje přesouvání klientů mezi sítěmi bez ztráty VPN spojení
+- ✔️ Používá nejmodernější kryptografii
+- ✔️ Běží dobře na výkonných serverech i vestavěných routerech
+- ✔️ Velmi vysoký výkon, srovnatelný s IPsec
+- ✔️ Podporuje linuxové kontejnery a umožňuje jim získat přístup pouze k VPN a to prostřednictvím jmenného prostoru WireGuardu
+- ✔️ Je k dispozici na mnoha platformách, včetně Androidu a iOS. Podpora pro WireGuard je aktivně přidávána i do starších linuxových jader, čímž se rozšiřuje podpora ještě více
+- ❌ Ovladač jádra je zatím k dispozici pouze pro Linux. Ostatní platformy používají klienta v uživatelském prostoru, který je napsán v Go. Ovšem podle autorů je stále dost výkonný
+
+Pro ty techničtější čtenáře přidám ještě několik plusů:
+- ✔️ Ovladač v linuxovém jádře nepoužívá Crypto API. Namísto toho WireGuard reimplementuje některé funkce napřímo, aby se vyhnul dynamické alokaci paměti
+- ✔️ WireGuard podporuje konfiguraci čistě pouze se staticky alokovanou pamětí
+- ✔️ Kryptografické klíče se jednoduše generují dodaným nástrojem `wg`
+- ✔️ Implicitní utajený (stealth) režim. Standardně posílají vrstevníci (peeři) data ve WireGuardu pouze když potřebují a služba WireGuard neodpovídá na náhodné požadavky bez správně vyplněných hlaviček. Takže když náhodný síťový skener pošle požadavek na port, na kterém poslouchá WireGuard, nedostane zpět žádnou odpověď a vůbec netuší, že tam běží nějaká VPN. Klienti za NATem mohou udržovat VPNku v provozu pomocí volitelného keepalive parametru. Standardně je * keepalive vypnutý*
+- ✔️ Protože WireGuard na Linux běží přímo v jádru a nikoli v uživatelském prostoru, vnitřní pakety se nekopírují několikrát, dokud opustí síťovou kartu
+- ✔️ Na rozdíl od OpenVPN využívá WireGuard všechny jádra procesoru efektivně
+- ✔️ Vrstva pro výměnu klíčů a transportní vrstva nejsou odděleny (na rozdíl od IPsec), aby byla implementace a údržba pro síťové inženýry jednodušší
+- ✔️ V Linuxu autoři WireGuardu částečně integrovali jeho konfiguraci do standardních linuxových nástrojů jako `ip`. Pro zbylou funkčnost poskytují nástroj `wg` a časem plánují integrovat všechnu tuto funkčnost do standardních nástrojů a zcela se zbavit tohoto `wg` nástroje
+
+Jak můžete vidět, tento seznam je dost dlouhý, a to jsou jen hlavní body, které jsem dal dohromady. Dokud se dostanu k tomu, jak jednoduše se to nastavuje, vysvětlím vám ještě, což je to WireGuard vrstevník (peer).
+
+## Každý je vrstevník
+Ve WireGuardu není žádný vztah typu klient-server. WireGuard zavádí koncept vrstevníků, což jsou navzájem propojeni klienti. A z definice není žádný nadřazený ani podřízený vrstevník.
+
+Abyste sestavili spojení, potřebujete zajistit následující:
+- Na každém vrstevníkovi vytvořit WireGuard rozhraní a přiřadit mu IP adresu s nástrojem `ip`. Jde o adresu uvnitř VPN sítě, která je navždy provázána s vrstevníkem
+- Na každém vrstevníkovi vytvořit privátní klíč pomocí funkce `wg` a přiřadit ho WireGuard rozhraní
+- Odvodit veřejný klíč, opět pomocí funkce `wg`, a přidat ho u všech vrstevníků, se kterými chcete komunikovat. WireGuard neurčuje, jak se mají vyměnit klíče. Já jsem otevřel SSH na každém zařízení a ručně jsem je zkopíroval
+- Volitelně, říct každému vrstevníkovi jak se spojit s těmi ostatními, zadáním veřejné IP adresy (nebo domény) a portu. Ne všichni vrstevníci potřebují vědět jak se spojit s ostatními. Stačí, že ostatní vědí, jak se spojit s nimi. Vždyť uvidíte později
+
+### Generování klíče pro vrstevníka
+Generování veřejného a privátního klíče je přímočaré. Ujistěte se, že máte nainstalované WireGuard nástroje. Postup se liší v závislosti na systému. Nejprve vygenerujte privátní klíč:
+
+```bash
+root@OpenWrt:~# wg genkey
+CKqTfzJBQgg4Vefi38IpBkzPUYUdJdneyZCf4bkBsm0=
+```
+
+Tento privátní klíč potřebujete uložit do souboru, na který se odkážete z WireGuard konfigurace. Z tohoto privátního klíče potřebujete odvodit veřejný klíč a distribuovat ho ostatním vrstevníkům:
+
+```bash
+root@OpenWrt:~# echo "CKqTfzJBQgg4Vefi38IpBkzPUYUdJdneyZCf4bkBsm0=" | wg pubkey
+pKIHvamNAEpnH11czVMDDv/GD0ivVwp8Jwhp0qUH7UU=
+```
+
+Tyto kroky musíte zopakovat pro každého vrstevníka ve vaší VPN síti.
+
+Přejděme si nyní spolu několik scénářů a snad lépe pochopíte, jak to celé funguje.
+
+### Scénář č.1: Site-to-site VPN, kde mají oba vrstevníci veřejnou IP adresu
+V tomto prvním scénáři navzájem propojujeme dva routery.
+
+Vrstevník A:
+- LAN síť: 10.0.0.0/24
+- VPN IP: 192.168.1.1/32
+- Veřejná IP: 46.43.215.66 (nebo doména vrstevnikjeden.priklad.cz)
+- WireGuard port: 1194 (použijte jakýkoliv port chcete, jen ho nesmí blokovat váš poskytovatel)
+
+Vrstevník B:
+- LAN síť: 10.0.1.0/24
+- VPN IP: 192.168.1.2/32
+- Veřejná IP: 12.35.181.48 (nebo doména vrstevnikdva.priklad.cz)
+- WireGuard port: 1194
+
+<div className="Image__Medium">
+  <img src="./images/cs/scenario_01.png" alt="Scénář 1" />
+  <figcaption>Scénář 1: Site-to-site VPN</figcaption>
+</div>
+
+Nejprve na každém vrstevníkovi vytvořte WireGuard rozhraní:
+
+Vrstevník A:
+```bash
+vrstevník A# ip link add dev wg0 type wireguard
+```
+
+Vrstevník B:
+```bash
+vrstevník B# ip link add dev wg0 type wireguard
+```
+
+Dále přiřaďte rozhraní IP adresu. Slouží jako IP adresa vrstevníka uvnitř vaší VPN a nikdy se nemění (samozřejmě, pokud to neuděláte vy).
+
+Vrstevník A:
+```bash
+vrstevník A# ip address add dev wg0 192.168.1.1/32
+```
+
+Vrstevník B:
+```bash
+vrstevník B# ip address add dev wg0 192.168.1.2/32
+```
+
+Dále vygenerujte klíče podle postupu výše a přiřaďte je vrstevníkům.
+
+Vrstevník A:
+```bash
+vrstevník A# wg genkey > private
+vrstevník A# cat private
+iFtTfEwI/+Bc0M2olXuytEVPU4TXhCDVGezFt7H8ylg=
+vrstevník A# wg pubkey < private
+AqyBazhsen/jzTJ0MzyyU16wOYovBPZ+DIu6x4rSH3Y=
+
+# Přiřazení privátního klíče rozhraní wg0
+vrstevník A# wg set wg0 private-key ./private
+```
+
+Vrstevník B:
+```bash
+vrstevník B# wg genkey > private
+vrstevník B# cat private
+uPBLlBHptZahFKaX9mSFmIgSNjAEd1kwB+MSAE+QVE0=
+vrstevník B# wg pubkey < private
+i8nniZCkTISUfaLMQ+FV0Sewvq0f68UrkLkeV0a4BnA=
+
+# Přiřazení privátního klíče rozhraní wg0
+vrstevník B# wg set wg0 private-key ./private
+```
+
+A u obou vrstevníků povolte rozhraní `wg0`:
+
+Vrstevník A:
+```bash
+vrstevník A# ip link set wg0 up
+```
+
+Vrstevník B:
+```bash
+vrstevník B# ip link set wg0 up
+```
+
+V této fázi je WireGuard rozhraní nakonfigurováno, ale vrstevníci navzájem o sobě nevědí. Pojďme to napravit.
+
+Vrstevník A:
+```bash
+vrstevník A# wg set wg0 peer i8nniZCkTISUfaLMQ+FV0Sewvq0f68UrkLkeV0a4BnA= allowed-ips 192.168.1.2/32,10.0.1.0/24 endpoint 12.35.181.48:1194
+```
+
+Vrstevník B:
+```bash
+vrstevník B# wg set wg0 peer AqyBazhsen/jzTJ0MzyyU16wOYovBPZ+DIu6x4rSH3Y= allowed-ips 192.168.1.1/32,10.0.0.0/24 endpoint 46.43.215.66:1194
+```
+
+Nyní je VPN konfigurována a vrstevníci by měli vědět spolu komunikovat.
+
+Parametr `peer` je veřejný klíč vrstevníka, se kterým chcete začít komunikovat.
+
+Parametr `allowed-ips` uvádí všechny sítě, které poskytuje druhý vrstevník. V našem příkladu uvádí IP adresu přiřazenou WireGuard rozhraní a IP adresu sítě LAN připojené k vrstevníkům. Máte plnou kontrolu nad tím, jaké sítě budete sdělovat ostatním, ale minimálně byste sem měli uvést IP adresu vrstevníka.
+
+Parametr `endpoint` říká vrstevníkovi, jak se spojit s druhým vrstevníkem, a je volitelný. Nicméně, představte si situaci, že ani u jednoho vrstevníka tuto informaci nezadáte. Jak se navzájem spojí? Pravdou je, že se nespojí. V každém scénáři by měl mít alespoň jeden vrstevník napevno zadanou cestu, jak se spojit s druhým vrstevníkem. Představte si, že jsem nezadal koncový bod pro vrstevníka A na vrstevníkovi B. Proto, když chce vrstevník B poslat paket, dostanete chybu, která říká, že k vrstevníkovi A neexistuje trasa. Ale pokud chce vrstevník A komunikovat s vrstevníkem B, může, protože má zadaný jeho koncový bod. Jakmile vrstevník B přijme paket od vrstevníka A, poznamená si jeho WAN IP adresu a od této chvíle mohou oba komunikovat.
+
+WireGuard udržuje virtuální směrovací tabulku, ve které přiřazuje veřejný klíč k IP adrese vrstevníka:
+
+| Veřejný klíč vrstevníka                      | Povolené zdrojové IP adresy |
+|----------------------------------------------|-----------------------------|
+| i8nniZCkTISUfaLMQ+FV0Sewvq0f68UrkLkeV0a4BnA= | 192.168.1.2/32,10.0.1.0/24  |
+
+Tato tabulka přiřazuje veřejný klíč vrstevníka k přiřazeným IP adresám. Představte si, že vrstevník A chce poslat paket na zařízení v LAN síti za vrstevníkem B (IP: 10.0.1.10). WireGuard se podívá do této tabulky a najde příslušný veřejný klíč (to znamená, že trasa existuje). Potom WireGuard paket zašifruje veřejným klíčem přiřazeným s cílovou IP adresou a odešle paket na koncový bod vrstevníka B. Na druhém konci VPN příjme vrstevník B paket na WireGuard portu 1194. Pak se pokusí paket dešifrovat jeho privátním klíčem. Jestliže vrstevník B uspěje, paket zpracuje. V opačném případě ho WireGuard zahodí.
+
+| Veřejný klíč vrstevníka                      | Povolené zdrojové IP adresy |
+|----------------------------------------------|-----------------------------|
+| AqyBazhsen/jzTJ0MzyyU16wOYovBPZ+DIu6x4rSH3Y= | 192.168.1.1/32,10.0.0.0/24  |
+
+Když chce počítač na IP adrese 10.0.1.0 odeslat odpověď vrstevníkovi A, uvede IP adresu vrstevníka A jako cílovou adresu. Pak se vrstevník B podívá do tabulky, aby našel příslušný veřejný klíč pro tuto cílovou adresu. Pokud uspěje, zašifruje paket příslušným veřejným klíčem vrstevníka A a paket odešle. Ten se zpracuje na instanci WireGuardu na vrstevníkovi A.
+
+### Scénář č.2: Dva vrstevníci za NATem a jeden vrstevník s veřejnou IP
+Tento scénář představuje typickou situaci, kdy máte routery za NATem a chcete sestavit zabezpečenou VPN. V takovém případě musí mít alespoň jedno zařízení veřejnou IP adresu.
+
+Vrstevník A:
+- LAN síť: 10.0.0.0/24
+- VPN IP: 192.168.1.1/32
+- Za NATem (nemá veřejnou IP)
+
+Vrstevník B:
+- LAN síť: 10.0.1.0/24
+- VPN IP: 192.168.1.2/32
+- Za NATem (nemá veřejnou IP)
+
+Vrstevník C:
+- LAN síť: 10.0.2.0/24
+- VPN IP: 192.168.1.3/32
+- Veřejná IP: 12.35.181.48
+- WireGuard port: 1194
+
+<div className="Image__Medium">
+  <img src="./images/cs/scenario_02.png" alt="Scénář 2" />
+  <figcaption>Scénář 2: Site-to-site VPN s vrstevníky za NATem</figcaption>
+</div>
+
+V tomto příkladu jsou vrstevníci A a B za NATem. Není žádný způsob, jak by mohli spolu napřímo komunikovat. Ovšem mohou si posílat data přes vrstevníka C, se kterým se umí spojit oba. Stále tu máme vrstevníky, kteří jsou si ve WireGuard terminologii „rovni.“ Ovšem tím, že nastavíme konfiguraci tak, aby se posílaly data z vrstevníka A na vrstevníka B přes vrstevníka C (a opačně), jsme v podstatě vytvořili architekturu klient-server. Vrstevníci A a B jsou klienti a všechny jejich data jdou přes vrstevníka C. Oba klienti, A i B, mají definovaný koncový bod na vrstevníka C. Nebudu sem dávat celou konfiguraci, protože jsem ji podrobně vysvětlil v předchozím scénáři. Ale ukážu vám aspoň konfiguraci pro vrstevníka A.
+
+```bash
+# Vytvoření rozhraní
+vrstevník A# ip link add dev wg0 type wireguard
+vrstevník A# ip address add dev wg0 192.168.1.1/32
+
+# Vygenerování klíče
+vrstevník A# wg genkey > private
+vrstevník A# cat private
+iFtTfEwI/+Bc0M2olXuytEVPU4TXhCDVGezFt7H8ylg=
+vrstevník A# wg pubkey < private
+AqyBazhsen/jzTJ0MzyyU16wOYovBPZ+DIu6x4rSH3Y=
+
+# Přiřazení privátního klíče rozhraní wg0
+vrstevník A# wg set wg0 private-key ./private
+
+# Povolení rozhraní
+vrstevník A# ip link set wg0 up
+
+# Sem přidáme pouze vrstevníka C (vrstevník B je dostupný přes vrstevníka C)
+# Přidejte sítě od vrstevníka B i C, které chcete oznamovat jako
+# dostupné přes vrstevníka C
+vrstevník A# wg set wg0 peer <veřejný-klíč-vrstevníka-c> allowed-ips 192.168.1.2/32,192.168.1.3/32,10.0.1.0/24,10.0.2.0/24 endpoint 12.35.181.48:1194
+```
+
+Pokud chce v této chvíli vrstevník A poslat paket do LAN sítě LAN 10.0.1.0/24 na vrstevníkovi B, podívá se do tabulky, vyhledá pro cílovou trasu příslušný veřejný klíč vrstevníka C a pošle paket. Vrstevník C má spojení s vrstevníkem B a paket mu přepošle. Abychom se ujistili, že jsou všichni vrstevníci kdykoliv dostupní, musíme nastavit volitelný parametr `persistent-keepalive`. NAT relace se obvykle uzavře dost rychle a protože standardně WireGuard posílá data pouze tehdy, když má co poslat, spojení mezi vrstevníkem A a vrstevníkem C, jakož i mezi vrstevníkem B a vrstevníkem C, se uzavře. Znovu se sestaví když pošle vrstevník A data vrstevníkovi C a vrstevník B musí udělat totéž. Abychom ponechali NAT relaci aktivní pro oba vrstevníky, můžeme nastavit *keepalive* na vrstevnících A a B, kteří jednou za 25 sekund pošlou vrstevníkovi C paket (je to doporučená hodnota, dostatečně bezpečná, abychom zabránili uzavření relace). A tedy, vrstevník C může komunikovat s oběma vrstevníky kdykoliv a přeposílat jejich data podle potřeby.
+
+Změňme poslední řádek, kde přidáváme informaci o vrstevníkovi C na vrstevníkovi A. Všimněte si, že *keepalive* nastavujeme na 25 sekund:
+
+```bash
+vrstevník A# wg set wg0 peer <veřejný-klíč> allowed-ips <sítě> endpoint <koncový-bod-vrstevníka-c> persistent-keepalive 25
+```
+
+### Scénář č.3: RoadWarrior klienti přistupující k firemní VPN
+Následující scénář je dost typický. Zaměstnanec chce přistupovat k firemní VPN s jeho firemním notebookem a telefonem, aby si přečetl nějaké dokumenty.
+
+<div className="Image__Medium">
+  <img src="./images/cs/scenario_03.png" alt="Scénář 3" />
+  <figcaption>Scénář 3: RoadWarrior klienti přistupující k firemní VPN</figcaption>
+</div>
+
+V tomto případě jsou notebook i telefon za NATem. Jejich lokalita se může kdykoliv změnit, jakož i jejich IP adresy. „Klientskí“ vrstevníci nesdílejí žádné sítě a chtějí komunikovat pouze se „serverovým“ vrstevníkem. Parametr `persistent-keepalive` nepotřebujeme, protože firemní server nikdy nepotřebuje připojení k zařízení zaměstnance. Obvykle se zaměstnanec připojí s WireGuard VPN pouze tehdy, když chce přenést nějaké data a hned potom se odpojí. I když je klientská aplikace stále připojena a NAT relace se přeruší, během nejbližšího datového přenosu se vytvoří nová NAT relace a firemní server si poznamená aktualizovanou IP adresu a port. Vše funguje tak jak má.
+
+Toto nastavení má jeden nedostatek. Pokud vím, neexistuje způsob jak dynamicky přiřadit IP adresu klientovi uvnitř VPN. Jak se postupně nástroje vylepšují, očekávám, že se tento problém vyřeší.
+
+## Podpora v aplikacích
+WireGuard je podporován na mnoha platformách. Mimo Linuxu můžete použít jeho aplikaci napsanou v Go. Mnoho nástrojů jako `systemd-networkd` nebo `NetworkManager` přidalo nativní podporu, díky čemuž se WireGuard používá ještě jednodušší. V mém případě jsem nastavoval WireGuard na [OpenWrt][openwrt] routeru. Jeho grafické prostředí s názvem [LuCI][luci] má pro WireGuard balík. Přes webové rozhraní routeru můžete vytvářet rozhraní, jakož i přidávat vrstevníky. A pokud rozumíte terminologii, nastavit to je hračka.
+
+<div className="Image__Medium">
+  <img src="./images/wg-luci.png" alt="WireGuard na LuCI" />
+  <figcaption>WireGuard ve webovém rozhraní LuCI</figcaption>
+</div>
+
+## Propustnost
+WireGuard používám přes dva týdny. Nemám přesná data propustnosti, protože kvůli situaci ohledně COVID-19 je Internet dost vytížen a moje rychlost během dne dost kolísá. Ovšem udělal jsem pár rychlých testů mimo špičky a výsledky byly ohromné.
+
+Rychlost stahování mého Internetu u vrstevníka v Chmiňanech je zhruba 100 Mbit/s. Vzdálený konec má optické připojení s mnohem vyššími rychlostmi stahování a nahrávání. Když jsem zkusil kopírovat video z mého vzdáleného serveru, dostával jsem propustnost v rozsahu 70-80 Mbit/s. Zkontroloval jsem také vytížení procesoru v RPi a byla tam ještě rezerva.
+
+Toto jsou hrubé data jen pro ilustraci. Pokud chcete vidět alespoň nějaké srovnání, koukněte se na [technický dokument][wg-whitepaper], kde autoři WireGuardu porovnávají WireGuard, IPsec a OpenVPN. Rozdíl mezi OpenVPN a WireGuardem je enormní.
+
+## Závěr
+Věřím, že má WireGuard jasnou budoucnost a těším se na vylepšenou podporu na stávajících zařízeních i na přidání podpory na těch nových. V části o IPsec jsem stručně zmínil [ePDG][ePDG], které běží v cloudu u mobilního operátora a přenáší hlas přes IPsec. Ačkoliv standard definuje pro transport IPsec, umím si představit, že by se časem nahradil za WireGuard a celkově, že ho uvidíme v mnoha aplikacích, kde IPsec roky dominoval.
+
+[//]: # (Used references)
+[rpi-as-a-home-router]: https://www.zahradnik.io/raspberry-pi-jako-domaci-router
+[rpi4-specs]: https://www.raspberrypi.org/products/raspberry-pi-4-model-b/
+[wireguard]: https://www.wireguard.com/
+[wg-whitepaper]: https://www.wireguard.com/papers/wireguard.pdf
+[linus-likes-wireguard]: https://www.phoronix.com/scan.php?page=news_item&px=Linus-Likes-WireGuard
+[linus-quote]: http://lkml.iu.edu/hypermail/linux/kernel/1808.0/02472.html
+[ePDG]: https://www.3gpp.org/technologies/keywords-acronyms/100-the-evolved-packet-core
+[openvpn]: https://openvpn.net/
+[ipsec]: https://cs.wikipedia.org/wiki/IPsec
+[esp]: https://tools.ietf.org/html/rfc2406
+[ike]: https://tools.ietf.org/html/rfc5996
+[strongswan]: https://strongswan.org/
+[ip-protocols]: https://en.wikipedia.org/wiki/List_of_IP_protocol_numbers
+[mikrotik-ipsec-script]: https://github.com/vzahradnik/dynamic-ipsec-scripts
+[openwrt]: https://openwrt.org/
+[easy-rsa]: https://community.openvpn.net/openvpn/wiki/EasyRSA
+[openvpn-vulnerabilities]: https://openvpn.net/security-advisories/
+[routeros]: https://mikrotik.com/software
+[luci]: https://openwrt.org/docs/guide-user/luci/luci.essentials
+[winbox-beta-wireguard]: https://forum.mikrotik.com/viewtopic.php?f=1&t=165248
+[post-english]: https://www.zahradnik.io/wireguard-a-vpn-with-real-world-usage-in-mind

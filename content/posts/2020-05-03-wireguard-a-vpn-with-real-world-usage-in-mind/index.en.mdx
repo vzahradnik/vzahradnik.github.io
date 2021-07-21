@@ -79,7 +79,7 @@ When I read their paper and had all this information in my head, I wrote the mai
 - ✔️ Uses the state-of-the-art cryptography
 - ✔️ Runs well on powerful servers and embedded routers
 - ✔️ Very high performance, comparable to IPsec
-- ✔️ Supports Linux containers to give them access to VPN only through the Wireguard namespace
+- ✔️ Supports Linux containers to give them access to VPN only through the WireGuard namespace
 - ✔️ Available on many platforms, including Android and iOS. WireGuard is actively backported to older Linux kernels to extend support even more
 - ❌ The kernel driver is so far available only for Linux. Other platforms use a userspace client written in Go. However, according to the authors, it's still quite performant
 
@@ -292,6 +292,7 @@ peer A# wg set wg0 peer <peer-c-public-key> allowed-ips 192.168.1.2/32,192.168.1
 At this moment, if peer A wants to send a packet to the LAN 10.0.1.0/24 on peer B, it looks into the table and matches the route with a public key for peer C and sends the packet. Peer C has a connection to peer B and forwards the packet. To make sure all peers are reachable at any time, we need to set an optional `persistent-keepalive` parameter. NAT session usually terminates rather quickly, and because WireGuard, by default, sends data only when there's anything to send, the connection between peer A and peer C as well as between peer B and peer C closes. It is re-established when peer A sends data to peer C, and peer B needs to do the same. To keep the NAT session active for both peers, we can set the *keepalive* on peers A and B, which send a packet to peer C once per 25 seconds (it's a recommended value, safe enough to avoid closing the session). Therefore, peer C can communicate with both peers at any time and forward data as needed.
 
 Let's change the last line where we add peer C information on peer A. Note the *keepalive* set to 25 seconds:
+
 ```bash
 peer A# wg set wg0 peer <pubkey> allowed-ips <networks> endpoint <peer-c-endpoint> persistent-keepalive 25
 ```
@@ -309,7 +310,7 @@ In this case, both a laptop and a phone are behind NAT. Their location may chang
 There is one caveat to this setup. As far as I know, there's no way how to dynamically assign an IP address to the client peer inside the VPN. As tools evolve, I expect this problem to be solved.
 
 ## Application support
-WireGuard is supported on many platforms. Outside of Linux, you can use its app written in Go. Many tools like `systemd-networkd` or `NetworkManager` added native support, which makes WireGuard even easier to use. In my case, I set up WireGuard on [OpenWrt][openwrt] router. Their GUI called [LuCI][luci] has a package for WireGuard; you can create the interface as well as add peers from the router web interface. And so long as you understood the terminology, setting it up is a breeze.
+WireGuard is supported on many platforms. Outside of Linux, you can use its app written in Go. Many tools like `systemd-networkd` or `NetworkManager` added native support, which makes WireGuard even easier to use. In my case, I set up WireGuard on [OpenWrt][openwrt] router. Its GUI called [LuCI][luci] has a package for WireGuard; you can create the interface as well as add peers from the router web interface. And so long as you understood the terminology, setting it up is a breeze.
 
 <div className="Image__Medium">
   <img src="./images/wg-luci.png" alt="WireGuard on LuCI" />
