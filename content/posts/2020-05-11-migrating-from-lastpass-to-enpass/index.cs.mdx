@@ -1,0 +1,106 @@
+---
+title: Migrace z LastPass do Enpass
+excerpt: LastPass Premium jsem používal několik let. Teď jsem se rozhodl zmigrovať na jiné řešení. Jaké jsem měl důvody a byla migrace složitá?
+author: Vladimír Záhradník
+date: 2020-05-11
+categories: passwords security technology comenio
+hero: ./images/hero.jpg
+lang: cs_CZ
+secret: true
+---
+
+[LastPass][lastpass] byl můj první správce hesel. Před LastPassem jsem si pamatoval mnoho hesel v mé hlavě a uvědomuji si, že bezpečnost mých hesel byla vážně ohrožena. Pro důležité účty jako Google jsem používal samostatné heslo a tam, kde to bylo možné, jsem také zapnul [dvoufaktorové ověření][2fa]. Ovšem ve skutečnosti mnoho účtů nepodporovalo 2FA a já jsem sdílel několik hesel mezi více stránkami.
+
+LastPass vyřešil všechny tyto problémy a v té době to bylo to nejlepší řešení pro správu hesel, o jakém jsem věděl. Postupně jsem přidal všechny mé účty a nastavil jsem pro *každý jeden* z nich nové, silné heslo. Tento přístup omezil možné škody, kdyby došlo ke kompromitaci hesla, na minimum. Pak jsem zašel ještě dál. Jak jsem zjistil, LastPass podporoval [YubiKey][yubikey] klíče, kterými umíte přidat do trezoru s hesly další vrstvu zabezpečení. Tato funkce byla (a stále je) k dispozici pouze v rámci [LastPass Premium][lastpass-plans]. V té době, asi před třemi lety, byla cena za prémiový účet asi 12 dolarů ročně a já si rád za tento komfort zaplatil.
+
+## Nezbytné funkce
+Dokud jsem začal používat LastPass, udělal jsem si průzkum a věděl jsem o [KeePassu][keepass]. Je to skvělé řešení, ale chybí mu několik funkcí, které potřebuji:
+- Schopnost uložit libovolné datové hodnoty, ne jen kombinace se jménem a heslem (privátní GPG klíče, fotky mého občanského průkazu a pasu a jiné soubory)
+- Schopnost flexibilně přidat do položek nové záznamy, jako například poznámky, bezpečnostní otázky, PINy
+- Standardizované rozšíření pro prohlížeč, které funguje na každé platformě stejně
+- Funkce s automatickým doplňováním (ve všech mých zařízeních), podpora pro [Android autofill API][android-autofill]
+- Automatická záloha mého šifrovaného trezoru
+- Pohodlný generátor zabezpečených hesel
+- Bezpečnostní audit (způsob, jak najít slabé hesla, hesla použité na více stránkách, [pwnuté][pwn] hesla)
+
+KeePass není homogenní. Existuje množství aplikací s proměnlivou úrovní podpory a s různými funkcemi. Ovšem mnohé funkce uvedené v mých požadavcích v něm stále nejsou přítomny. Na druhé straně, KeePass vám dává plnou kontrolu nad šifrovanými trezory. Trezor je pouze šifrovaný soubor a vy jste zodpovědní za jeho zálohování. Nedostane se do cloudu, pokud ho tam sami nenahrajete.
+
+## Bezpečnostní zranitelnosti a výpadky
+Během let jsem slyšel o několika zranitelnostech v LastPass rozšířeních pro prohlížeče. Klobouk dolů před vývojáři, obvykle je rychle opravili. Ovšem jednou z hlavních nevýhod podle mě je, že LastPass závisí na internetovém připojení a jeho cloudu. Pokud nemáte připojení, čekají vás těžké časy při snahách dostat se k vašim heslům.
+
+Několikrát jsem se dostal do situace, že jsem se nemohl přihlásit do mého trezoru a přistupovat k heslům. Je dost možné, že servery LastPassu měli výpadek. Co je pouze nepříjemnost u jiných služeb, je u této noční můra. Hesla ve své hlavě už více nenosím.
+
+## Problémy s použitelností
+Během roku jsem narazil na drobné nedostatky, díky kterým nebylo použití tohoto řešení až tak příjemné. Možná, že Firefox zvýšil zabezpečení pro rozšíření a vývojáři z LastPassu nebyli schopni se s tím zcela vypořádat, opravdu nevím. No pokaždé, když jsem zapnul počítač a otevřel prohlížeč, musel jsem zadat mé hlavní heslo. Občas to nestačilo a rozšíření si ptalo heslo několikrát, dokud jsem se přihlásil do trezoru. Často mě rozšíření požádalo o vložení mého YubiKey přesto, že jsem označil mé zařízení jako důvěryhodné na 30 dní.
+
+## Neustálé zvyšování cen
+Odkdy jsem začal používat LastPass, jeho roční prémiový plán byl každým rokem dražší. Co začalo jako pohodlná služba za 12 dolarů ročně, [stojí aktuální 36 dolarů][lastpass-plans] (květen 2020). Nevadí mi platit vyšší částky, pokud dostanu dokonalý produkt, kde vše bez zaváhání funguje — o LastPassu to už víc neplatí. Když se blížil konec mého prémiového plánu, aktivně jsem začal hledat náhradu.
+
+<div className="Image__Large">
+  <img src="./images/security-lock.png" alt="Zámek" />
+  <figcaption>Zdroj: Thomas Breher, Pixabay</figcaption>
+</div>
+
+## A vítězem se stává Enpass
+Nedávné roky byli na poli správců hesel velmi turbulentní. LastPass získal mnoho konkurentů, mnozí z nich nabídli srovnatelné funkce za stejnou nebo nižší cenu. Když jsem se rozhodl zmigrovat na jiné řešení, udělal jsem si průzkum, abych si zjistil, které řešení jsou pro mě dobré. Před pár dny jsem četl blogový příspěvek od Nextcloudu, kde [porovnávají různé správce hesel][nextcloud-pass]. Uvedli tam jisté skvělé možnosti a Enpass vypadal slibně. Jen nedávno jeho autoři přidali podporu pro [WebDAV][webdav], který mi umožňuje použít můj lokální [Nextcloud server][nextcloud] jako „cloud.“ Jinými slovy, mám plnou kontrolu nad mými hesly.
+
+### Funkce Enpassu:
+- Umožňuje synchronizovat hesla s lokálním Nextcloud serverem
+- Podporuje více trezorů
+- Poskytuje aplikace pro počítač na všech hlavních platformách
+- Trezory jsou šifrované a ukládají se lokálně. Synchronizace do cloudu je zcela volitelná
+- Na Androidu podporuje autofill API a odemykání trezoru otiskem prstu
+- Rozšíření pro prohlížeč nepotřebujete. Pokud je použijete, neodesílají Enpassu žádné údaje. Rozšíření komunikuje přímo s vaší lokálně nainstalovanou aplikací
+- Umožňuje ukládat do trezoru jakákoli data, včetně libovolných souborů
+- Jeho aplikace jsou velmi moderní a líbí se mi jejich UI
+- Jednou z nejlepších funkcí je podpora pro [TOTP][totp]
+- Nabízí *doživotní předplatné*, které stojí méně než jeden rok LastPass Premium
+
+Doživotní předplatné od Enpassu a schopnost synchronizovat trezory s mým Nextcloud serverem byly rozhodující. Aplikaci jsem se rozhodl koupit jen pár minut poté, co jsem si ji nainstaloval. Synchronizace je bleskurychlá. Když aktualizuji v aplikaci můj trezor, trvá méně než 30 sekund, dokud se změny projeví na jiných zařízeních, například na mém telefonu. Když si koupíte jejich aplikaci, potřebujete dát Enpassu vaši emailovou adresu. Spáruje vaši platbu s emailem, abyste mohli vaši licenci obnovit na dalších zařízeních. A to je vše — Enpass potřebuje pouze emailovou adresu, a to pouze na pozdější obnovu vašeho nákupu.
+
+Bezplatná verze Enpassu je omezena na 25 položek v jednom trezoru. Nevyžaduje vůbec žádnou registraci, takže vás povzbuzuji, abyste si ji zkusili, hlavně pokud ještě správce hesel nepoužíváte.
+
+Pokaždé, když spustíte počítač, potřebujete zadat celé hlavní heslo. Jednou za den je to přijatelné. Enpass uzamkne trezor po zadané době nečinnosti. Abyste ho odemknout, standardně opět žádá o heslo, ale existuje i lepší způsob. Můžete nastavit PIN, kterým budete odemykat aplikaci namísto hesla. V mém případě je PIN mnohem kratší než moje hlavní heslo a nevadí mi zadávat ho, když je to potřeba. Na mém telefonu odemykám aplikaci otiskem mého prstu. Toto odemykání otiskem má své mouchy, občas se pole na přiložení prstu nezobrazí. Ale když odejdu z aplikace a vrátím se zpět, ve většině případů začne fungovat. O nic nejde, protože většinou na Androidu interaguji s aplikací pomocí funkce autofill.
+
+Jednou z novějších funkcí je podpora pro autentifikační tokeny [TOTP][totp]. Nyní může každý účet obsahovat heslo a token na jednom místě. Stále si nechávám [Authy][authy] jako zálohu, ale velmi ho už nepoužívám. Při pokusu přihlásit se do služby, která vyžaduje heslo a číselný kód měnící se v čase, Enpass zadá všechny informace za vás.
+
+Své hesla jsem rozdělil do dvou samostatných trezorů. Jeden je pracovní a druhý můj osobní. Fyzicky jsou hesla uloženy v samostatných souborech, ale Enpass dokáže zobrazit položky ze všech trezorů na jednom místě.
+
+## Migrace
+LastPass podporuje export položek do jednoho velkého JSON souboru. Enpass by měl podporovat import takového souboru, ovšem nevím vám to říct s jistotou. Rozhodl jsem se projít všechny své položky a zadat je ručně. Mým hlavním důvodem bylo, že jsem měl skvělou příležitost revidovat mé účty, aktualizovat hesla a odstranit ty účty, které nepoužívám. GDPR [„právo být zapomenut“][gdpr-forget] se občas hodí.
+
+<div className="Image__Large">
+  <img src="./images/password-app.jpg" alt="Heslo" />
+  <figcaption>Zdroj: Gino Crescoli, Pixabay</figcaption>
+</div>
+
+Když už jsem nainstaloval rozšíření do prohlížeče od Enpassu, migrace probíhala rychle. Hned jak jsem se přihlásil na webovou stránku s přístupovými údaji z LastPassu, Enpass tyto údaje odchytil a nabídl jejich uložení do jednoho z lokálních trezorů. Vše, co jsem musel udělat, bylo prohlédnout přidávanou položku a kliknout na tlačítko „Uložit.“ Občas jsem opravil nebo přidal dodatečné informace. Mnoho položek v mém LastPass trezoru obsahovalo dodatečné poznámky jako seznam kódů na obnovu.
+
+Enpass umožňuje přidat vlastní pole. Definoval jsem si tedy pole jako *Kódy na obnovu* a všechny kódy jsem zapsal na jeden řádek. Enpass má možnost označit pole jako citlivé, aby se zabránilo náhodnému úniku informace. Namísto kódu vidíte tečky, jako u oken, kde zadáváte hesla.
+
+Skvělou funkcí je podpora pro značky. Položce můžete přiřadit několik značek, díky čemuž ji velmi jednoduše umíte najít. Například můj [MailChimp][mailchimp] účet jsem označil jako *Nástroje na produktivitu*, *Blog*, *Podnikání* a *Mailing list*. LastPass měl kategorie a položku jste mohli přidat pouze do jedné kategorie. Označování je mnohem lepší.
+
+Migraci jsem dokončil za několik hodin. Když jsem zmigroval všechna data, nakonec jsem šel do správy účtu LastPassu a požádal o úplné odstranění účtu.
+
+## Závěr
+Enpass je řešení pro mé potřeby! Jednoduchý, ale výkonný nástroj s doživotní licencí. Chybí mi funkce jako podpora pro YubiKey, ale ty časem mohou přibýt. Jelikož vše běží lokálně na mém počítači, silné hlavní heslo by mělo na zajištění bezpečnosti více než stačit.
+
+Klidně mi napište do komentářů, jaká řešení používáte na správu hesel a proč? Může to být podnětná diskuse.
+
+[//]: # (Used references)
+[lastpass]: https://www.lastpass.com/
+[2fa]: https://en.wikipedia.org/wiki/Multi-factor_authentication
+[yubikey]: https://www.yubico.com/
+[lastpass-plans]: https://www.lastpass.com/pricing
+[keepass]: https://keepass.info/
+[android-autofill]: https://developer.android.com/guide/topics/text/autofill-optimize
+[lastpass-issue]: https://bugs.chromium.org/p/project-zero/issues/detail?id=1209
+[dashlane]: https://www.dashlane.com/
+[nextcloud]: https://nextcloud.com/
+[nextcloud-pass]: https://nextcloud.com/blog/password-managers-for-nextcloud/
+[webdav]: https://cs.wikipedia.org/wiki/WebDAV
+[gdpr-forget]: https://gdpr-info.eu/art-17-gdpr/
+[authy]: https://authy.com/
+[mailchimp]: https://mailchimp.com/
+[totp]: https://en.wikipedia.org/wiki/Time-based_One-time_Password_algorithm
+[pwn]: https://en.wikipedia.org/wiki/Pwn
