@@ -38,20 +38,23 @@ Nájdite si príspevok s videom, ktoré chcete stiahnuť a zväčšite video, ab
 </div>
 
 Mali by ste vidieť obrazovku podobnú tejto:
+
 <div className="Image__Medium">
   <img src="./images/sk/expanded-video.jpg" alt="Video na celú obrazovku" />
   <figcaption>Video na celú obrazovku</figcaption>
 </div>
 
 Teraz si skopírujte URL odkaz k videu. Mal by vyzerať nejako takto:
+
 ```
 https://www.facebook.com/vladimir.zahradnik1/videos/3175253852495827/
 ```
 
-> Poznámka: Niektoré skupiny majú videosekciu so všetkými videami zobrazenými na jednom mieste. 
+> Poznámka: Niektoré skupiny majú videosekciu so všetkými videami zobrazenými na jednom mieste.
 
 ### Druhý krok: Upravte odkaz, aby ukazoval na verziu webu pre mobily
-Je to jednoduché — jednoducho nahraďte časť `www` za `m` a otvorte namiesto pôvodného odkazu ten nový:
+Je to jednoduché — len nahraďte časť `www` za `m` a otvorte namiesto pôvodného odkazu ten nový:
+
 ```
 https://m.facebook.com/vladimir.zahradnik1/videos/3175253852495827/
 ```
@@ -66,7 +69,7 @@ Teraz by ste mali vidieť stránku na Facebooku navrhnutú pre mobilné telefón
 </div>
 
 ### Tretí krok: Otvorte kartu Sieť z menu pre webových vývojárov
-Mobilná verzia webu ukazuje na video súbor v jeho celistvosti. Video nie je rozdelené na menšie úseky. Nevýhodou tohto prístupu je, že stiahnuté video je v nižšej kvalite. Avšak aj napriek tomu uprednostňujem mať aspoň niečo, ako vôbec nič. V mojom pôvodnej metóde ste si mohli stiahnuť video kliknutím na video a následne na položku v menu `Uložiť cieľ odkazu ako...`. Tento prístup už viac nefunguje. Avšak stále je tu spôsob, ako video stiahnuť.
+Mobilná verzia webu ukazuje na video súbor v jeho celistvosti. Video nie je rozdelené na menšie úseky. Nevýhodou tohto prístupu je, že stiahnuté video je v nižšej kvalite. Avšak aj napriek tomu uprednostňujem mať aspoň niečo, ako vôbec nič. V mojej pôvodnej metóde ste si mohli stiahnuť video kliknutím na video a následne na položku v menu `Uložiť cieľ odkazu ako...`. Tento prístup už viac nefunguje. Avšak stále je tu spôsob, ako video stiahnuť.
 
 Každá webstránka má nejaké zdroje, ktoré si prehliadač potrebuje stiahnuť. Vaše video je jedným z nich. Všetky tieto zdroje sú viditeľné na karte Sieť vo vývojárskej konzole. Existuje niekoľko spôsobov, ako sa na túto kartu dostať:
 1. Kliknite na tlačidlo menu v pravom hornom rohu. Potom kliknite na menu  `Webový vývojár` a vyberte položku `Sieť`
@@ -141,7 +144,7 @@ Pokiaľ používate dvojfaktorovú autentifikáciu, aby ste ešte viac zvýšili
 ### Heslá aplikácií
 Nie všetky aplikácie podporujú dvojfaktorovú autentifikáciu. Aby ste s nimi mohli pracovať, Facebook vám umožňuje vygenerovať heslo aplikácie. Mali by ste sa vedieť prihlásiť bez zadania hesla k vášmu účtu a dodatočného kódu.
 
-Typicky vygenerujete heslo aplikácie v nastaveniach zabezpečenia účtu Facebooku. Avšak zdá sa, že táto funkcia nefunguje správne. Keď som vytvoril heslo, Facebook ma stále zadal o dodatočný kód. Možno, že ide o chybu alebo jednoducho Facebook implementoval túto funkciu inak ako všetci ostatní. Taktiež, keď som sa pokúsil vymazať vygenerovaný záznam, dostával som zvláštne chybové hlášky (rozhodne chyba v kóde).
+Typicky vygenerujete heslo aplikácie v nastaveniach zabezpečenia účtu Facebooku. Avšak zdá sa, že táto funkcia nefunguje správne. Keď som vytvoril heslo, Facebook ma stále žiadal o dodatočný kód. Možno, že ide o chybu alebo jednoducho Facebook implementoval túto funkciu inak ako všetci ostatní. Taktiež, keď som sa pokúsil vymazať vygenerovaný záznam, dostával som zvláštne chybové hlášky (rozhodne chyba v kóde).
 
 <div className="Image__Medium">
   <img src="./images/sk/facebook-security.png" alt="Stránka zabezpečenia účtu Facebooku" />
